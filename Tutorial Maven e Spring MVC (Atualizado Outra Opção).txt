@@ -1,0 +1,213 @@
+3. Crie um projeto Maven:
+
+Ctrl + N
+Digite "Maven"
+Escolha a opção Maven Project -> Next
+Acione a opção "Create a Simple Project"
+Digite no Group Id e Artefact Id "rotherdan"; e no item Packaging "jar" -> Finish
+
+
+4. Substitua o pom.xml pelo abaixo:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>sparta</groupId>
+	<artifactId>sparta</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- Versão do spring -->
+		<spring.version>4.3.12.RELEASE</spring.version>
+		<!-- Versão do spring Security -->
+		<spring.security.version>4.3.12.RELEASE</spring.security.version>
+		<!-- Versão do jstl -->
+		<jstl.version>1.2</jstl.version>
+		<!-- Mapeamento de diretório -->
+		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+		<!-- Encoding do projeto -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>${jstl.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!--  Spring Core -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+
+		<!--  Spring MVC -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+	</dependencies>
+
+</project>
+
+
+
+5. Dentro da pasta WEB-INF crie o arquivo mvc-Dispatcher-servlet e copie o conteúdo abaixo:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- scan packages to register controllers which are annotated -->
+	<context:component-scan base-package="com.spring.series.mvc.controller" />
+
+	<!-- view resolver for rendering the final output -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix">
+			<value>/WEB-INF/jsp/</value>
+		</property>
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+</beans>
+
+
+6. Acesse dentro do WEB-INF o arquivo web.xml e copie o código abaixo:
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	id="WebApp_ID" version="2.5">
+
+	<!-- project display for web application -->
+	<display-name>SpringMVC-Annotation</display-name>
+
+	<!-- welcome file list -->
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+	</welcome-file-list>
+
+	<!-- Spring MVC DispatcherServlet: dispatches HTTP requests to registered
+		controllers -->
+	<servlet>
+		<servlet-name>mvc-dispatcher</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>mvc-dispatcher</servlet-name>
+		<url-pattern>/</url-pattern><!-- *.html -->
+	</servlet-mapping>
+
+	<!-- location of the root application context xml file -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/mvc-dispatcher-servlet.xml</param-value>
+	</context-param>
+
+	<!-- context loader listener -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+</web-app>
+
+
+
+
+6. Dentro da pasta WEB-INF crie a pasta jsp.
+
+
+
+7. Dentro da pasta WEB-INF/jsp crie o arquivo showMessage.jsp e copie o código abaixo:
+
+<!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Spring MVC Annotation</title>
+    </head>
+    <body>
+
+<h2>${message}</h2>
+
+    </body>
+</html>
+
+
+8. Dentro da pasta webapp crie o arquivo index.jsp e copie o código abaixo:
+		Observação: Paginas jsp que serão chamadas diretamente no browse tem que ficar visiveis,
+								neste caso, ficarão na pasta webapp. Já os jsp que forem chamados pelo objeto
+								"modelview" nos componentes, estas poderão ficar escondidas na pasta "WEB-INF/jsp"
+
+
+<!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Welcome to Spring MVC</title>
+    </head>
+    <body>
+        <a href="controller/firstmvc.htm">MY First Annotated MVC Controller</a>
+    </body>
+</html>
+
+
+
+9. Crie a classe abaixo:
+
+package com.spring.series.mvc.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+@Controller
+@RequestMapping("/controller")
+public class MyFirstMVController {
+
+    // http://localhost:8080/SpringMVC-Annotation/controller/firstmvc.htm
+
+    @RequestMapping(value="/firstmvc", method=RequestMethod.GET)
+    public ModelAndView firstMVController() {
+
+        ModelAndView modelAndView = new ModelAndView("showMessage");
+        modelAndView.addObject("message", "Welcome To Spring MVC Annotation based web application");
+        return modelAndView;
+    }
+}

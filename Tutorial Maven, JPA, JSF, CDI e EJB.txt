@@ -1,0 +1,706 @@
+1. Copie o arquivo mysql-connector-java-5.1.13-bin.jar para a pasta glassfishv3/glassfish/lib
+também da Área de Trabalho.
+
+
+
+2. Com o Glassfish inicializado, abra a interface de administração acessando a url localhost:
+4848.
+
+
+
+3. Abra a apostila da K19 e execute os passos da configuração do pool de conexão das paginas 65
+a  68
+
+
+
+4. Crie um projeto Maven web-app
+
+
+
+5. Atualize o pom.xml pelo abaixo:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+
+        <groupId>persistenciaWeb2</groupId>
+        <artifactId>persistenciaWeb2</artifactId>
+        <packaging>war</packaging>
+        <version>0.0.1-SNAPSHOT</version>
+        <name>persistenciaWeb2 Maven Webapp</name>
+
+
+        <properties>
+                <org.springframework-version>3.0.5.RELEASE</org.springframework-version>
+                <org.slf4j-version>1.5.10</org.slf4j-version>
+                <jsf-version>2.0.3</jsf-version>
+                <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+                <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        </properties>
+        <dependencies>
+                <!-- Database, JPA -->
+                <dependency>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-entitymanager</artifactId>
+                        <version>3.5.0-Final</version>
+                </dependency>
+
+                <!-- Logging -->
+                <dependency>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                        <version>${org.slf4j-version}</version>
+                </dependency>
+                <dependency>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>jcl-over-slf4j</artifactId>
+                        <version>${org.slf4j-version}</version>
+                </dependency>
+                <dependency>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                        <version>${org.slf4j-version}</version>
+                        <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                        <version>1.2.15</version>
+                        <exclusions>
+                                <exclusion>
+                                        <groupId>javax.mail</groupId>
+                                        <artifactId>mail</artifactId>
+                                </exclusion>
+                                <exclusion>
+                                        <groupId>javax.jms</groupId>
+                                        <artifactId>jms</artifactId>
+                                </exclusion>
+                                <exclusion>
+                                        <groupId>com.sun.jdmk</groupId>
+                                        <artifactId>jmxtools</artifactId>
+                                </exclusion>
+                                <exclusion>
+                                        <groupId>com.sun.jmx</groupId>
+                                        <artifactId>jmxri</artifactId>
+                                </exclusion>
+                        </exclusions>
+                        <scope>runtime</scope>
+                </dependency>
+                <!-- Servlet -->
+                <dependency>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                        <version>2.5</version>
+                        <scope>provided</scope>
+                </dependency>
+                <!-- JSR 303 with Hibernate Validator -->
+                <!-- JAXB is needed when running on Java 5. In this environment these dependencies
+                        have to be added (unless xml configuration is explicitly disabled via
+
+Configuration.ignoreXmlConfiguration)
+                        On Java 6 jaxb is part of the runtime environment. -->
+                <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                        <version>2.1</version>
+                </dependency>
+                <!-- Test -->
+                <dependency>
+                        <groupId>org.easymock</groupId>
+                        <artifactId>easymock</artifactId>
+                        <version>2.5.2</version>
+                        <scope>test</scope>
+                </dependency>
+                <dependency>
+                        <groupId>junit</groupId>
+                        <artifactId>junit</artifactId>
+                        <version>3.8.2</version>
+                        <scope>test</scope>
+                </dependency>
+                <dependency>
+                        <groupId>javax</groupId>
+                        <artifactId>javaee-api</artifactId>
+                        <version>6.0</version>
+                        <type>jar</type>
+                </dependency>
+                <dependency>
+                        <groupId>org.primefaces.themes</groupId>
+                        <artifactId>all-themes</artifactId>
+                        <version>1.0.9</version>
+                </dependency>
+                <dependency>
+                        <groupId>org.primefaces</groupId>
+                        <artifactId>primefaces</artifactId>
+                        <version>3.2</version>
+                </dependency>
+                <!-- MySQL Java Connector dependency -->
+                <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>5.1.17</version>
+                </dependency>
+                <!-- Configuração para JSF -->
+                <dependency>
+                        <groupId>com.sun.faces</groupId>
+                        <artifactId>jsf-api</artifactId>
+                        <version>2.1.7</version>
+                </dependency>
+                <dependency>
+                        <groupId>com.sun.faces</groupId>
+                        <artifactId>jsf-impl</artifactId>
+                        <version>2.1.7</version>
+                </dependency>
+                <dependency>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>jstl</artifactId>
+                        <version>1.2</version>
+                </dependency>
+
+                <!-- Fim -->
+        </dependencies>
+        <repositories>
+                <!-- Maven Central -->
+                <repository>
+                        <id>org.maven.central</id>
+                        <name>Maven Central Repository</name>
+                        <url>http://repo1.maven.org/maven2</url>
+                        <snapshots>
+                                <enabled>false</enabled>
+                        </snapshots>
+                </repository>
+                <!-- For Mojarra 2.x -->
+                <repository>
+                        <id>java.net.release</id>
+                        <name>Repository for Projects On Hosted on java.net</name>
+                        <url>http://download.java.net/maven/2</url>
+                </repository>
+                <repository>
+                        <id>prime-repo</id>
+                        <name>PrimeFaces Maven Repository</name>
+                        <url>http://repository.primefaces.org</url>
+                        <layout>default</layout>
+                </repository>
+        </repositories>
+
+        <build>
+                <plugins>
+                        <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-compiler-plugin</artifactId>
+                                <version>2.3.2</version>
+                                <configuration>
+                                        <source>1.6</source>
+                                        <target>1.6</target>
+                                        <compilerArguments>
+                                                <endorseddirs>${endorsed.dir}</endorseddirs>
+                                        </compilerArguments>
+                                </configuration>
+                        </plugin>
+                        <plugin>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-war-plugin</artifactId>
+                                <version>2.1.1</version>
+                                <configuration>
+                                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                                </configuration>
+                        </plugin>
+                </plugins>
+        </build>
+
+</project>
+
+
+
+4. Crie a folder META-INF dentro do source folder src/main/resources
+
+
+
+5. Crie o arquivo de persistencia XML na pasta META-INF:
+
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+        <persistence-unit name="´PU" transaction-type="JTA">
+                <provider>org.hibernate.ejb.HibernatePersistence</provider>
+                <jta-data-source>jdbc/MySQL</jta-data-source>
+
+                <properties>
+                        <property name="hibernate.hbm2ddl.auto" value="update" />
+                        <property name="hibernate.show_sql" value="true" />
+                        <property name="hibernate.format_sql" value="true" />
+                </properties>
+        </persistence-unit>
+</persistence>
+
+
+
+6. Crie o arquivo log4j.properties no root da source folder src/main/resources
+
+log4j.rootCategory=INFO, stdout
+
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern=%d %p [%c] - <%m>%n
+
+# Enable web flow logging
+log4j.category.org.springframework.webflow=DEBUG
+log4j.category.org.springframework.faces=DEBUG
+log4j.category.org.springframework.binding=DEBUG
+log4j.category.org.springframework.transaction=DEBUG
+
+
+
+7. Crie o arquivo log4j.xml no root da source folder src/main/resources
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+        <!-- Appenders -->
+        <appender name="console" class="org.apache.log4j.ConsoleAppender">
+                <param name="Target" value="System.out" />
+                <layout class="org.apache.log4j.PatternLayout">
+                        <param name="ConversionPattern" value="%-5p: %c - %m%n" />
+                </layout>
+        </appender>
+
+        <logger name="org.springframework.beans">
+                <level value="warn" />
+        </logger>
+
+        <logger name="org.springframework.binding">
+                <level value="debug" />
+        </logger>
+
+        <logger name="org.springframework.jdbc">
+                <level value="warn" />
+        </logger>
+
+        <logger name="org.springframework.transaction">
+                <level value="warn" />
+        </logger>
+
+        <logger name="org.springframework.orm">
+                <level value="warn" />
+        </logger>
+
+        <logger name="org.springframework.web">
+                <level value="debug" />
+        </logger>
+
+        <logger name="org.springframework.faces">
+                <level value="debug" />
+        </logger>
+
+        <logger name="org.springframework.webflow">
+                <level value="debug" />
+        </logger>
+
+        <!-- Root Logger -->
+        <root>
+                <priority value="warn" />
+                <appender-ref ref="console" />
+        </root>
+
+</log4j:configuration>
+
+
+
+
+8. Crie a source folder src/main/java
+
+
+
+9. Dentro da pasta src/main/webapp crie a folder META-INF
+
+
+10. Crie o arquivo MANIFEST.MF conforme abaixo:
+
+Manifest-Version: 1.0
+Class-Path:
+
+
+
+11. Dentro da pasta WEB-INF crie o arquivo beans.xml conforme abaixo:
+
+<?xml version="1.0"?>
+<beans xmlns="http://java.sun.com/xml/ns/javaee"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+
+http://jboss.org/schema/cdi/beans_1_0.xsd"/>
+
+
+
+12. Dentro da pasta WEB-INF crie o arquivo faces-config.xml conforme abaixo:
+
+<faces-config
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                        http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
+                            version="2.0">
+
+
+
+</faces-config>
+
+
+
+
+13. Atualize o arquivo web.xml conforme abaixo:
+
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+        id="WebApp_ID" version="2.5">
+        <display-name>ECommerce</display-name>
+        <!-- Project Stage Level -->
+        <context-param>
+                <param-name>javax.faces.PROJECT_STAGE</param-name>
+                <param-value>Development</param-value>
+        </context-param>
+
+        <!-- Welcome Page -->
+        <welcome-file-list>
+                <welcome-file>index.xhtml</welcome-file>
+        </welcome-file-list>
+
+        <!-- JSF Servlet is defined to container -->
+        <servlet>
+                <servlet-name>Faces Servlet</servlet-name>
+                <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+                <load-on-startup>1</load-on-startup>
+        </servlet>
+
+        <!-- Mapping with servlet and url for the http requests. -->
+        <servlet-mapping>
+                <servlet-name>Faces Servlet</servlet-name>
+                <url-pattern>*.jsf</url-pattern>
+        </servlet-mapping>
+        <servlet-mapping>
+                <servlet-name>Faces Servlet</servlet-name>
+                <url-pattern>*.xhtml</url-pattern>
+        </servlet-mapping>
+
+        <context-param>
+                <param-name>primefaces.THEME</param-name>
+                <param-value>bluesky</param-value>
+        </context-param>
+
+</web-app>
+
+
+
+14. No caso do glassfish crie o arquivo sun-web.xml conforme abaixo:
+
+<!DOCTYPE sun-web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN"
+
+"http://www.sun.com/software/appserver/dtds/sun-web-app_2_5-0.dtd">
+<sun-web-app error-url="">
+  <context-root>/persistenciaWeb2</context-root>
+  <class-loader delegate="true"/>
+  <jsp-config>
+    <property name="keepgenerated" value="true">
+      <description>Keep a copy of the generated servlet class java code.</description>
+    </property>
+  </jsp-config>
+</sun-web-app>
+
+
+
+
+15. Criar pasta css na pasta webapp
+
+
+
+16. Criar o arquivo themes.css na pasta css
+
+.ui-widget {font-size: x-small !important;}
+
+
+17. Crie o arquivo index.xhtml na pasta webapp conforme abaixo:
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:ui="http://java.sun.com/jsf/facelets">
+
+<h:head>
+        <link rel="StyleSheet" type="text/css" href="css/theme.css"/>
+</h:head>
+<body>
+         <p:dataTable value="#{livroMB.livros}" var="livro">
+                <p:column>
+                        <f:facet name="header">
+                                <h:outputText value="Id" />
+                        </f:facet>
+                        <h:outputText value="#{livro.id}" />
+                </p:column>
+                <p:column>
+                        <f:facet name="header">
+                                <h:outputText value="Nome" />
+                        </f:facet>
+                        <h:outputText value="#{livro.nome}" />
+                </p:column>
+                <p:column>
+                        <f:facet name="header">
+                                <h:outputText value="Preço" />
+                        </f:facet>
+                        <h:outputText value="#{livro.preco}" />
+                </p:column>
+        </p:dataTable>
+
+
+</body>
+</html>
+
+
+
+18. Dentro da source folder src/main/java crie as packages abaixo:
+
+br.com.dao
+br.com.entity
+br.com.managedbean
+util.data
+
+
+
+19. Crie o DAO abaixo:
+
+package br.com.dao;
+
+import javax.inject.Named;
+
+import util.data.GenericDAO;
+import br.com.entity.Livro;
+
+//@Stateless(name = "livroDAO")
+@Named
+public class LivroDAO extends GenericDAO<Livro>{
+
+}
+
+
+
+20. Crie os models abaixo:
+
+package br.com.entity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+
+@Entity
+public class Autor {
+
+@Id @GeneratedValue
+private Long id;
+
+private String nome;
+
+@ManyToMany
+private final List<Livro> livros = new ArrayList<Livro>();
+
+public Long getId() {
+        return id;
+}
+
+public void setId(Long id) {
+        this.id = id;
+}
+
+public String getNome() {
+        return nome;
+}
+
+public void setNome(String nome) {
+        this.nome = nome;
+}
+
+public List<Livro> getLivros() {
+        return livros;
+}
+
+
+}
+
+
+------------------------------------
+
+package br.com.entity;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
+public class Livro {
+
+        @Id
+        @GeneratedValue
+        private Long id;
+
+        private String nome;
+
+        private Double preco;
+
+        public Long getId() {
+                return id;
+        }
+
+        public void setId(Long id) {
+                this.id = id;
+        }
+
+        public String getNome() {
+                return nome;
+        }
+
+        public void setNome(String nome) {
+                this.nome = nome;
+        }
+
+        public Double getPreco() {
+                return preco;
+        }
+
+        public void setPreco(Double preco) {
+                this.preco = preco;
+        }
+
+}
+
+
+---------------------------------------
+
+
+
+21. Crie o Managed Bean abaixo:
+
+package br.com.managedbean;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.inject.Inject;
+
+import util.data.AtacadaoException;
+import br.com.dao.LivroDAO;
+import br.com.entity.Livro;
+
+@ManagedBean(name="livroMB")
+@SessionScoped
+public class LivroMB {
+
+        @Inject
+        private LivroDAO livroDAO;
+
+        private List<Livro> livros = new ArrayList<Livro>();
+
+
+/*
+        public LivroMB(){
+                Livro livro = new Livro();
+
+                livro.setId(1L);
+                livro.setNome("TEMPO");
+                livro.setPreco(50d);
+
+
+                livros.add(livro);
+        }
+*/
+        public List<Livro> getLivros(){
+                System.out.println("getLivros");
+
+                try {
+                        return livroDAO.findByAll("SELECT l FROM Livro l");
+                } catch (AtacadaoException e) {
+                        e.printStackTrace();
+
+                        return null;
+                }
+        }
+
+        public void setLivros(List<Livro> livros) {
+                this.livros = livros;
+        }
+
+
+
+}
+
+
+
+22. Crie as classes e interfaces commons abaixo:
+
+package util.data;
+
+public class AtacadaoException extends Exception {
+
+        public AtacadaoException() {
+                super();
+        }
+
+        public AtacadaoException(String message) {
+                super("[AtacadaoException] " + message);
+        }
+
+        public AtacadaoException(String message, Throwable cause) {
+                super("[AtacadaoException] " + message, cause);
+        }
+
+        public AtacadaoException(Throwable cause) {
+                super(cause);
+        }
+
+}
+
+
+
+------------------------------------------------------------------------
+
+package util.data;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+@SuppressWarnings("unchecked")
+public abstract class GenericDAO<T> {
+
+        @PersistenceContext
+        private EntityManager em;
+
+        public EntityManager getEntityManager() {
+                return em;
+        }
+
+        public List<T> findByAll(String sql) throws AtacadaoException{
+                List<T> query =  this.getEntityManager().createQuery( sql ).getResultList();
+
+                return query;
+
+        }
+
+/*
+        @TransactionAttribute(TransactionAttributeType.REQUIRED)
+        public boolean update( T obj ){
+
+                this.getEntityManager().persist( obj );
+
+                return true;
+        }
+
+*/
+
+}

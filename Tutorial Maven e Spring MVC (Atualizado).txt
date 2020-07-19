@@ -1,0 +1,403 @@
+3. Crie um projeto Maven:
+
+Ctrl + N
+Digite "Maven"
+Escolha a opção Maven Project -> Next
+Acione a opção "Create a Simple Project"
+Digite no Group Id e Artefact Id "rotherdan"; e no item Packaging "jar" -> Finish
+
+
+4. Substitua o pom.xml pelo abaixo:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>haia</groupId>
+	<artifactId>haia</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>haia</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- Versão do spring -->
+		<spring.version>4.3.12.RELEASE</spring.version>
+		<!-- Versão do spring Security -->
+		<spring.security.version>4.3.12.RELEASE</spring.security.version>
+		<!-- Versão do jstl -->
+		<jstl.version>1.2</jstl.version>
+		<!-- Mapeamento de diretório -->
+		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+		<!-- Encoding do projeto -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>3.1.0.RELEASE</version>
+			<scope>compile</scope>
+		</dependency>
+
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<type>jar</type>
+		</dependency>
+
+	</dependencies>
+</project>
+
+9. Alterar o web.xml conforme abaixo:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+	<display-name>Archetype Created Web Application</display-name>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+			/WEB-INF/applicationContext.xml
+		</param-value>
+	</context-param>
+
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<servlet>
+		<servlet-name>springmvc</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value />
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>springmvc</servlet-name>
+		<url-pattern>*.html</url-pattern>
+	</servlet-mapping>
+	<session-config>
+		<session-timeout>
+			30
+		</session-timeout>
+	</session-config>
+
+
+	<!-- Defini��o de filtro para encoding -->
+	<welcome-file-list>
+		<welcome-file>
+			/list_cars.html
+		</welcome-file>
+	</welcome-file-list>
+</web-app>
+
+
+4. Crie os arquivos springContext*.xml dentro da pasta WEB-INF
+
+applicationContext.xml
+======================
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+	<!-- Nesse ponto fazemos o import dos outros arquivos para modularizar o arquivo e arquivos menores -->
+	<import resource="applicationContextMVC.xml" />
+</beans>
+
+applicationContextMVC.xml
+=========================
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:dwr="http://www.directwebremoting.org/schema/spring-dwr"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.1.xsd
+    http://www.directwebremoting.org/schema/spring-dwr
+  	http://www.directwebremoting.org/schema/spring-dwr-3.0.xsd">
+
+
+	<!-- Enable DWR AJAX functionality -->
+<!--
+	<dwr:configuration />
+	<dwr:annotation-scan />
+	<dwr:url-mapping />
+	<dwr:controller id="dwrController" debug="true" />
+ -->
+
+	<mvc:annotation-driven />
+
+	<!-- Define quais pacotes o spring vai varrer em busca de anotatios -->
+	<context:component-scan base-package="spring" />
+
+	<!-- Define qual pasta est�o os arquivos de visualiza��o jsp,html,xhtml -->
+
+	<!-- <bean name="/list_cars.html" class="spring.mvc.controller.CarListController"/>  -->
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+</beans>
+
+
+
+
+
+
+5. Criar as classes abaixo em seus respectivos pacotes
+
+package spring.mvc.controller;
+
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import spring.mvc.service.CarManager;
+
+@Controller
+public class CarListController {
+
+	@RequestMapping("/list_cars.html")
+	public ModelAndView handleRequest(HttpSession session) throws Exception {
+
+		CarManager carManager = new CarManager();
+
+		ModelAndView modelAndView = new ModelAndView("carList");
+//		modelAndView.addObject("cars", carManager.getCarList());
+
+		session.setAttribute("cars", carManager.getCarList());
+
+		return modelAndView;
+	}
+}
+
+
+
+------------------------------------
+
+
+package spring.mvc.model;
+
+
+public class Brand {
+	private Long id;
+	private String name;
+	private String country;
+
+	public String getCountry() {
+		return country;
+	}
+	public void setCountry(String country) {
+		this.country = country;
+	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+}
+
+
+
+-----------------------------------------
+
+package spring.mvc.model;
+
+import java.math.BigDecimal;
+
+public class Car {
+	private Long id;
+	private Brand brand;
+	private String model;
+	private BigDecimal price;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Brand getBrand() {
+		return brand;
+	}
+
+	public void setBrand(Brand brand) {
+		this.brand = brand;
+	}
+
+	public String getModel() {
+		return model;
+	}
+
+	public void setModel(String model) {
+		this.model = model;
+	}
+
+	public BigDecimal getPrice() {
+		return price;
+	}
+
+	public void setPrice(BigDecimal price) {
+		this.price = price;
+	}
+}
+
+
+----------------------------------------------
+
+package spring.mvc.service;
+
+import java.math.BigDecimal;
+import java.util.LinkedList;
+import java.util.List;
+
+import spring.mvc.model.Brand;
+import spring.mvc.model.Car;
+
+
+public class CarManager {
+
+	private static List<Car> carList;
+
+	static {
+		Brand brand1 = new Brand();
+		brand1.setId((long)1);
+		brand1.setName("Mercedes");
+		brand1.setCountry("Germany");
+
+		Brand brand2 = new Brand();
+		brand2.setId((long)2);
+		brand2.setName("Peugeot");
+		brand2.setCountry("France");
+
+		Car car1 = new Car();
+		car1.setId((long)1);
+		car1.setBrand(brand1);
+		car1.setModel("SL 500");
+		car1.setPrice(new BigDecimal(40000));
+
+		Car car2 = new Car();
+		car2.setId((long)2);
+		car2.setBrand(brand2);
+		car2.setModel("607");
+		car2.setPrice(new BigDecimal(35000));
+
+		carList = new LinkedList<Car>();
+		carList.add(car1);
+		carList.add(car2);
+	}
+
+	public List<Car> getCarList() {
+		System.out.println("CarManager.getCarList() total de " + carList.size());
+
+		return carList;
+	}
+}
+
+
+
+6. Criar a pasta jsp dentro do WEB-INF
+
+7. Criar a pagina carList.jsp abaixo:
+
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page session="true" %>
+<html>
+<body>
+	<h1>Car List</h1>
+
+	<c:forEach items="${cars}" var="car">
+		${car.brand.name} ${car.model} ${car.price}
+		<br />
+	</c:forEach>
+
+ </body>
+</html>
+
+
+
+Observação: Caso ocorra o seguinte erro "java.lang.classnotfoundexception org.springframework.web.context.contextloaderlistener"
+						Proceda da seguinte forma:
+
+
+1. Right Click on maven web project
+2. Click 'Properties'menu
+3. Select 'Deployment Assembly' in left side of the popped window
+4. Click 'Add...' Button in right side of the popped up window
+5. Now appear one more popup window(New Assembly Directivies)
+6. Click 'Java Build path entries'
+7. Click 'Next' Button
+8. Click 'Finish' Button, now atomatically close New Assemby Directivies popup window
+9. Now click 'Apply' Button and Ok Button
+10.Run your webapplication

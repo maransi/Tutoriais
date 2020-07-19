@@ -1,0 +1,258 @@
+3. Crie um projeto Maven:
+
+Ctrl + N
+Digite "Maven"
+Escolha a opção Maven Project -> Next
+Acione a opção "Create a Simple Project"
+Digite no Group Id e Artefact Id "bariloche"; e no item Packaging "jar" -> Finish
+
+
+
+4. Substitua o pom.xml pelo abaixo:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.springframework.samples</groupId>
+	<artifactId>bariloche</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<properties>
+
+		<!-- Generic properties -->
+		<java.version>1.6</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<!-- Spring -->
+		<spring-framework.version4.3.12.RELEASE</spring-framework.version>
+
+		<!-- Logging -->
+		<logback.version>1.0.13</logback.version>
+		<slf4j.version>1.7.5</slf4j.version>
+
+	</properties>
+
+	<dependencies>
+		<!-- Spring and Transactions -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring-framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${spring-framework.version}</version>
+		</dependency>
+
+		<!-- Logging with SLF4J & LogBack -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+	</dependencies>
+</project>
+
+
+Dentro da pasta resource crie o arquivo spring.xml conforme abaixo:
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd"
+		default-autowire="byName" default-autowire-candidates="*" >
+
+<bean name="employee" class="com.journaldev.spring.autowiring.model.Employee">
+	<property name="name" value="Pankaj"></property>
+</bean>
+
+<bean name="employee1" class="com.journaldev.spring.autowiring.model.Employee" autowire-candidate="false">
+	<property name="name" value="Dummy Name"></property>
+</bean>
+
+<!-- autowiring byName, bean name should be same as the property name -->
+<bean name="employeeServiceByName" class="com.journaldev.spring.autowiring.service.EmployeeService" autowire="byName" />
+
+<!-- autowiring byType, there should be only one bean definition for the mapping -->
+<bean name="employeeServiceByType" class="com.journaldev.spring.autowiring.service.EmployeeService" autowire="byType" />
+
+<!-- autowiring by constructor -->
+<bean name="employeeServiceConstructor" class="com.journaldev.spring.autowiring.service.EmployeeService" autowire="constructor" />
+
+<!-- Enable Annotation based configuration -->
+<context:annotation-config />
+
+<!-- using @Autowiring annotation in below beans, byType and constructor -->
+<bean name="employeeAutowiredByTypeService" class="com.journaldev.spring.autowiring.service.EmployeeAutowiredByTypeService" />
+<bean name="employeeAutowiredByConstructorService" class="com.journaldev.spring.autowiring.service.EmployeeAutowiredByConstructorService" />
+</beans>
+
+
+
+3. Crie as classes abaixo:
+
+
+package com.journaldev.spring.autowiring.model;
+
+public class Employee {
+
+	private String name;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+}
+
+
+-----------------------------
+
+
+package com.journaldev.spring.autowiring.service;
+
+import com.journaldev.spring.autowiring.model.Employee;
+
+public class EmployeeService {
+
+	private Employee employee;
+
+	// constructor is used for autowire by constructor
+	public EmployeeService(Employee emp) {
+		System.out.println("Autowiring by constructor used");
+		this.employee = emp;
+	}
+
+	// default constructor to avoid BeanInstantiationException for autowire
+	// byName or byType
+	public EmployeeService() {
+		System.out.println("Default Constructor used");
+	}
+
+	// used for autowire byName and byType
+	public void setEmployee(Employee emp) {
+		this.employee = emp;
+	}
+
+	public Employee getEmployee() {
+		return this.employee;
+	}
+}
+
+
+----------------------------------
+
+
+
+package com.journaldev.spring.autowiring.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.journaldev.spring.autowiring.model.Employee;
+
+public class EmployeeAutowiredByTypeService {
+
+	//Autowired annotation on variable/setters is equivalent to autowire="byType"
+	@Autowired
+	private Employee employee;
+
+	@Autowired
+	public void setEmployee(Employee emp){
+		this.employee=emp;
+	}
+
+	public Employee getEmployee(){
+		return this.employee;
+	}
+}
+
+
+--------------------------
+
+
+package com.journaldev.spring.autowiring.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import com.journaldev.spring.autowiring.model.Employee;
+
+public class EmployeeAutowiredByConstructorService {
+
+	private Employee employee;
+
+	//Autowired annotation on Constructor is equivalent to autowire="constructor"
+	@Autowired(required=false)
+	public EmployeeAutowiredByConstructorService(@Qualifier("employee") Employee emp){
+		this.employee=emp;
+	}
+
+	public Employee getEmployee() {
+		return this.employee;
+	}
+}
+
+
+
+-------------------------------------
+
+
+package com.journaldev.spring.autowiring.main;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.journaldev.spring.autowiring.service.EmployeeAutowiredByConstructorService;
+import com.journaldev.spring.autowiring.service.EmployeeAutowiredByTypeService;
+import com.journaldev.spring.autowiring.service.EmployeeService;
+
+public class SpringMain {
+
+	public static void main(String[] args) {
+		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("spring.xml");
+
+		EmployeeService serviceByName = ctx.getBean("employeeServiceByName", EmployeeService.class);
+
+		System.out.println("Autowiring byName. Employee Name="+serviceByName.getEmployee().getName());
+
+		EmployeeService serviceByType = ctx.getBean("employeeServiceByType", EmployeeService.class);
+
+		System.out.println("Autowiring byType. Employee Name="+serviceByType.getEmployee().getName());
+
+		EmployeeService serviceByConstructor = ctx.getBean("employeeServiceConstructor", EmployeeService.class);
+
+		System.out.println("Autowiring by Constructor. Employee Name="+serviceByConstructor.getEmployee().getName());
+
+		//printing hashcode to confirm all the objects are of different type
+		System.out.println(serviceByName.hashCode()+"::"+serviceByType.hashCode()+"::"+serviceByConstructor.hashCode());
+
+		//Testing @Autowired annotations
+		EmployeeAutowiredByTypeService autowiredByTypeService = ctx.getBean("employeeAutowiredByTypeService",EmployeeAutowiredByTypeService.class);
+
+		System.out.println("@Autowired byType. Employee Name="+autowiredByTypeService.getEmployee().getName());
+
+		EmployeeAutowiredByConstructorService autowiredByConstructorService = ctx.getBean("employeeAutowiredByConstructorService",EmployeeAutowiredByConstructorService.class);
+
+		System.out.println("@Autowired by Constructor. Employee Name="+autowiredByConstructorService.getEmployee().getName());
+
+		ctx.close();
+	}
+}
+
+
+----------------------

@@ -1,0 +1,927 @@
+
+1. Crie um projeto Maven:
+
+Ctrl + N
+Digite "Maven"
+Escolha a opção Maven Project -> Next
+Acione a opção "Create a Simple Project"
+Digite no Group Id e Artefact Id "nice"; e no item Packaging "war" -> Finish
+
+2. Atualize o pom.xml:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>com.nice</groupId>
+	<artifactId>nice</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	
+	<packaging>war</packaging>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Para não deixar obrigatório a existência do arquivo web.xml. Isto será
+             usado quando houver classes de configuração spring -->
+
+		<failOnMissingWebXml>false</failOnMissingWebXml>
+
+		<!-- Spring MVC -->
+		<spring-framework.version>4.3.0.RELEASE</spring-framework.version>
+		
+		<!-- Servlet API -->
+		<servlet.version>3.1.0</servlet.version>
+
+		<!-- Thymeleaf -->
+		<thymeleaf.version>3.0.0.RELEASE</thymeleaf.version>
+
+		<!-- Bean Validation / Hibernate Validator -->
+		<hibernate-validator.version>5.2.4.Final</hibernate-validator.version>
+
+		<!-- Thymeleaf - Layout Dialect -->
+		<thymeleaf-layout-dialect.version>2.2.2</thymeleaf-layout-dialect.version>
+
+		<java.version>1.8</java.version>
+		<maven-compiler-pluging.version>3.2</maven-compiler-pluging.version>
+	</properties>
+	
+    <!-- Para que estas configurações do plugin funcione é necessário ir na opção do eclipse
+        clique direito no projeto Maven/Update Project... Marque a opção "Force Update..."
+        Uma das coisas que isto resolve é o aviso de erro no projeto devido a versão do java
+    -->
+    
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-pluging.version}</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<!-- A tag dependencyManagement evitará de colocarmos dentro da tag dependency a version da library
+		 sem contar com a compatibilidade entre as bibliotecas que ajudará manter, como no caso quando
+		 temos varias libraries do spring dentro do projeto
+	-->
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>${spring-framework.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<!-- Spring MVC -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+		</dependency>
+		
+		<!-- Servlet API -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>${servlet.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		
+		<!-- Thymeleaf -->
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
+			<version>${thymeleaf.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf-spring4</artifactId>
+			<version>${thymeleaf.version}</version>
+		</dependency>
+
+		<!-- Bean Validation / Hibernate Validator -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>${hibernate-validator.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+        <!-- Thymeleaf - Layout Dialect -->
+		<dependency>
+    		<groupId>nz.net.ultraq.thymeleaf</groupId>
+    		<artifactId>thymeleaf-layout-dialect</artifactId>
+    		<version>${thymeleaf-layout-dialect.version}</version>
+		</dependency>
+
+	</dependencies>
+	
+</project>
+
+
+3. Crie as classes abaixo:
+
+package com.nice.config;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.spring4.SpringTemplateEngine;
+import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ITemplateResolver;
+
+import com.nice.controller.VeiculoController;
+
+import nz.net.ultraq.thymeleaf.LayoutDialect;
+
+
+@Configuration
+@ComponentScan(basePackageClasses = { VeiculoController.class })
+@EnableWebMvc
+public class WebConfig extends WebMvcConfigurerAdapter implements ApplicationContextAware {
+
+	private ApplicationContext applicationContext;
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	@Bean
+	public ViewResolver viewResolver() {
+		ThymeleafViewResolver resolver = new ThymeleafViewResolver();
+		resolver.setTemplateEngine(templateEngine());
+		resolver.setCharacterEncoding("UTF-8");
+		return resolver;
+	}
+
+	@Bean
+	public TemplateEngine templateEngine() {
+		SpringTemplateEngine engine = new SpringTemplateEngine();
+		engine.setEnableSpringELCompiler(true);
+		engine.setTemplateResolver(templateResolver());
+		engine.addDialect(new LayoutDialect());				// Essa linha precisa ser inserida
+
+		return engine;
+	}
+
+	private ITemplateResolver templateResolver() {
+		SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
+		resolver.setApplicationContext(applicationContext);
+		resolver.setPrefix("classpath:/templates/"); // Localiza-se dentro do main/src/resources
+		resolver.setSuffix(".html");
+		resolver.setTemplateMode(TemplateMode.HTML);
+		return resolver;
+	}
+
+	@Override
+	public void addViewControllers(ViewControllerRegistry registry) {
+//		registry.addViewController("/").setViewName("veiculo/CadastroVeiculo");
+		registry.addRedirectViewController("/","veiculo/novo");
+	}
+	
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
+	}
+	
+}
+
+
+
+package com.nice.controller;
+
+import javax.validation.Valid;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.nice.veiculo.VeiculoBean;
+
+@Controller
+public class VeiculoController {
+
+	@RequestMapping("/veiculo/novo")
+	public String novo(VeiculoBean veiculo) {
+		return "veiculo/CadastroVeiculo"; 	// Aqui o correto era inserir .html no final da string, como no WebConfig ja tem 
+	}										// a configuração resolver.setSuffix(".html") isto não será necessario. 
+
+	@RequestMapping(value = "/veiculo/novo", method = RequestMethod.POST)  
+	public String cadastrar( @Valid VeiculoBean veiculo, BindingResult result, Model model, RedirectAttributes attributes) {
+		
+		if (result.hasErrors()) {
+			return novo(veiculo); 	// Aqui o correto era inserir .html no final da string, como no WebConfig ja tem 
+		}
+
+		System.out.println(" codigoVeiculo : " + veiculo.getCodigoVeiculo());
+		attributes.addFlashAttribute("mensagem", "Veiculo salvo com sucesso!");
+
+		return "redirect:/veiculo/novo";
+	}
+	
+	@RequestMapping("/veiculo/cadastro")
+	public String cadastro() {
+		return "veiculo/cadastro-veiculo";
+	}
+	
+	@RequestMapping("/veiculo/cadastro-layout")
+	public String cadastroLayout() {
+		return "veiculo/cadastro-veiculo-layout";
+	}	
+	
+}
+
+
+
+
+
+package com.nice.veiculo;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+
+import org.hibernate.validator.constraints.NotBlank;
+
+
+
+public class VeiculoBean {
+
+	@Positive(message="O código do veiculo válido deve estar entre 1 a 9999")
+	@NotNull(message="O código do veiculo válido deve estar entre 1 a 9999")
+	private Integer codigoVeiculo;
+	
+	@NotBlank(message="A marca deve não pode ser vazia")
+	private String marca;
+	
+	@NotBlank(message="O nome não deve ser vazio")
+	private String nome;
+	
+//	@Pattern(regexp="\\^[a-zA-Z]{3}\\-\\d{4}$\\", message="Placa Inválida")
+	@NotBlank(message="A placa não deve ser vazia")
+	private String placa;
+
+	public String getPlaca() {
+		return placa;
+	}
+
+	public void setPlaca(String placa) {
+		this.placa = placa;
+	}
+
+	public Integer getCodigoVeiculo() {
+		return codigoVeiculo;
+	}
+
+	public void setCodigoVeiculo(Integer codigoVeiculo) {
+		this.codigoVeiculo = codigoVeiculo;
+	}
+
+	public String getMarca() {
+		return marca;
+	}
+
+	public void setMarca(String marca) {
+		this.marca = marca;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((codigoVeiculo == null) ? 0 : codigoVeiculo.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VeiculoBean other = (VeiculoBean) obj;
+		if (codigoVeiculo == null) {
+			if (other.codigoVeiculo != null)
+				return false;
+		} else if (!codigoVeiculo.equals(other.codigoVeiculo))
+			return false;
+		return true;
+	}
+
+	public VeiculoBean(Integer codigoVeiculo, String marca, String nome) {
+		super();
+		this.codigoVeiculo = codigoVeiculo;
+		this.marca = marca;
+		this.nome = nome;
+	}
+
+	public VeiculoBean() {
+		super();
+	}
+
+	
+	
+}
+
+
+5. Criar o arquivo veiculo.js na pasta /static/layout/javascripts como abaixo:
+
+$(function() {
+	var decimal = $('.js-decimal');
+	decimal.maskMoney();
+	
+	var plain = $('.js-plain');
+	plain.maskMoney({ precision: 0 });
+});
+
+
+5. Crie a pasta templates/layout/fragments e crie os htmls abaixo dentro dela:
+
+BarraNavegacao.html 
+-------------------
+
+<!DOCTYPE html>
+<html lang="pt" xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:th="http://www.thymeleaf.org">
+	
+<body>
+<nav class="navbar  navbar-fixed-top  navbar-default  js-sticky-reference" id="main-navbar" th:fragment="navbar">
+	<div class="container-fluid">
+
+    <div class="navbar-header">
+     	<a class="navbar-brand  hidden-xs" href="#">
+        	<img alt="AlgaWorks" th:src="@{/images/logo.png}"/>
+      	</a>
+
+      	<ul class="nav  navbar-nav">
+        	<li>
+          		<a href="#" class="js-sidebar-toggle"><i class="fa  fa-bars"></i></a>
+        	</li>
+      	</ul>
+    </div>
+
+    <ul class="nav navbar-nav  navbar-right">
+    	<li>
+        	<a href="#"><em class="fa  fa-sign-out"></em></a>
+      	</li> 
+    </ul>
+
+  </div>
+</nav>
+
+</body>
+</html>
+
+
+Footer.html
+-----------
+<!DOCTYPE html>
+<html lang="pt" xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:th="http://www.thymeleaf.org">
+	
+<body>
+<footer class="aw-layout-footer  js-content" th:fragment="layout-footer">
+	<div class="container-fluid">
+		<span class="aw-footer-disclaimer">&copy; 2016 AlgaWorks. Todos os direitos reservados.</span>
+	</div>
+</footer>
+
+</body>
+</html>
+
+MenuLateral.html
+----------------
+
+<!DOCTYPE html>
+<html lang="pt" xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:th="http://www.thymeleaf.org">
+	
+<body>
+<aside class="aw-layout-sidebar  js-sidebar" th:fragment="layout-sidebar">
+	<div class="aw-layout-sidebar__content">
+
+    	<nav class="aw-menu  js-menu">
+      		<ul class="aw-menu__list">
+
+        		<li class="aw-menu__item">
+          			<a href="dashboard.html"><i class="fa  fa-fw  fa-home"></i><span>Dashboard</span></a>
+        		</li>
+
+        		<li class="aw-menu__item  is-active">
+          			<a href="#">
+            			<i class="fa  fa-fw  fa-file-text"></i><span>Cadastros</span>
+            			<i class="aw-menu__navigation-icon  fa"></i>
+          			</a>
+      
+          			<ul class="aw-menu__list  aw-menu__list--sublist">
+			            <li class="aw-menu__item  aw-menu__item--link"><a href="cadastro-produto.html">Cadastro de produto</a></li>
+			            <li class="aw-menu__item  aw-menu__item--link  is-active"><a href="pesquisa-produtos.html">Pesquisa de produtos</a></li>
+			            <li class="aw-menu__item  aw-menu__item--link"><a href="tabela-sem-dados.html">Tabela sem dados</a></li>
+          			</ul>
+        		</li>
+
+        		<li class="aw-menu__item  is-expanded">
+          			<a href="#">
+            			<i class="fa  fa-fw  fa-file-text"></i><span>Páginas comuns</span>
+            			<i class="aw-menu__navigation-icon  fa"></i>
+          			</a>
+
+          			<ul class="aw-menu__list  aw-menu__list--sublist">
+			            <li class="aw-menu__item  aw-menu__item--link"><a href="pagina-vazia.html">Página vazia</a></li>
+			            <li class="aw-menu__item  aw-menu__item--link"><a href="login.html">Login</a></li>
+			            <li class="aw-menu__item  aw-menu__item--link"><a href="esqueceu-a-senha.html">Esqueceu a senha</a></li>
+			            <li class="aw-menu__item  aw-menu__item--link"><a href="403.html">403</a></li>
+			            <li class="aw-menu__item  aw-menu__item--link"><a href="404.html">404</a></li>
+			            <li class="aw-menu__item  aw-menu__item--link"><a href="500.html">500</a></li>
+          			</ul>
+        		</li>
+
+      		</ul>
+    	</nav>
+	</div>
+</aside>
+</body>
+</html>
+
+
+
+
+5. Crie dentro da pasta src/main/resources a pasta templates/veiculo. Dentro desta pasta crie o arquivo CadastroVeiculo.html
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8">
+		<title>Insert title here</title>
+	</head>
+
+	<body>
+		<h1>Olá! Thymeleaf configurado!</h1>
+		<div th:each="erro : ${#fields.detailedErrors('${veiculoBean.*}')}">
+			<span th:text="${erro.message}"></span>
+		</div>
+		<form method="POST" action="/nice/veiculo/novo" th:object="${veiculoBean}" >
+			<span th:text="${mensagem}"></span>
+			<br>
+			<label for="codigoVeiculo">Código do Veiculo</label> <br>
+			<input type="text" size=3 id="codigoVeiculo" th:field="*{codigoVeiculo}">
+			<br>
+			<label for="nome">Nome</label> <br>
+			<input type="text" th:field="*{nome}" id="nome" size="30" length="30"> <br>
+			<label for="marca">Marca</label> <br>
+			<input type="text" th:field="*{marca}" id="marca" size="15" length="15"> <br>
+			<label for="placa">Placa</label> <br>
+			<input type="text" th:field="*{placa}" id="placa"> <br>
+			<input type="submit" value="Gravar">
+		</form>
+	</body>
+
+</html>
+
+
+
+
+
+
+5. VERIFICAR A CRIAÇÃO DAS PASTAS DENTRO PASTA STATIC
+
+
+
+
+
+
+
+5. Acesse a folder templates e crie uma folder com o nome layout.
+
+6. Dentro da pasta template/layout crie a pagina LayoutPadrao.html com o código abaixo:
+
+<!DOCTYPE html>
+<html lang="pt" xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+	<meta charset="UTF-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+	<title>Veiculos</title>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/layout/stylesheets/vendors.min.css}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{/layout/stylesheets/algaworks.min.css}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{/layout/stylesheets/application.css}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{/layout/stylesheets/brewer.css}"/>
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+<div class="aw-layout-page">
+	
+	<div th:replace="layout/fragments/BarraNavegacao :: navbar"></div>
+	
+	<div th:replace="layout/fragments/MenuLateral :: layout-sidebar"></div>
+	
+	<section class="aw-layout-content  js-content" layout:fragment="conteudo"></section>
+	
+	<div th:replace="layout/fragments/Footer :: layout-footer"></div>
+</div>
+<script th:src="@{/layout/javascripts/vendors.min.js}"></script>
+<script th:src="@{/layout/javascripts/algaworks.min.js}"></script>
+<script th:src="@{/layout/javascripts/jquery.maskMoney.min.js}"></script>
+<script th:src="@{/layout/javascripts/veiculo.js}"></script>
+</body>
+</html>
+
+
+7. Dentro da pasta template/veiculo crie o html cadastro-veiculo-layout.html como abaixo:
+
+<!DOCTYPE html>
+<html lang="pt" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorator="'layout/LayoutPadrao'">
+
+<head></head>
+
+<body>
+	<section layout:fragment="conteudo">
+
+		<div class="page-header">
+			<div class="container-fluid">
+				<h1>Cadastro de Veiculos</h1>
+			</div>
+		</div>
+
+		<div class="container-fluid">
+
+			<!-- <div class="alert  alert-danger  alert-dismissible" role="alert">
+			<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<i class="fa  fa-exclamation-circle"></i> Já existe um produto com o nome informado.
+		</div> -->
+
+			<form method="POST" th:object="${veiculoBean}"
+				class="form-vertical  js-form-loading">
+
+				<div class="row">
+					<div class="col-sm-2  form-group">
+						<label for="sku">SKU</label> <input id="sku" type="text"
+							class="form-control" />
+					</div>
+
+					<div class="col-sm-10  form-group">
+						<label for="nome">Nome</label> <input id="nome" type="text"
+							class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="descricao">Descrição</label>
+					<textarea id="descricao" rows="3" class="form-control"></textarea>
+				</div>
+
+				<div class="row">
+					<div class="col-sm-3  form-group">
+						<label for="estilo">Estilo</label> <select id="estilo"
+							class="form-control">
+							<option value="">Selecione o estilo</option>
+							<option value="1">Pale lager</option>
+						</select>
+
+						<div class="bw-field-action__icon">
+							<a href="#" data-toggle="modal" data-target="#modalCadastroRapidoEstilo">
+								<i class="glyphicon  glyphicon-plus-sign  bw-glyphicon-large"></i>
+							</a>
+						</div>
+					</div>
+
+					<div class="col-sm-3  form-group">
+						<label for="sabor">Sabor</label> <select id="sabor"
+							class="form-control">
+							<option value="">Selecione o sabor</option>
+							<option value="1">Adocicada</option>
+						</select>
+					</div>
+
+					<div class="col-sm-3  form-group">
+						<label for="teorAlcoolico">Teor alcoólico</label>
+						<div class="input-group">
+							<input id="teorAlcoolico" type="text" class="form-control" />
+							<div class="input-group-addon">%</div>
+						</div>
+					</div>
+
+					<div class="col-lg-3  col-sm-6  form-group">
+						<label for="origem">Origem</label>
+						<div>
+							<div class="radio  radio-inline">
+								<input type="radio" name="origem"> <label>Nacional</label>
+							</div>
+							<div class="radio  radio-inline">
+								<input type="radio" name="origem"> <label>Internacional</label>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-sm-3  form-group">
+						<label for="preco">Preço</label>
+						<div class="input-group">
+							<div class="input-group-addon">R$</div>
+							<input id="preco" type="text" class="form-control" />
+						</div>
+					</div>
+
+					<div class="col-sm-3  form-group">
+						<label for="comissao">Comissão</label>
+						<div class="input-group">
+							<input id="comissao" type="text" class="form-control" />
+							<div class="input-group-addon">%</div>
+						</div>
+					</div>
+
+					<div class="col-sm-3  form-group">
+						<label for="estoque">Estoque</label> <input id="estoque"
+							type="text" class="form-control" />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<button class="btn  btn-primary" type="submit">Salvar</button>
+				</div>
+
+			</form>
+		</div>
+
+		<div th:replace="estilo/CadastroRapidoEstilo :: modal"></div>
+	</section>
+
+</body>
+</html>
+
+
+8. Dentro da pasta template/veiculo crie o html cadastro-veiculo.html como abaixo:
+
+
+<!DOCTYPE html>
+<html lang="pt" xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+	<title>Brewer</title>
+
+	<link rel="stylesheet" type="text/css" th:href="@{/layout/stylesheets/vendors.min.css}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{/layout/stylesheets/algaworks.min.css}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{/layout/stylesheets/application.css}"/>
+
+	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+
+<body>
+<div class="aw-layout-page">
+	<nav class="navbar  navbar-fixed-top  navbar-default  js-sticky-reference" id="main-navbar">
+		<div class="container-fluid">
+
+	    <div class="navbar-header">
+	     	<a class="navbar-brand  hidden-xs" href="#">
+	        	<img alt="AlgaWorks" src="@{/layout/images/logo4.png}" height="30" width="128"/>
+	      	</a>
+
+	      	<ul class="nav  navbar-nav">
+	        	<li>
+	          		<a href="#" class="js-sidebar-toggle"><i class="fa  fa-bars"></i></a>
+	        	</li>
+	      	</ul>
+	    </div>
+
+	    <ul class="nav navbar-nav  navbar-right">
+	    	<li>
+	        	<a href="#"><em class="fa  fa-sign-out"></em></a>
+	      	</li> 
+	    </ul>
+
+	  </div>
+	</nav>
+	
+	<aside class="aw-layout-sidebar  js-sidebar">
+		<div class="aw-layout-sidebar__content">
+
+	    	<nav class="aw-menu  js-menu">
+	      		<ul class="aw-menu__list">
+	
+	        		<li class="aw-menu__item">
+	          			<a href="dashboard.html"><i class="fa  fa-fw  fa-home"></i><span>Dashboard</span></a>
+	        		</li>
+	
+	        		<li class="aw-menu__item  is-active">
+	          			<a href="#">
+	            			<i class="fa  fa-fw  fa-file-text"></i><span>Cadastros</span>
+	            			<i class="aw-menu__navigation-icon  fa"></i>
+	          			</a>
+	      
+	          			<ul class="aw-menu__list  aw-menu__list--sublist">
+				            <li class="aw-menu__item  aw-menu__item--link"><a href="cadastro-produto.html">Cadastro de produto</a></li>
+				            <li class="aw-menu__item  aw-menu__item--link  is-active"><a href="pesquisa-produtos.html">Pesquisa de produtos</a></li>
+				            <li class="aw-menu__item  aw-menu__item--link"><a href="tabela-sem-dados.html">Tabela sem dados</a></li>
+	          			</ul>
+	        		</li>
+	
+	        		<li class="aw-menu__item  is-expanded">
+	          			<a href="#">
+	            			<i class="fa  fa-fw  fa-file-text"></i><span>Páginas comuns</span>
+	            			<i class="aw-menu__navigation-icon  fa"></i>
+	          			</a>
+	
+	          			<ul class="aw-menu__list  aw-menu__list--sublist">
+				            <li class="aw-menu__item  aw-menu__item--link"><a href="pagina-vazia.html">Página vazia</a></li>
+				            <li class="aw-menu__item  aw-menu__item--link"><a href="login.html">Login</a></li>
+				            <li class="aw-menu__item  aw-menu__item--link"><a href="esqueceu-a-senha.html">Esqueceu a senha</a></li>
+				            <li class="aw-menu__item  aw-menu__item--link"><a href="403.html">403</a></li>
+				            <li class="aw-menu__item  aw-menu__item--link"><a href="404.html">404</a></li>
+				            <li class="aw-menu__item  aw-menu__item--link"><a href="500.html">500</a></li>
+	          			</ul>
+	        		</li>
+	
+	      		</ul>
+	    	</nav>
+		</div>
+	</aside>
+	
+	<section class="aw-layout-content  js-content">
+
+		<div class="page-header">
+			<div class="container-fluid">
+				<h1>
+					Cadastro de Veiculo
+				</h1>
+			</div>
+		</div>
+
+		<div class="container-fluid">
+
+			<!-- <div class="alert  alert-danger  alert-dismissible" role="alert">
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<i class="fa  fa-exclamation-circle"></i> Já existe um produto com o nome informado.
+			</div> -->
+
+			<form method="POST" th:object="${veiculoBean}" class="form-vertical  js-form-loading">
+		
+				<div class="row">
+					<div class="col-sm-2  form-group">
+						<label for="sku">SKU</label>
+						<input id="sku" type="text" class="form-control"/>
+					</div>
+					
+					<div class="col-sm-10  form-group">
+						<label for="nome">Nome</label>
+						<input id="nome" type="text" class="form-control"/>
+					</div>
+				</div>
+	
+				<div class="form-group">
+					<label for="descricao">Descrição</label>
+					<textarea id="descricao" rows="3" class="form-control"></textarea>
+				</div>
+
+				<div class="row">
+					<div class="col-sm-3  form-group">
+						<label for="estilo">Estilo</label>
+						<select id="estilo" class="form-control">
+							<option value="">Selecione o estilo</option>
+							<option value="1">Pale lager</option>
+						</select>
+					</div>
+					
+					<div class="col-sm-3  form-group">
+						<label for="sabor">Sabor</label>
+						<select id="sabor" class="form-control">
+							<option value="">Selecione o sabor</option>
+							<option value="1">Adocicada</option>
+						</select>
+					</div>
+					
+					<div class="col-sm-3  form-group">
+						<label for="teorAlcoolico">Teor alcoólico</label>
+						<div class="input-group">
+							<input id="teorAlcoolico" type="text" class="form-control"/>
+							<div class="input-group-addon">%</div>
+						</div>
+					</div>
+					
+					<div class="col-lg-3  col-sm-6  form-group">
+						<label for="origem">Origem</label>
+						<div>
+							<div class="radio  radio-inline">
+								<input type="radio" name="origem"> 
+								<label>Nacional</label>
+							</div>
+							<div class="radio  radio-inline">
+								<input type="radio" name="origem"> 
+								<label>Internacional</label>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="col-sm-3  form-group">
+						<label for="preco">Preço</label>
+						<div class="input-group">
+							<div class="input-group-addon">R$</div>
+							<input id="preco" type="text" class="form-control"/>
+						</div>
+					</div>
+					
+					<div class="col-sm-3  form-group">
+						<label for="comissao">Comissão</label>
+						<div class="input-group">
+							<input id="comissao" type="text" class="form-control"/>
+							<div class="input-group-addon">%</div>
+						</div>
+					</div>
+					
+					<div class="col-sm-3  form-group">
+						<label for="estoque">Estoque</label>
+						<input id="estoque" type="text" class="form-control"/>
+					</div>
+				</div>
+				
+				<div class="form-group">
+					<button class="btn  btn-primary" type="submit">Salvar</button>
+				</div>
+		
+			</form>
+		</div>
+	</section>
+	
+	<footer class="aw-layout-footer  js-content">
+		<div class="container-fluid">
+			<span class="aw-footer-disclaimer">&copy; 2016 AlgaWorks. Todos os direitos reservados.</span>
+		</div>
+	</footer>
+</div>
+
+<script th:src="@{/layout/javascripts/vendors.min.js}"></script>
+<script th:src="@{/layout/javascripts/algaworks.min.js}"></script>
+</body>
+</html>
+
+6. Clique com o direito no nó principal do projeto. Acesse a opção Maven/Update Project, marque a opção "Force Update" e de OK.
+
+7. Publique a aplicação e execute as URLs abaixo:
+	http://localhost:8080/nice/
+	http://localhost:8080/nice/veiculo/novo
+	http://localhost:8080/nice/veiculo/cadastro
+	http://localhost:8080/nice/veiculo/cadastro-veiculo
+	http://localhost:8080/nice/veiculo/cadastro-layout
+	
+

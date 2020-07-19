@@ -1,0 +1,885 @@
+
+1.E Criar projeto java Dynamic Web; 
+1.N Criar novo projeto web
+
+2.E Na pasta src criar as packages:
+2.N Na pasta "Pacote de Códigos Fonte" criar as packages:
+
+br.com.ativo
+br.com.pattern
+
+3.E Na pasta src criar a folder:
+3.N Não precisa
+
+META-INF
+
+4.E Na pasta raiz criar as folders:
+4.N Não precisa
+
+resources
+
+
+
+5. Criar as classes e interfaces:
+
+IDAO
+----
+
+package br.com.pattern;
+
+import java.util.List;
+
+public interface IDAO<T> {
+
+	public boolean insert( T t);
+
+	public boolean update( T t);
+
+	public boolean delete( T t);
+
+	public List<T> findAll();
+
+}
+
+
+
+IService
+--------
+
+package br.com.pattern;
+
+import java.util.List;
+
+public interface IService<T> {
+
+	public boolean insert(T t);
+
+	public boolean update(T t);
+
+	public boolean delete(T t);
+
+	public List<T> findAll();
+
+}
+
+
+VeiculoBean
+------------
+
+package br.com.ativo;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
+@Entity
+@Table(name="veiculo")
+public class VeiculoBean {
+
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Integer	id_veiculo;
+
+	@Column(name="ano_fabricacao")
+	private int	anoFabricacao;
+
+	@Column(name="marca")
+	private String marca;
+
+	@Column(name="placa")
+	private String placa;
+
+	public Integer getId_veiculo() {
+		return id_veiculo;
+	}
+	public void setId_veiculo(Integer id_veiculo) {
+		this.id_veiculo = id_veiculo;
+	}
+	public int getanoFabricacao() {
+		return anoFabricacao;
+	}
+	public void setanoFabricacao(int anoFabricacao) {
+		this.anoFabricacao = anoFabricacao;
+	}
+	public String getMarca() {
+		return marca;
+	}
+	public void setMarca(String marca) {
+		this.marca = marca;
+	}
+	public String getPlaca() {
+		return placa;
+	}
+	public void setPlaca(String placa) {
+		this.placa = placa;
+	}
+
+	public VeiculoBean(Integer idVeiculo, int anoFabricacao, String marca,
+			String placa) {
+		super();
+		this.id_veiculo = idVeiculo;
+		this.anoFabricacao = anoFabricacao;
+		this.marca = marca;
+		this.placa = placa;
+	}
+
+
+	public VeiculoBean(Integer id_veiculo) {
+		super();
+		this.id_veiculo = id_veiculo;
+	}
+	public VeiculoBean(){
+		super();
+	}
+}
+
+
+
+
+
+
+VeiculoDAO
+----------
+
+package br.com.ativo;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import br.com.pattern.IDAO;
+
+@Repository
+public class VeiculoDAO implements IDAO<VeiculoBean> {
+
+	@PersistenceContext
+	private  EntityManager em;
+
+	@Override
+	@Transactional
+	public boolean update(VeiculoBean t) {
+		try {
+			em.merge(t);
+
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return false;
+		} finally {
+			em.close();
+		}
+	}
+
+	@Override
+	@Transactional
+	public boolean delete(VeiculoBean t) {
+		try {
+			t = em.merge(t);
+			em.remove(t);
+
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+
+			return false;
+		} finally {
+			em.close();
+		}
+	}
+
+	@Override
+	@Transactional
+	public boolean insert(VeiculoBean t) {
+		try {
+			em.persist(t);
+
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+
+			return false;
+		} finally {
+			em.close();
+		}
+
+	}
+
+	@Override
+	@Transactional
+	public List<VeiculoBean> findAll() {
+		try {
+			Query usu = em.createQuery("select object(v) from VeiculoBean as v");
+			return usu.getResultList();
+		} catch (Exception e) {
+			return null;
+		} finally {
+			em.close();
+		}
+	}
+
+	public VeiculoDAO() {
+		super();
+	}
+}
+
+
+
+
+
+
+
+VeiculoService
+--------------
+
+package br.com.ativo;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+
+import br.com.pattern.IDAO;
+import br.com.pattern.IService;
+
+@Service
+public class VeiculoService implements IService<VeiculoBean> {
+
+	@Autowired
+	private IDAO veiculoDAO; //= new VeiculoDAO();
+
+	public VeiculoService() {
+		super();
+
+		SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+
+	}
+
+	public IDAO<VeiculoBean> getVeiculoDAO() {
+		return veiculoDAO;
+	}
+
+	public void setVeiculoDAO(IDAO<VeiculoBean> veiculoDAO) {
+		this.veiculoDAO = veiculoDAO;
+	}
+
+	@Override
+	public boolean insert(VeiculoBean veiculo) {
+		return veiculoDAO.insert(veiculo);
+	}
+
+	@Override
+	public boolean update(VeiculoBean veiculo) {
+		return veiculoDAO.update(veiculo);
+	}
+
+	@Override
+	public boolean delete(VeiculoBean veiculo) {
+		return veiculoDAO.delete(veiculo);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<VeiculoBean> findAll() {
+		return veiculoDAO.findAll();
+	}
+
+	public List<VeiculoBean> getFindAll(){
+		return this.findAll();
+	}
+
+	public String getMensagem(){
+		return "Hello";
+	}
+}
+
+
+
+
+
+
+VeiculoTest
+-----------
+
+package br.com.ativo;
+
+import junit.framework.TestCase;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
+
+@ContextConfiguration(locations ="classpath:applicationContext.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
+@Transactional
+public class VeiculoTest extends TestCase {
+
+	/**
+	 * @param args
+	 */
+	@Autowired
+	private VeiculoService veiculoService; // = new VeiculoService();
+	private static Integer idVeiculoGerado;
+
+	@Test
+	public void testInsert(){
+		VeiculoBean veiculoBean = new VeiculoBean(null, 2012,"FORD","GCD1531");
+
+		try{
+			assertTrue(veiculoService.insert(veiculoBean));
+		}catch(Exception e){
+			e.printStackTrace();
+			assertEquals(" " + e.getMessage(), e.getMessage());
+		}finally{
+			this.idVeiculoGerado = veiculoBean.getId_veiculo();
+		}
+	}
+
+	@Test
+	public void testUpdate(){
+		VeiculoBean veiculoBean = new VeiculoBean(this.idVeiculoGerado, 2012,"FORD","GCD1531");
+
+		try{
+			assertTrue(veiculoService.update(veiculoBean));
+		}catch(Exception e){
+			e.printStackTrace();
+			assertEquals(" " + e.getMessage(), e.getMessage());
+		}
+	}
+
+	@Test
+	public void testDelete(){
+		VeiculoBean veiculoBean = new VeiculoBean(this.idVeiculoGerado);
+
+		try{
+			assertTrue(veiculoService.delete(veiculoBean));
+		}catch(Exception e){
+			e.printStackTrace();
+			assertEquals(" " + e.getMessage(), e.getMessage());
+		}
+	}
+
+	@Test
+	public void testFindAll(){
+		try{
+			assertTrue(veiculoService.findAll().size()>0);
+		}catch(Exception e){
+			e.printStackTrace();
+			assertEquals(" " + e.getMessage(), e.getMessage());
+		}
+	}
+
+}
+
+
+
+
+package br.com.ativo;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
+
+@RunWith(Suite.class)
+@SuiteClasses({
+    VeiculoTest.class
+        
+})
+
+public class AllTests {
+
+
+}        
+
+
+
+
+6.E Criar uma pasta META-INF dentro da source folder src e crie o arquivo persistence.xml
+6.N Clique com o botão esquerdo do mouse no nó principal do projeto, acione "Novo Arquivo" / Persistência / Unidade de Persistência / Escolha Hibernate JPA 2.0
+	e crie o arquivo persistence.xml
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+	<persistence-unit name="PU">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<class>br.com.ativo.VeiculoBean</class>
+
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://srvwebapp:3306/estoque" />
+			<property name="javax.persistence.jdbc.user" value="root" />
+			<property name="javax.persistence.jdbc.password" value="aawandwer01" />
+		</properties>
+	</persistence-unit>
+</persistence>
+
+
+
+
+8.Criar dois applicationContext.xml um na pasta raiz do src e outro dentro do WebContent\WEB-INF
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+	<!-- Seta anotaçoes para serem usadas pelo Spring -->
+	<context:annotation-config />
+	<!-- Define o pacote onde o Spring vai procurar por beans anotados -->
+	<context:component-scan base-package="br" />
+
+	<!-- define que as transaçoes irao ser anotadas -->
+	<tx:annotation-driven />
+	<!-- Configuracao do Banco de Dados -->
+<!--
+	<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+		<prop key="hibernate.connection.url">jdbc:mysql://srvwebapp:3306/estoque</prop>
+		<prop key="hibernate.connection.username">root</prop> <prop key="hibernate.connection.password">aawandwer01</prop>
+		<prop key="hibernate.show_sql">true</prop> <prop key="hibernate.current_session_context_class">thread</prop>
+		<prop key="hibernate.hbm2ddl.auto">update</prop>
+ -->
+
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://srvwebapp:3306/estoque" />
+		<property name="username" value="root" />
+		<property name="password" value="aawandwer01" />
+	</bean>
+
+	<!-- Configuracao do Hibernate -->
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="persistenceUnitName" value="PU" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="databasePlatform" value="org.hibernate.dialect.MySQLDialect" />
+				<property name="showSql" value="true" />
+			</bean>
+		</property>
+	</bean>
+	<!-- Configuracao do gerente de transacoes do Spring -->
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+</beans>
+
+
+
+
+7.E Copiar o web.xml na pasta WebContent\WEB-INF
+7.N Copiar o web.xml na pasta Páginas Web\WEB-INF
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	id="WebApp_ID" version="3.0">
+	<display-name>ametista</display-name>
+
+	<!-- Configuracao do Spring -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/applicationContext.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+
+	<!-- The Bootstrap listener to start up and shut down Spring's root WebApplicationContext.
+		It is registered to Servlet Container -->
+
+	<listener>
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
+
+	<!-- Fim -->
+
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.htm</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+		<welcome-file>default.html</welcome-file>
+		<welcome-file>default.htm</welcome-file>
+		<welcome-file>default.jsp</welcome-file>
+	</welcome-file-list>
+</web-app>
+
+
+
+8.E Na pasta resources criar o arquivo de log4j.properties
+8.N Nas pasta Páginas Web\WEB-INF criar o arquivo log4j.properties
+
+log4j.rootCategory=INFO, CONSOLE
+log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+log4j.appender.CONSOLE.layout.ConversionPattern=%r [%t] %-5p %c - %m%n
+
+
+9.E Adicionar as libs abaixo no projeto
+9.N Clique c/o botão direito do mouse no nó principal do projeto. 
+	Vá em propriedades e Bibliotecas, Adicionar bibliotecas e selecione 
+	( JSTL 1.1, Spring Framework 3.1...., Drive do Java DB ) mais os JARs especificos como JUnit, log4j, ou JDBCs de outros bancos. 
+	Caso já tenha os JARs separados basta ao invés de Adicionar bibliotecas, vá em adicionar jars e escolhar os jars.
+
+
+antlr-2.7.6.jar
+aopalliance-1.0.jar
+c3p0-0.9.1.jar
+cglib-2.2.jar
+commons-collections-3.1.jar
+commons-collections.jar
+commons-logging.jar
+dom4j-1.6.1.jar
+ehcache-1.3.0.jar
+hibernate-jpa-2.0-api-1.0.0.Final.jar
+hibernate-testing-3.3.1.GA-sources.jar
+hibernate3.jar
+infinispan-core-4.2.1.CR1.jar
+javassist-3.12.0.GA.jar
+jbosscache-core-3.2.1.GA.jar
+jstl.jar
+jta-1.1.jar
+log4j-1.2.16.jar
+mysql-connector-java-5.1.5-bin.jar
+org.springframework.aop-3.1.0.M2.jar
+org.springframework.asm-3.1.0.M2.jar
+org.springframework.aspects-3.1.0.M2.jar
+org.springframework.beans-3.1.0.M2.jar
+org.springframework.context-3.1.0.M2.jar
+org.springframework.context.support-3.1.0.M2.jar
+org.springframework.core-3.1.0.M2.jar
+org.springframework.expression-3.1.0.M2.jar
+org.springframework.instrument-3.1.0.M2.jar
+org.springframework.instrument.tomcat-3.1.0.M2.jar
+org.springframework.jdbc-3.1.0.M2.jar
+org.springframework.jms-3.1.0.M2.jar
+org.springframework.orm-3.1.0.M2.jar
+org.springframework.oxm-3.1.0.M2.jar
+org.springframework.test-3.1.0.M2.jar
+org.springframework.transaction-3.1.0.M2.jar
+org.springframework.web-3.1.0.M2.jar
+org.springframework.web.portlet-3.1.0.M2.jar
+org.springframework.web.servlet-3.1.0.M2.jar
+org.springframework.web.struts-3.1.0.M2.jar
+oscache-2.1.jar
+proxool-0.8.3.jar
+slf4j-api-1.6.1.jar
+standard.jar
+swarmcache-1.0RC2.jar
+
+
+10.E Selecionar todos os jars e colocar no classpath da aplicação:
+
+
+11.E Criar as pastas abaixo dentro da raiz da pasta WebContent:
+11.N Criar as pastas abaixo dentro da raiz da pasta Páginas Web:
+
+cs
+image
+js
+themes
+
+
+
+12. Pegar o demo.css do JQuery e copiar na pasta cs
+
+cs\demo.css
+
+
+13. Criar o arquivo global.css dentro da pasta cs
+
+@CHARSET "ISO-8859-1";
+
+.txtPretoBold8 {
+	font-size: 8pt;
+	color: #000000;
+	font-weight: bold;
+}
+
+.txtPretoBold10 {
+	font-size: 10pt;
+	color: #000000;
+	font-weight: bold;
+}
+
+.txtBold9 {
+	font-size: 8pt;
+	font-family: Tahoma;
+	color: #336699;
+	font-weight: bold;
+}
+
+.txt9 {
+	font-size: 8pt;
+	font-family: Tahoma;
+	color: #336699;
+	font-weight: normal;
+}
+
+.txtVermelhoBold8 {
+	font-size: 8pt;
+	color: #FB0000;
+	font-weight: bold;
+	font-family: Tahoma;
+}
+
+input submit {
+	font-family: verdana;
+	font-style: normal;
+	font-weight: bold;
+	font-size: 8pt;
+	vertical-align: middle;
+	text-transform: normal;
+	text-align: center middle;
+	border-style: outset;
+	border-width: 1px;
+	background-color: #FFFFFF;
+	padding-left: 2px;
+	padding-right: 2px;
+	color: #336699;
+	height: 22px;
+	cursor: hand;
+	filter: progid:DXImageTransform.Microsoft.Gradient(gradientType=0,
+		startColorStr=#ffffff, endColorStr=#eaeaea );
+}
+
+input {
+	font-family: verdana, arial;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 8pt;
+	height: 17px;
+	color: #336699;
+	padding: 0px;
+	padding-left: 2px;
+	padding-right: 2px;
+	border: 1px solid #336699;
+	vertical-align: text-middle;
+}
+
+.inputRadio,input.inputCheckBox {
+	font-family: verdana, arial;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 8pt;
+	color: #336699;
+	border-width: 0px;
+	padding: 0px;
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+fieldset {
+	border: 1px solid #336699;
+	padding: 0.2em 0.5em;
+	vertical-align: text-middle;
+}
+
+legend {
+	padding: 0.2em 0.5em;
+	font-size: 90%;
+	text-align: center;
+	font-size: 9pt;
+	color: #336699;
+	font-weight: bold;
+	font-family: Tahoma;
+}
+
+.content {
+	font-size: 9px;
+	font-style: normal;
+	line-height: normal;
+	font-weight: bold;
+	font-variant: normal;
+	text-transform: none;
+	color: #336699;
+	text-decoration: none;
+}
+
+img {
+	BORDER-TOP-STYLE: none;
+	BORDER-RIGHT-STYLE: none;
+	BORDER-LEFT-STYLE: none;
+	BORDER-BOTTOM-STYLE: none;
+	vertical-align: bottom;
+}
+
+.backGround-color-Header {
+	background-color: #cdcbcb;
+}
+
+.embalagem table {
+	font-family: Tahoma;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 8pt;
+	color: #336699;
+	vertical-align: text-middle;
+	text-transform: none;
+	text-align: center;
+	border: 0;
+	padding: 0;
+	spacing: 0;
+}
+
+.embalagem th {
+	font-family: Tahoma;
+	font-style: normal;
+	font-weight: bold;
+	font-size: 10pt;
+	color: #FFFFFF;
+	vertical-align: center;
+	text-transform: normal;
+	text-align: center;
+	background-color: #cdcbcb;
+	height: 32px;
+}
+
+.embalagem tr {
+	font-family: Tahoma;
+	font-style: normal;
+	font-weight: bold;
+	font-size: 10pt;
+	color: #FFFFFF;
+	vertical-align: center;
+	text-transform: normal;
+	background-color: #336699;
+	height: 34px;
+}
+
+.embalagem td {
+	font-family: Tahoma;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 8pt;
+	color: #336699;
+	text-transform: none;
+	text-decoration: none;
+	vertical-align: center;
+}
+
+
+14. Copiar os arquivo do JQuery abaixo na pasta js:
+
+easyloader.js
+jquery-easyui.min.js
+jquery.1.7.1.min.js
+
+
+
+15. Copiar a pasta do themes do jquery-easyui e copiar na pasta themes:
+
+\default
+\gray
+\icons
+icons.css
+
+
+
+16.E Criar a pagina jsp no WebContent
+16.N Criar a pagina jsp no Páginas Web
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib  uri="http://java.sun.com/jsp/jstl/core"  prefix='c'%>
+<%@ page import="br.com.ativo.*;" %>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    	               "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>GlassFish JSP Page</title>
+<link rel="stylesheet" type="text/css" href="themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="themes/default/combo.css">
+<link rel="stylesheet" type="text/css" href="themes/icon.css">
+<link rel="stylesheet" type="text/css" href="cs/demo.css">
+<link rel="stylesheet" type="text/css" href="cs/global.css">
+<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="js/jquery.easyui.min.js"></script>
+
+</head>
+<body>
+	<jsp:useBean id="veiculoService" class="br.com.ativo.VeiculoService" scope="session" />
+	<form id="veiculo" action="veiculoServlet">
+		<div id="tt" class="easyui-tabs" tools="#tab-tools"
+			style="width: 720px; height: 420px;">
+			<div title="Cadastro" tools="#p-tools"
+				style="padding: 10px; background: #fafafa; width: 710px; height: 410px; overflow: hidden;">
+				<div id="cadastro" class="easyui-panel"
+					iconCls="icon-write"
+					style="width: 700px; height: 365px; padding: 10px; background: #fafafa;align:center;">
+					<table width="60%" cellspacing="1" cellpadding="1">
+						<tr>
+							<td style="width: 70px"><font class="txtBold9">Código</font>
+							</td>
+							<td style="width: 100px"><font class="txtBold9">Ano</font></td>
+							<td style="width: 100px"><font class="txtBold9">Marca</font></td>
+							<td style="width: 100px"><font class="txtBold9">Placa</font>
+							</td>
+						</tr>
+
+						<c:forEach items="${veiculoService.findAll}" var="veiculo">
+							<tr>
+								<td>
+									<font class="txt9">
+										<c:out value="${veiculo.id_veiculo}"/>
+									</font>
+								</td>
+								<td>
+									<font class="txt9">
+										<c:out value="${veiculo.anoFabricacao}"/>
+									</font>
+								</td>
+								<td>
+									<font class="txt9">
+										<c:out value="${veiculo.marca}"/>
+									</font>
+								</td>
+								<td>
+									<font class="txt9">
+										<c:out value="${veiculo.placa}"/>
+									</font>
+								</td>
+							</tr>
+						</c:forEach>
+					</table>
+				</div>
+			</div>
+		</div>
+	</form>
+</body>
+</html>
+
+
+
+17.E Teste os componentes na classe de teste VeiculoTest
+17.N Teste os componentes na suite de testes AllTests
+

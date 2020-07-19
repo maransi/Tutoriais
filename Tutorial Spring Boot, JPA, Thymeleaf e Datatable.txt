@@ -1,0 +1,433 @@
+1. Crie um projeto Spring Boot com as seguintes dependências:
+
+    Web
+    JPA
+    H2
+    Thymeleaf
+
+2. Coloque na propriedade package "com.example";
+
+3. Coloque no application.properties as linhas abaixo:
+
+    # ===============================
+    # = Thymeleaf configurations
+    # ===============================
+    spring.thymeleaf.mode=LEGACYHTML5
+    spring.thymeleaf.cache=false
+
+    # ===============================
+    # = data.sql file will be executed?
+    # ===============================
+    spring.datasource.initialize=true
+
+
+    #Enabled H2 COnsole
+    spring.h2.console.enabled=true
+
+    # Custom H2 Console URL
+    spring.h2.console.path=/h2
+
+    #Turn Stastic on
+    spring.jpa.properties.hibernate.generate_statistics=true
+    logging.level.org.hibernate.stat=debug
+
+    #Show all queries
+    spring.jpa.show-sql=true
+    spring.jpa.properties.hibernate.format_sql=true
+    logging.level.org.hibernate.type=debug
+
+4. Verifique se o pom.xml com as linhas abaixo:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.example</groupId>
+	<artifactId>demo</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>demo</name>
+	<description>Demo project for Spring Boot</description>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.4.2.RELEASE</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/net.sourceforge.nekohtml/nekohtml -->
+		<dependency>
+			<groupId>net.sourceforge.nekohtml</groupId>
+			<artifactId>nekohtml</artifactId>
+			<version>1.9.21</version><!--$NO-MVN-MAN-VER$ -->
+		</dependency>
+		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+
+</project>
+
+
+
+5. Crie a classe model abaixo:
+
+package com.example.model;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
+public class Employee {
+	
+	@Id
+	@@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="id")
+	private long id;
+	@Column(name="name")
+	private String name;
+	@Column(name="lastname")
+	private String lastName;
+	@Column(name="email")
+	private String email;
+	@Column(name="phone")
+	private String phone;
+	@Column(name="active")
+	private boolean active;
+	
+	public Employee() {
+		super();
+	}
+	
+	public Employee(String name, String lastName, String email, String phone, boolean active) {
+		super();
+		this.name = name;
+		this.lastName = lastName;
+		this.email = email;
+		this.phone = phone;
+		this.active = active;
+	}
+	
+	public long getId() {
+		return id;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getLastName() {
+		return lastName;
+	}
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+}
+
+
+6. Crie a classe repository abaixo:
+
+package com.example.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.example.model.Employee;
+
+@Repository("employeeRepository")
+public interface EmployeeRepository extends JpaRepository<Employee, Long>{
+
+}
+
+
+7. Crie a Interface de serviço abaixo:
+
+package com.example.service;
+
+import java.util.List;
+
+import com.example.model.Employee;
+
+public interface EmployeeService {
+	
+	public List<Employee> getAllEmployees();
+	public Optional<Employee> getEmployeeById(long id);
+	
+}
+
+
+8. Crie a classe de implementação abaixo:
+
+package com.example.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.example.model.Employee;
+import com.example.repository.EmployeeRepository;
+
+@Service("employeeService")
+public class EmployeeServiceImpl implements EmployeeService {
+
+	@Autowired
+	private EmployeeRepository employeeRepository;
+
+	@Override
+	public List<Employee> getAllEmployees() {
+		return employeeRepository.findAll();
+	}
+
+	@Override
+	public Optional<Employee> getEmployeeById(long id) {
+		return employeeRepository.findById(id);
+	}
+
+}
+
+
+9. Crie a classe de implementação abaixo:
+
+package com.example.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+public class EmployeeController {
+	
+	@RequestMapping(path="/", method=RequestMethod.GET)
+	public String goHome(){
+		return "index";
+	}
+
+}
+
+
+/*
+
+By default Spring Boot defines the view resolver in the next way.
+
+    Prefix → resources/templates
+    Suffix → html
+
+Note: if you want to implement a custom view resolver you can do it using the application.properties file or the a java configuration file.
+
+*/
+
+
+
+
+10. Crie a classe controller abaixo:
+
+package com.example.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.model.Employee;
+import com.example.service.EmployeeService;
+
+@RestController
+public class EmployeeRestController {
+	
+	@Autowired
+	private EmployeeService employeeService;
+	
+	@RequestMapping(path="/employees", method=RequestMethod.GET)
+	public List<Employee> getAllEmployees(){
+		return employeeService.getAllEmployees();
+	}
+    @RequestMapping(value = "/employee/{id}", method = RequestMethod.GET)
+	public Optional<Employee> getEmployeeById(@PathVariable("id") long id){
+		return employeeService.getEmployeeById(id);
+	}
+
+}
+
+
+11. Crie a pagina web index.html , dentro da pasta src\main\resources\templates\
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8" />
+	<title>Spring Boot + JPA + Datatables</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+	<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+	<script src="/js/datatable.js"></script>
+</head>
+
+<body>
+	<h1>Employees Table</h1>
+	<table id="employeesTable" class="display">
+      
+       <!-- Header Table -->
+       <thead>
+            <tr>
+                <th>Id</th>
+				<th>Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <!-- Footer Table -->
+        <tfoot>
+            <tr>
+                <th>Id</th>
+				<th>Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Active</th>
+            </tr>
+        </tfoot>
+    </table>
+    
+</body>
+</html>
+
+
+12. Incluir o arquivo data.sql na pasta src\main\resources\ com o conteúdo abaixo:
+
+
+INSERT INTO employee(name, lastname, email, phone, active) values ('Gustavo','Ponce','test@test.com','1234567890',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Bob','Marley','one@love.com','6483748590',false);
+INSERT INTO employee(name, lastname, email, phone, active) values ('David','Gilmour','high@hopes.com','7648909831',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('John','Lennon','standby@me.com','7689485620',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Ozzy','Osbourne','children@grave.com','6483748590',false);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Jimmy','Page','stairway@heaven.com','7648909831',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Jimi','Hendrix','purple@haze.com','8754091236',false);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Sex','Pistols','save@queen.com','6729098761',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Jim','Morrison','riders@storm.com','8754091236',false);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Richard','Blackmore','highway@star.com','8754091236',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Jay','Kay','cosmic@girl.com','0926389871',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('David','Bowie','heroes@oneday.com','4338490981',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Bob','Dylan','knocking@doors.com','4338490981',false);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Manu','Chao','mala@vida.com','8923098753',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('The','Specials','ghost@thown.com','7590498573',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Jymmy','Cliff','see@clearly.com','4338490981',false);
+INSERT INTO employee(name, lastname, email, phone, active) values ('The','Temptations','my@girl.com','7639864096',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Simon','Garfunkel','mr@robinson.com','8750987531',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('catch','22','takes@sometime.com','7098653427',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Janis','Joplin','cry@baby.com','6739087641',false);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Lou','Red','wild@side.com','6789045678',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Iggy','Pop','the@passenger.com','6934980751',true);
+INSERT INTO employee(name, lastname, email, phone, active) values ('Dead','Kennedys','holiday@cambodia.com','2389096457',false);
+INSERT INTO employee(name, lastname, email, phone, active) values ('The','Cure','dont@cry.com','8749340987',false);
+
+13. Crie o arquivo schema.sql
+
+CREATE TABLE EMPLOYEE(  id      INTEGER     NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                        name    VARCHAR(100),
+                        lastname    VARCHAR(50),
+                        email       VARCHAR(50),
+                        phone       VARCHAR(30),
+                        active      BOOLEAN);
+
+
+
+13. Inclua a pasta "js" dentro da pasta src\main\resources\static
+
+
+15. Dentro da pasta "js" inclua a arquivo "datatable.js" com o conteúdo abaixo:
+
+$(document).ready( function () {
+	 var table = $('#employeesTable').DataTable({
+			"sAjaxSource": "/employees",
+			"sAjaxDataProp": "",
+			"order": [[ 0, "asc" ]],
+			"aoColumns": [
+			      { "mData": "id"},
+		          { "mData": "name" },
+				  { "mData": "lastName" },
+				  { "mData": "email" },
+				  { "mData": "phone" },
+				  { "mData": "active" }
+			]
+	 })
+});
+
+
+
+

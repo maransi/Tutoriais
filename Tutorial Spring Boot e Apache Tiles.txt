@@ -1,0 +1,345 @@
+1. Crie um projeto Spring Boot com as seguintes dependências:
+
+    Web
+    Thymeleaf
+
+2. Verifique se o pom.xml ficou como abaixo:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.4.RELEASE</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>org.o7planning</groupId>
+	<artifactId>SpringBootJspTiles</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>SpringBootJspTiles</name>
+	<description>Spring Boot + Tiles + Jsp</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+
+		<!-- Tiles API -->
+		<!-- http://mvnrepository.com/artifact/org.apache.tiles/tiles-api -->
+		<dependency>
+			<groupId>org.apache.tiles</groupId>
+			<artifactId>tiles-api</artifactId>
+			<version>3.0.8</version>
+		</dependency>
+
+
+		<!-- Tiles Core -->
+		<!-- http://mvnrepository.com/artifact/org.apache.tiles/tiles-core -->
+		<dependency>
+			<groupId>org.apache.tiles</groupId>
+			<artifactId>tiles-core</artifactId>
+			<version>3.0.8</version>
+		</dependency>
+
+		<!-- Tiles Servlet -->
+		<!-- http://mvnrepository.com/artifact/org.apache.tiles/tiles-servlet -->
+		<dependency>
+			<groupId>org.apache.tiles</groupId>
+			<artifactId>tiles-servlet</artifactId>
+			<version>3.0.8</version>
+		</dependency>
+
+		<!-- Tiles JSP -->
+		<!-- http://mvnrepository.com/artifact/org.apache.tiles/tiles-jsp -->
+		<dependency>
+			<groupId>org.apache.tiles</groupId>
+			<artifactId>tiles-jsp</artifactId>
+			<version>3.0.8</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.tiles/tiles-request-api -->
+		<dependency>
+			<groupId>org.apache.tiles</groupId>
+			<artifactId>tiles-request-api</artifactId>
+			<version>1.0.6</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+
+3. Verifique se a classe lançadora da aplicação ficou como abaixo:
+
+package org.o7planning.sbtiles;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SpringBootJspTilesApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SpringBootJspTilesApplication.class, args);
+	}
+
+}
+
+
+4. Crie a classe de configuração abaixo:
+
+package org.o7planning.sbtiles.config;
+ 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.view.UrlBasedViewResolver;
+import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
+import org.springframework.web.servlet.view.tiles3.TilesView;
+ 
+@Configuration
+public class TilesConfig {
+     
+     
+    @Bean(name = "viewResolver")
+    public ViewResolver getViewResolver() {
+        UrlBasedViewResolver viewResolver = new UrlBasedViewResolver();
+ 
+        // TilesView 3
+        viewResolver.setViewClass(TilesView.class);
+ 
+        return viewResolver;
+    }
+ 
+    @Bean(name = "tilesConfigurer")
+    public TilesConfigurer getTilesConfigurer() {
+        TilesConfigurer tilesConfigurer = new TilesConfigurer();
+ 
+        // TilesView 3
+        tilesConfigurer.setDefinitions(new String[] {"/WEB-INF/tiles.xml"});
+ 
+        return tilesConfigurer;
+    }
+ 
+}
+
+
+5. Crie a classe controller abaixo:
+
+package org.o7planning.sbtiles.controller;
+ 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+ 
+@Controller
+public class MainController {
+ 
+    @RequestMapping(value = { "/", "/home" }, method = RequestMethod.GET)
+    public String homePage(Model model) {
+        return "homePage";
+    }
+ 
+     
+    @RequestMapping(value = { "/contactus" }, method = RequestMethod.GET)
+    public String contactusPage(Model model) {
+        model.addAttribute("address", "Vietnam");
+        model.addAttribute("phone", "...");
+        model.addAttribute("email", "...");
+        return "contactusPage";
+    }
+     
+}
+
+
+
+6. Insira as linhas abaixo no arquivo application.properties:
+
+spring.thymeleaf.enabled=false
+
+
+7. Crie dentro da pasta "src/main" as pastas abaixo:
+
+/src/main/webapp
+/src/main/webapp/WEB-INF
+/src/main/webapp/WEB-INF/basefragments
+/src/main/webapp/WEB-INF/bodyfragments
+/src/main/webapp/WEB-INF/layouts
+
+
+
+8. Dentro da pasta /src/main/webapp/WEB-INF/ crie o arquivo tiles.xml como abaixo:
+
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE tiles-definitions PUBLIC  
+       "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"  
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">  
+        
+<tiles-definitions>  
+ 
+    <!-- Base Define -->
+    <definition name="base.definition" 
+        template="/WEB-INF/layouts/classic.jsp">  
+        <put-attribute name="title" value="" />  
+        <put-attribute name="header" value="/WEB-INF/basefragments/_header.jsp" />  
+        <put-attribute name="menu" value="/WEB-INF/basefragments/_menu.jsp" />  
+        <put-attribute name="body" value="" />  
+        <put-attribute name="footer" value="/WEB-INF/basefragments/_footer.jsp" />  
+    </definition>  
+ 
+    <!-- Home Page  -->
+    <definition name="homePage" extends="base.definition" >  
+        <put-attribute name="title" value="Home Page" />  
+        <put-attribute name="body" value="/WEB-INF/bodyfragments/_home.jsp" />  
+    </definition>  
+       
+    <!-- ContactUs Page -->
+    <definition name="contactusPage" extends="base.definition" >  
+        <put-attribute name="title" value="Contact Us" />  
+        <put-attribute name="body" value="/WEB-INF/bodyfragments/_contactus.jsp" />  
+    </definition>    
+ 
+  
+</tiles-definitions> 
+
+
+9. Dentro da pasta /src/main/webapp/WEB-INF/basefragments crie os arquivos abaixo:
+
+_footer.jsp 
+
+<div style="background: #E0E0E0; text-align: center; padding: 5px; margin-top: 10px;">
+	@Copyright o7planning.org
+</div>
+
+
+
+_header.jsp
+
+<div style="background: #E0E0E0; height: 55px; padding: 5px;">
+   <div style="float: left">
+      <h1>My Site</h1>
+   </div>
+ 
+   <div style="float: right; padding: 10px; text-align: right;">
+ 
+      Search <input name="search">
+ 
+   </div>
+ 
+</div>
+
+
+_menu.jsp
+
+<div style="padding: 5px;">
+ 
+    <ul>
+ 
+        <li><a href="${pageContext.request.contextPath}/">Home</a></li>
+        <li><a href="${pageContext.request.contextPath}/contactus">Contact Us</a></li>
+ 
+    </ul>
+ 
+</div>
+
+
+10. Dentro da pasta /src/main/webapp/WEB-INF/bodyfragments crie os arquivos abaixo:
+
+_contactus.jsp
+
+Contact Us: o7planning.org
+<br>
+Address: ${address}
+<br>
+Phone: ${phone}
+<br>
+Email: ${email}
+
+
+_home.jsp
+
+<h2>Hi All</h2>
+ 
+This is Home Page
+
+
+10. Dentro da pasta /src/main/webapp/WEB-INF/layouts crie os arquivos abaixo:
+
+classic.jsp
+
+<%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles"%>
+<html>
+<head>
+<title><tiles:getAsString name="title" /></title>
+</head>
+ 
+<body>
+    <table width="100%">
+        <tr>
+            <td colspan="2">
+                <tiles:insertAttribute name="header" />
+            </td>
+        </tr>
+        <tr>
+            <td width="20%" nowrap="nowrap">
+                 <tiles:insertAttribute name="menu" />
+             </td>
+            <td width="80%">
+                 <tiles:insertAttribute name="body" />
+             </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                 <tiles:insertAttribute name="footer" />
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
+
+11. Execute o link http://localhost:8080/
+

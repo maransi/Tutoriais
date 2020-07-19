@@ -1,0 +1,353 @@
+1. Acesse o seu banco e database;
+
+
+2. Crie a tabela abaixo:
+
+. MYSQL
+
+CREATE TABLE `player` (
+  `player_id` INT(6) NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) NOT NULL,
+  `age` INT(3) NOT NULL,
+  `matches` INT(3) NOT NULL,
+  PRIMARY KEY (`player_id`)
+);
+
+INSERT INTO `player`(`name`, `age`, `matches`) VALUES ("Sachin Tendulkar",41,200);
+INSERT INTO `player`(`name`, `age`, `matches`) VALUES ("Shane Warne",44,145);
+INSERT INTO `player`(`name`, `age`, `matches`) VALUES ("Kevin Pietersen",34,104);
+INSERT INTO `player`(`name`, `age`, `matches`) VALUES ("Shahid Afridi",35,27);
+INSERT INTO `player`(`name`, `age`, `matches`) VALUES ("Brian Lara",45,131);
+INSERT INTO `player`(`name`, `age`, `matches`) VALUES ("Graeme Smith",34,117);
+INSERT INTO `player`(`name`, `age`, `matches`) VALUES ("Mahela Jayawardene",37,145);
+
+
+.Postgres
+
+CREATE TABLE player (
+  player_id SERIAL,
+  name VARCHAR(50) NOT NULL,
+  age INT NOT NULL,
+  matches INT NOT NULL,
+  PRIMARY KEY (player_id)
+);
+
+
+INSERT INTO player(name, age, matches) VALUES ('Sachin Tendulkar',41,200);
+INSERT INTO player(name, age, matches) VALUES ('Shane Warne',44,145);
+INSERT INTO player(name, age, matches) VALUES ('Kevin Pietersen',34,104);
+INSERT INTO player(name, age, matches) VALUES ('Shahid Afridi',35,27);
+INSERT INTO player(name, age, matches) VALUES ('Brian Lara',45,131);
+INSERT INTO player(name, age, matches) VALUES ('Graeme Smith',34,117);
+INSERT INTO player(name, age, matches) VALUES ('Mahela Jayawardene',37,145);
+
+
+3. Crie um projeto Maven:
+
+Ctrl + N
+Digite "Maven"
+Escolha a opção Maven Project -> Next
+Acione a opção "Create a Simple Project"
+Digite no Group Id e Artefact Id "kroton"; e no item Packaging "jar" -> Finish
+
+4. Atualize o pom.xml com o trecho abaixo:
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.kroton</groupId>
+	<artifactId>kroton</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+		<!-- <spring.version>3.2.3.RELEASE</spring.version> -->
+		<spring.version>4.3.12.RELEASE</spring.version>
+		<postgres.version>42.2.9</postgres.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+	
+	
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${postgres.version}</version>
+		</dependency>
+	</dependencies>
+</project>
+
+
+4. Crie dentro da pasta "src/main/resource" o arquivo abaixo com nome de SpringContext.xml.
+   Atenção com os parâmetros de conexão (url, username e password), elas variarão de ambiente para ambiente
+
+<!-- Para o banco MYSQL -->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:context="http://www.springframework.org/schema/context"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                              http://www.springframework.org/schema/beans/spring-beans.xsd
+                              http://www.springframework.org/schema/context
+                              http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <!-- to activate annotations in beans already registered in the application context -->
+    <context:annotation-config />
+
+    <!-- scans packages to find and register beans within the application context -->
+    <context:component-scan base-package="com.spring.series.jdbc.dao.impl" />
+
+    <!-- jdbcTemplate uses dataSource -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- dataSource configuration -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/benchresources" />
+        <property name="username" value="root" />
+        <property name="password" value="" />
+    </bean>
+</beans>
+
+
+
+
+<!-- Para o banco postgresql -->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:context="http://www.springframework.org/schema/context"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans
+                              http://www.springframework.org/schema/beans/spring-beans.xsd
+                              http://www.springframework.org/schema/context
+                              http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <!-- to activate annotations in beans already registered in the application context -->
+    <context:annotation-config />
+
+    <!-- scans packages to find and register beans within the application context -->
+    <context:component-scan base-package="com.spring.series.jdbc.dao.impl" />
+
+    <!-- jdbcTemplate uses dataSource -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- dataSource configuration -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="org.postgresql.Driver" />
+        <property name="url" value="jdbc:postgresql://127.0.0.1:5432/desenv" />
+        <property name="username" value="marco" />
+        <property name="password" value="brasil2" />
+    </bean>
+</beans>
+
+
+
+
+6. Crie a classe abaixo, certifique-se que a classe ficará no pacote definido no seu cabeçalhado.
+
+package com.spring.series.jdbc.model;
+
+public class Player {
+
+    // member variables
+    private int playerId;
+    private String name;
+    private int age;
+    private int matches;
+
+    // default constructor
+    public Player() {
+        super();
+    }
+
+    // 3-arg parameterized-constructor
+    public Player(String name, int age, int matches) {
+        super();
+        this.name = name;
+        this.age = age;
+        this.matches = matches;
+    }
+
+    // getter and setter
+    public int getPlayerId() {
+        return playerId;
+    }
+    public void setPlayerId(int playerId) {
+        this.playerId = playerId;
+    }
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+    public int getAge() {
+        return age;
+    }
+    public void setAge(int age) {
+        this.age = age;
+    }
+    public int getMatches() {
+        return matches;
+    }
+    public void setMatches(int matches) {
+        this.matches = matches;
+    }
+}
+
+
+7. Crie a interface abaixo, tomando cuidado com a criação da package que ele pertence:
+
+package com.spring.series.jdbc.dao;
+
+import java.util.List;
+
+import com.spring.series.jdbc.model.Player;
+
+public interface GenericDAO<T, K> {
+
+    public Player getPlayer(K objectKey);
+    public String insertNewPlayer(T obj);
+    public List<T> getAllPlayer();
+}
+
+
+6. Crie a classe abaixo:
+
+package com.spring.series.jdbc.dao.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import com.spring.series.jdbc.dao.GenericDAO;
+import com.spring.series.jdbc.model.Player;
+
+@Repository("playerDAO")
+public class PlayerDAOImpl implements GenericDAO<Player, Integer> {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate;
+    }
+
+    /**
+     * This method retrieves a player from database using jdbcTemplate based on the PLAYER_ID supplied in the formal arguments
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public Player getPlayer(Integer objectKey) {
+
+        String sql = "SELECT PLAYER_ID, NAME, AGE, MATCHES FROM PLAYER WHERE PLAYER_ID = ?";
+        Player player = (Player) getJdbcTemplate().queryForObject(
+                sql,
+                new Object[] { objectKey },
+                new BeanPropertyRowMapper(Player.class));
+        return player;
+    }
+
+    /**
+     * create or inserts the new player information into the database using jdbcTemplate
+     */
+    public String insertNewPlayer(Player obj) {
+
+        String sql = "INSERT INTO PLAYER(NAME, AGE, MATCHES) VALUES(?, ?, ?)";
+        int returnValue = getJdbcTemplate().update(
+                sql,
+                new Object[] { obj.getName(), obj.getAge(), obj.getMatches() });
+        if(1 == returnValue)
+            return "Player creation is SUCCESS";
+        else
+            return "Player creation is FAILURE";
+    }
+
+    /**
+     * Retrieves all players from the database
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public List<Player> getAllPlayer() {
+
+        String sql = "SELECT PLAYER_ID, NAME, AGE, MATCHES FROM PLAYER";
+        List<Player> lstPlayers  = getJdbcTemplate().query(
+                sql,
+                new BeanPropertyRowMapper(Player.class));
+        return lstPlayers;
+    }
+}
+
+
+8. Crie a classe de teste abaixo:
+
+package com.spring.series.jdbc;
+
+import java.util.List;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.spring.series.jdbc.dao.GenericDAO;
+import com.spring.series.jdbc.model.Player;
+
+public class TestPlayerInfo {
+
+    public static void main(String[] args) {
+        testSpringJdbcTemplate();
+    }
+
+    /**
+     * Test method : invokes all three public DAO methods using Spring Dependency Injection after loading the context xml file
+     */
+    private static void testSpringJdbcTemplate(){
+
+        // loads the context xml and uses getBean() to retrieve the bean
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("SpringContext.xml");
+        GenericDAO playerDAO = (GenericDAO) applicationContext.getBean("playerDAO");
+
+        System.out.println("\nSpring JDBC Template Demostration using spring datasource");
+
+        // invokes getPlayer() method supplying PLAYER_ID
+        System.out.println("\nA. Invoking getPlayer() method supplying player_id in the formal argument");
+        Player player1 = playerDAO.getPlayer(1);
+        System.out.println("\nID\tName\t\t\tAge\tMatches");
+        System.out.println("==\t================\t===\t=======");
+        System.out.println(player1.getPlayerId() + "\t" + player1.getName() + "\t" + player1.getAge() + "\t" + player1.getMatches());
+
+        // insert or save new player information into the database
+        System.out.println("\nB. Creating or Saving new player in database");
+        Player newPlayer = new Player("Lou Vincent", 36, 23);
+        String returnStr = playerDAO.insertNewPlayer(newPlayer);
+        System.out.println("Return message : " + returnStr);
+
+        // invokes to retrieve all players from database
+        System.out.println("\nC. Invoking getAllPlayers() method to retrieve all players from database");
+        List<Player> lstPlayers = playerDAO.getAllPlayer();
+        System.out.println("\nID\tName\t\t\tAge\tMatches");
+        System.out.println("==\t================\t===\t=======");
+        for(Player player : lstPlayers){
+            System.out.println(player.getPlayerId() + "\t" + player.getName() + "\t" + player.getAge() + "\t" + player.getMatches());
+        }
+    }
+}

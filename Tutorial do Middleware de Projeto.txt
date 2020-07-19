@@ -1,0 +1,754 @@
+1. Acesse o seu banco e database;
+
+2. Crie a tabela abaixo:
+
+DROP TABLE cliente;
+
+CREATE TABLE cliente( codigo    BIGINT NOT NULL PRIMARY KEY,
+                      cpf       VARCHAR(18) NOT NULL,
+                      nome      VARCHAR(150),
+                      dataNascimento DATE,
+                      rg        VARCHAR(20),
+                      sexo      CHAR(1),
+                      estadoCivil VARCHAR(12),
+                      pai       VARCHAR(45),
+                      mae       VARCHAR(45),
+                      endereco  VARCHAR(250),
+                      cidade    VARCHAR(100),
+                      estado    CHAR(2),
+                      cep       VARCHAR(15),
+                      telefone  VARCHAR(20));
+
+CREATE INDEX idxCliente_CPF ON cliente(cpf);
+
+3. Crie um projeto Maven:
+
+Ctrl + N
+Digite "Maven"
+Escolha a opção Maven Project -> Next
+Acione a opção "Create a Simple Project"
+Digite no Group Id e Artefact Id "male"; e no item Packaging "war" -> Finish
+
+4. Criação do web.xml:
+
+Abra a arvore do projeto recém criado;
+Click com botão esquerdo no item "Deployment Descriptor" e escolha a opção "Generate Deployment Descriptor"
+
+5. Configuração do pom.xml:
+
+Acesse o pom.xml do projeto e atualize pelo pom abaixo;
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>male</groupId>
+	<artifactId>male</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<dependencies>
+		<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.6</version>
+		</dependency>
+	</dependencies>
+</project>
+
+6. Criação da classe GenericDAO:
+
+Ctrl + N
+Digite "class" -> Next
+Digite no item "Package" male.util
+Digite no name GenericDAO -> finish
+Copie no corpo da classe o texto abaixo
+
+package male.util;
+
+import java.sql.Connection;
+import java.util.List;
+
+public abstract class GenericDAO<T,K> {
+	private Connection cn;
+
+	public Connection getCn() {
+		return cn;
+	}
+
+	public void setCn(Connection cn) {
+		this.cn = cn;
+	}
+
+	public abstract boolean insert( T obj ) throws Exception;
+
+	public abstract boolean update( T obj) throws Exception;
+
+	public abstract boolean delete(T obj) throws Exception;
+
+	public abstract List<T> findAll() throws Exception;
+
+	public abstract T findById( K keyParm ) throws Exception;
+
+	public abstract void setupTest() throws Exception;
+
+	public GenericDAO() {
+		try {
+			this.setCn(new JdbcMySql().getConnection());
+		}catch( Exception e) {
+			System.out.println("Ocorreu Erro [ClienteDAO.ClienteDAO()] ( " + e.getMessage() + " )");
+		}
+
+	}
+
+	public void closeConnection() throws Exception {
+		this.getCn().close();
+	}
+
+}
+
+
+7. Criação da classe JdbcConnection:
+
+Ctrl + N
+Digite "class" -> Next
+Digite no item "Package" male.util
+Digite no name JdbcConnection -> finish
+Copie no corpo da classe o texto abaixo
+
+package male.util;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class JdbcConnection {
+	private String JdbcDriver;
+	private String DbUrl;
+	private String user;
+	private String password;
+	private Connection cn;
+
+	public String getJdbcDriver() {
+		return JdbcDriver;
+	}
+	public void setJdbcDriver(String jdbcDriver) {
+		JdbcDriver = jdbcDriver;
+	}
+	public String getDbUrl() {
+		return DbUrl;
+	}
+	public void setDbUrl(String dbUrl) {
+		DbUrl = dbUrl;
+	}
+	public String getUser() {
+		return user;
+	}
+	public void setUser(String user) {
+		this.user = user;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Connection getCn() {
+		return cn;
+	}
+
+	public void setCn(Connection cn) {
+		this.cn = cn;
+	}
+
+	public JdbcConnection(String jdbcDriver, String dbUrl, String user, String password) {
+		super();
+		JdbcDriver = jdbcDriver;
+		DbUrl = dbUrl;
+		this.user = user;
+		this.password = password;
+	}
+
+	public Connection getConnection(String jdbcDriver, String dbUrl, String user, String password) throws Exception{
+		this.JdbcDriver = JdbcDriver;
+		this.DbUrl = dbUrl;
+		this.user = user;
+		this.password = password;
+
+		return getConnection();
+	}
+
+
+	public Connection getConnection() throws Exception {
+		Connection cn;
+
+		if (this.getCn() == null) {
+			try {
+				Class.forName(getJdbcDriver());
+
+				cn = DriverManager.getConnection(getDbUrl(), getUser(), getPassword());
+
+				this.setCn(cn);
+
+				return cn;
+			} catch (Exception e) {
+				throw e;
+			}
+		} else {
+			cn = this.getCn();
+		}
+
+		return cn;
+	}
+
+}
+
+
+8. Criação da classe JdbcMySql:
+
+Ctrl + N
+Digite "class" -> Next
+Digite no item "Package" male.util
+Digite no name JdbcMySql -> finish
+Copie no corpo da classe o texto abaixo
+IMPORTANTE: No metodo construtor, onde tem a chamado ao metodo construtor da super classe,
+						altere os parâmetros de acordo com o seu ambiente:
+
+						super("com.mysql.jdbc.Driver", "nome do seu datasource", "usuario", "senha");
+
+
+package male.util;
+
+public class JdbcMySql extends JdbcConnection {
+
+	public JdbcMySql(String jdbcDriver, String dbUrl, String user, String password) {
+		super(jdbcDriver, dbUrl, user, password);
+		// TODO Auto-generated constructor stub
+	}
+
+	public JdbcMySql() {
+		super("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/marco", "marco", "brasil2");
+	}
+}
+
+9. Criação da classe Cliente:
+
+Ctrl + N
+Digite "class" -> Next
+Digite no item "Package" male.model
+Digite no name Cliente -> finish
+Copie no corpo da classe o texto abaixo
+
+package male.model;
+
+public class Cliente {
+	private int codigo;
+	private String nome;
+	private String cpf;
+	private String rg;
+	private String sexo;
+	private String estadoCivil;
+	private String pai;
+	private String mae;
+	private String endereco;
+	private String cidade;
+	private String estado;
+	private String cep;
+	private String telefone;
+	public int getCodigo() {
+		return codigo;
+	}
+	public void setCodigo(int codigo) {
+		this.codigo = codigo;
+	}
+	public String getNome() {
+		return nome;
+	}
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+	public String getCpf() {
+		return cpf;
+	}
+	public void setCpf(String cpf) {
+		this.cpf = cpf;
+	}
+	public String getRg() {
+		return rg;
+	}
+	public void setRg(String rg) {
+		this.rg = rg;
+	}
+	public String getSexo() {
+		return sexo;
+	}
+	public void setSexo(String sexo) {
+		this.sexo = sexo;
+	}
+	public String getEstadoCivil() {
+		return estadoCivil;
+	}
+	public void setEstadoCivil(String estadoCivil) {
+		this.estadoCivil = estadoCivil;
+	}
+	public String getPai() {
+		return pai;
+	}
+	public void setPai(String pai) {
+		this.pai = pai;
+	}
+	public String getMae() {
+		return mae;
+	}
+	public void setMae(String mae) {
+		this.mae = mae;
+	}
+	public String getEndereco() {
+		return endereco;
+	}
+	public void setEndereco(String endereco) {
+		this.endereco = endereco;
+	}
+	public String getCidade() {
+		return cidade;
+	}
+	public void setCidade(String cidade) {
+		this.cidade = cidade;
+	}
+	public String getEstado() {
+		return estado;
+	}
+	public void setEstado(String estado) {
+		this.estado = estado;
+	}
+	public String getCep() {
+		return cep;
+	}
+	public void setCep(String cep) {
+		this.cep = cep;
+	}
+	public String getTelefone() {
+		return telefone;
+	}
+	public void setTelefone(String telefone) {
+		this.telefone = telefone;
+	}
+	public Cliente(int codigo, String nome, String cpf, String rg, String sexo, String estadoCivil, String pai,
+			String mae, String endereco, String cidade, String estado, String cep, String telefone) {
+		super();
+		this.codigo = codigo;
+		this.nome = nome;
+		this.cpf = cpf;
+		this.rg = rg;
+		this.sexo = sexo;
+		this.estadoCivil = estadoCivil;
+		this.pai = pai;
+		this.mae = mae;
+		this.endereco = endereco;
+		this.cidade = cidade;
+		this.estado = estado;
+		this.cep = cep;
+		this.telefone = telefone;
+	}
+
+	public Cliente() {
+		super();
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((cpf == null) ? 0 : cpf.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Cliente other = (Cliente) obj;
+		if (cpf == null) {
+			if (other.cpf != null)
+				return false;
+		} else if (!cpf.equals(other.cpf))
+			return false;
+		return true;
+	}
+	@Override
+	public String toString() {
+		return "Cliente [nome=" + nome + ", cpf=" + cpf + "]";
+	}
+}
+
+10. Criação da classe ClienteDAO
+
+Ctrl + N
+Digite "class" -> Next
+Digite no item "Package" male.dao
+Digite no name ClienteDAO -> finish
+Copie no corpo da classe o texto abaixo
+
+package male.dao;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import male.model.Cliente;
+import male.util.GenericDAO;
+import male.util.JdbcMySql;
+
+public class ClienteDAO extends GenericDAO<Cliente, String> {
+
+	@Override
+	public boolean insert(Cliente obj) throws Exception {
+
+		try {
+			if (this.getCn() == null
+				|| this.getCn().isClosed())
+				this.setCn(new JdbcMySql().getConnection());
+
+			PreparedStatement pstm = getCn().prepareStatement("INSERT INTO cliente( codigo, cpf, nome, rg, sexo, estadoCivil, pai, mae, endereco, cidade, estado, cep, telefone ) " +
+															  "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+			pstm.setInt(1, obj.getCodigo());
+			pstm.setString(2,obj.getCpf());
+			pstm.setString(3 , obj.getNome());
+			pstm.setString(4 , obj.getRg());
+			pstm.setString(5 , obj.getSexo());
+			pstm.setString(6 , obj.getEstadoCivil());
+			pstm.setString(7 , obj.getPai());
+			pstm.setString(8 , obj.getMae());
+			pstm.setString(9 , obj.getEndereco());
+			pstm.setString(10 , obj.getCidade());
+			pstm.setString(11 , obj.getEstado());
+			pstm.setString(12 , obj.getCep());
+			pstm.setString(13 , obj.getTelefone());
+
+			pstm.executeUpdate();
+
+			return true;
+		} catch (Exception e) {
+			throw e;
+		}finally {
+			this.closeConnection();
+		}
+
+	}
+
+	@Override
+	public boolean update(Cliente obj) throws Exception {
+		try {
+			if (this.getCn() == null
+					|| this.getCn().isClosed())
+					this.setCn(new JdbcMySql().getConnection());
+
+			PreparedStatement pstm = this.getCn().prepareStatement("UPDATE cliente "  +
+																	"SET nome		= ?, " +
+																	"	rg			= ?, " +
+																	"	sexo		= ?, " +
+																	"	estadoCivil	= ?, " +
+																	"	pai			= ?, " +
+																	"	mae			= ?, " +
+																	"	endereco	= ?, " +
+																	"	cidade		= ?, " +
+																	"	estado		= ?, " +
+																	"	cep			= ?, " +
+																	"	telefone	= ?  " +
+																	"WHERE cpf = ? ");
+
+			pstm.setString(1 , obj.getNome());
+			pstm.setString(2 , obj.getRg());
+			pstm.setString(3 , obj.getSexo());
+			pstm.setString(4 , obj.getEstadoCivil());
+			pstm.setString(5 , obj.getPai());
+			pstm.setString(6 , obj.getMae());
+			pstm.setString(7 , obj.getEndereco());
+			pstm.setString(8, obj.getCidade());
+			pstm.setString(9, obj.getEstado());
+			pstm.setString(10, obj.getCep());
+			pstm.setString(11, obj.getTelefone());
+			pstm.setString(12, obj.getCpf());
+
+			pstm.executeUpdate();
+
+			return true;
+		} catch (Exception e) {
+			throw e;
+		}finally {
+			this.closeConnection();
+		}
+	}
+
+	@Override
+	public boolean delete(Cliente obj) throws Exception {
+		try {
+			if (this.getCn() == null
+					|| this.getCn().isClosed())
+				this.setCn(new JdbcMySql().getConnection());
+
+			PreparedStatement pstm = this.getCn().prepareStatement("DELETE FROM cliente WHERE cpf = ?");
+
+			pstm.setString(1, obj.getCpf());
+
+			pstm.executeUpdate();
+
+			return true;
+		} catch (Exception e) {
+			throw e;
+		}finally {
+			this.closeConnection();
+		}
+	}
+
+	public List<Cliente> findAll() throws Exception {
+		return null;
+	}
+
+	@Override
+	public Cliente findById(String keyParm) throws Exception {
+		Cliente cliente = new Cliente();
+
+		try {
+			if (this.getCn() == null
+					|| this.getCn().isClosed())
+					this.setCn(new JdbcMySql().getConnection());
+
+			PreparedStatement pstm = getCn().prepareStatement("SELECT codigo, cpf, nome, rg, sexo, estadoCivil, pai, mae, endereco, cidade, estado, cep, telefone FROM cliente WHERE cpf = ?");
+
+			pstm.setString(1, keyParm);
+
+			ResultSet rs = pstm.executeQuery();
+
+			if (rs.next()) {
+				cliente.setCodigo(rs.getInt("codigo"));
+
+				cliente.setNome(rs.getString("nome"));
+				cliente.setCpf(rs.getString("cpf"));
+				cliente.setRg(rs.getString("rg"));
+				cliente.setSexo(rs.getString("sexo"));
+				cliente.setEstadoCivil(rs.getString("estadoCivil"));
+				cliente.setPai(rs.getString("pai"));
+				cliente.setMae(rs.getString("mae"));
+				cliente.setEndereco(rs.getString("endereco"));
+				cliente.setCidade(rs.getString("cidade"));
+				cliente.setEstado(rs.getString("estado"));
+				cliente.setCep(rs.getString("cep"));
+				cliente.setTelefone(rs.getString("telefone"));
+			}
+
+			return cliente;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			this.closeConnection();
+		}
+	}
+
+	public ArrayList<Cliente> findByNome( String parmNome ) throws Exception {
+		ArrayList<Cliente> clientes = new ArrayList<Cliente>();
+
+		try {
+			if (this.getCn() == null
+					|| this.getCn().isClosed())
+					this.setCn(new JdbcMySql().getConnection());
+
+
+			Statement stm = this.getCn().createStatement();
+
+			ResultSet rs = stm.executeQuery(	"SELECT codigo, cpf, nome, rg, sexo, estadoCivil, pai, mae, " +
+												"			endereco, cidade, estado, cep, telefone " +
+												"FROM cliente " +
+												"WHERE nome LIKE '%" + parmNome + "%' " +
+												"ORDER BY nome");
+
+			while  (rs.next()) {
+				Cliente cliente = new Cliente();
+
+				cliente.setCodigo(rs.getInt("codigo"));
+
+				cliente.setNome(rs.getString("nome"));
+				cliente.setCpf(rs.getString("cpf"));
+				cliente.setRg(rs.getString("rg"));
+				cliente.setSexo(rs.getString("sexo"));
+				cliente.setEstadoCivil(rs.getString("estadoCivil"));
+				cliente.setPai(rs.getString("pai"));
+				cliente.setMae(rs.getString("mae"));
+				cliente.setEndereco(rs.getString("endereco"));
+				cliente.setCidade(rs.getString("cidade"));
+				cliente.setEstado(rs.getString("estado"));
+				cliente.setCep(rs.getString("cep"));
+				cliente.setTelefone(rs.getString("telefone"));
+
+				clientes.add(cliente);
+			}
+
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			this.closeConnection();
+		}
+
+		return clientes;
+	}
+
+
+	@Override
+	public void setupTest() throws Exception {
+		Cliente c3 = new Cliente(2, "MARCO ANTONIO DA SILVA", "106.523.608-60", "16531421", "M", "C",
+				"LOURIVAL M SILVA", "BENEDITA A SILVA", "R CARIOBA 360", "SAO PAULO", "SP", "02423100", "11 22323419");
+
+		Cliente c4 = new Cliente(3, "MARCO ANTONIO DA SILVA", "106.523.608-61", "16531421", "M", "C",
+				"LOURIVAL M SILVA", "BENEDITA A SILVA", "R CARIOBA 360", "SAO PAULO", "SP", "02423100", "11 22323419");
+
+		try {
+			Statement stm = this.getCn().createStatement();
+
+			stm.executeUpdate("DELETE FROM cliente WHERE cpf LIKE '106.523.608%'");
+
+			this.insert(c3);
+			this.insert(c4);
+
+			this.closeConnection();
+		} catch (Exception e) {
+			throw new Exception("Ocorreu o seguinte Erro ( " + e.getMessage() + ")" );
+		}
+	}
+
+	public ClienteDAO() {
+		super();
+	}
+
+}
+
+11. Criação da classe ClienteTest
+
+Ctrl + N
+Digite "class" -> Next
+Digite no item "Source Folder" male/src/test/java			(Nova ação, atenção)
+Digite no item "Package" male.teste
+Digite no name ClienteTest -> finish
+Copie no corpo da classe o texto abaixo
+
+package male.teste;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import junit.framework.TestCase;
+import male.dao.ClienteDAO;
+import male.model.Cliente;
+
+public class ClienteTest{
+	ClienteDAO dao = new ClienteDAO();
+
+	@Test
+	public void testInsert() throws Exception {
+		Cliente cliente = new Cliente(0, "MARCO ANTONIO DA SILVA", "106.523.608-58", "16531421", "M", "C",
+				"LOURIVAL M SILVA", "BENEDITA A SILVA", "R CARIOBA 360", "SAO PAULO", "SP", "02423100", "11 22323419");
+
+		try {
+			assertTrue(dao.insert(cliente));
+		} catch (Exception e) {
+			throw new Exception("Ocorreu o seguinte Erro ( " + e.getMessage() + ")");
+		}
+	}
+
+	@Test
+	public void testUpdate() throws Exception {
+		Cliente cliente = new Cliente(1, "MARCO ANTONIO DA SILVA", "106.523.608-59", "16531421", "M", "C",
+				"LOURIVAL M SILVA", "BENEDITA A SILVA", "R CARIOBA 360", "SAO PAULO", "SP", "02423100", "11 22323419");
+
+		try {
+			dao.insert(cliente);
+
+			cliente.setNome("Marco Antonio da Silva");
+
+			TestCase.assertTrue(dao.update(cliente));
+
+			Cliente c = new Cliente();
+
+			c = dao.findById("106.523.608-59");
+
+			assertTrue(c.getNome().equals("Marco Antonio da Silva"));
+		} catch (Exception e) {
+			throw new Exception("Ocorreu o seguinte Erro ( " + e.getMessage() + ")");
+		}
+
+	}
+
+	@Test
+	public void testDelete() throws Exception {
+		Cliente c = new Cliente(2, "MARCO ANTONIO DA SILVA", "106.523.608-60", "16531421", "M", "C",
+				"LOURIVAL M SILVA", "BENEDITA A SILVA", "R CARIOBA 360", "SAO PAULO", "SP", "02423100", "11 22323419");
+
+		try {
+			assertTrue( dao.delete(c));
+		} catch( Exception e) {
+			throw new Exception("Ocorreu o seguinte Erro ( " + e.getMessage() + ")");
+		}
+	}
+
+	@Test
+	public void testFindById() throws Exception {
+		try {
+			assertTrue( dao.findById("106.523.608-61").getNome().equals("MARCO ANTONIO DA SILVA"));
+		} catch( Exception e) {
+			throw new Exception("Ocorreu o seguinte Erro ( " + e.getMessage() + ")");
+		}
+
+	}
+
+	@Test
+	public void testFindByNome() throws Exception{
+
+		try {
+			List<Cliente> clientes = new ArrayList<Cliente>();
+
+			clientes = dao.findByNome("MARIA");
+
+			assertNotNull(clientes);
+		} catch (Exception e) {
+			throw new Exception("Ocorreu o seguinte Erro ( " + e.getMessage() + ")");
+		}
+	}
+
+	@BeforeClass
+	public static void before() throws Exception{
+		new ClienteDAO().setupTest();
+	}
+}
+
+
+12. Teste do projeto
+
+Click na classe ClienteTest
+Click na seta Run As -> JUnit Test ( a seta está ao lado do botão Run na toolbar )
+Observe na aba JUnit se os testes foram concluido com sucesso. Se a barra de progresso
+			estiver verde é porque foi tudo bem, caso contrário acesse os metodos da classe
+			para entender o que aconteceu.

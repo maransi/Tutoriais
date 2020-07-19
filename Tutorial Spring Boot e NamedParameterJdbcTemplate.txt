@@ -1,0 +1,397 @@
+. Crie um projeto Spring Boot com as seguintes dependências:
+
+    JDBC
+    JPA
+    Web
+    H2
+
+. Adicione as linhas abaixo no arquivo application.properties
+
+    spring.datasource.url=jdbc:h2:mem:testdb
+    spring.datasource.driverClassName=org.h2.Driver
+    spring.datasource.username=sa
+    spring.datasource.password=
+    spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+
+    # Enabling H2 Console
+    spring.h2.console.enabled=true
+    
+    # Custom H2 Console URL
+    spring.h2.console.path=/h2
+
+    # temporary data storage
+    spring.datasource.url = jdbc:h2:mem:testdb
+    
+    # temporary data storage ( only you wish to persist data in disk )
+    spring.datasource.url = jdbc:h2:file:/data/sample
+    spring.datasource.url = jdbc:h2:file:C:/data/sample (Windows only)
+
+. Crie os arquivos abaixo na pasta /source/main/resources
+
+    schema.sql
+
+DROP TABLE IF EXISTS EMPLOYEES;
+  
+CREATE TABLE EMPLOYEES (
+  id INT AUTO_INCREMENT  PRIMARY KEY,
+  first_name VARCHAR(250) NOT NULL,
+  last_name VARCHAR(250) NOT NULL,
+  email VARCHAR(250) DEFAULT NULL
+);
+
+DROP TABLE IF EXISTS player;
+
+CREATE TABLE player (
+  playerId     INT NOT NULL AUTO_INCREMENT,
+  name          VARCHAR(50) NOT NULL,
+  age           INT NOT NULL,
+  matches       INT NOT NULL,
+  PRIMARY KEY (playerId)
+);
+
+DROP TABLE IF EXISTS customer;
+
+CREATE TABLE customer(  id        INT           NOT NULL  AUTO_INCREMENT  PRIMARY KEY,
+                        name      VARCHAR(50)   NOT NULL,
+                        rating    VARCHAR(4)    NOT NULL,
+                        numberPhone VARCHAR(9)   );
+
+data.sql
+
+INSERT INTO EMPLOYEES (first_name, last_name, email) VALUES
+  ('Lokesh', 'Gupta', 'abc@gmail.com'),
+  ('Deja', 'Vu', 'xyz@email.com'),
+  ('Caption', 'America', 'cap@marvel.com');
+
+INSERT INTO player(name, age, matches) VALUES ('Sachin Tendulkar',41,200);
+INSERT INTO player(name, age, matches) VALUES ('Shane Warne',44,145);
+INSERT INTO player(name, age, matches) VALUES ('Kevin Pietersen',34,104);
+INSERT INTO player(name, age, matches) VALUES ('Shahid Afridi',35,27);
+INSERT INTO player(name, age, matches) VALUES ('Brian Lara',45,131);
+INSERT INTO player(name, age, matches) VALUES ('Graeme Smith',34,117);
+INSERT INTO player(name, age, matches) VALUES ('Mahela Jayawardene',37,145);
+
+
+INSERT INTO customer( name, rating, numberPhone )
+VALUES('BV Financial', 'B','22323419'),
+      ('EASYNVEST Corretora','A','43336789'),
+      ('BANCO ITAU','A','08001234'),
+      ('MRV Construtora','HH1','32459675');
+
+
+. Acione o link abaixo:
+
+    http://localhost:8080/h2
+
+. Na tela que se abrir altere o conteúdo do campo JDBC URL para:
+
+    jdbc:h2:mem:testdb
+
+. Acione o Connect
+
+. Faça select e update na tabela do banco, pare a aplicação e verifique que o banco foi reiniciado
+    com os valores iniciais do arquivo data.sql.
+
+. Crie as classes abaixo:
+
+package net.springbooth2.jdbc;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+public abstract class GenericJDBCTemplateDAO< T, K > {
+
+	@Autowired
+	JdbcTemplate jdbcTemplate;
+	
+	@Autowired
+	NamedParameterJdbcTemplate namedJdbcTemplate;
+	
+	private String sqlFindById; 
+	private String sqlFindAll;
+	private String sqlInsert;
+	private String sqlUpdate;
+	private String sqlDelete;
+	
+	public String getSqlDelete() {
+		return sqlDelete;
+	}
+
+	public void setSqlDelete(String sqlDelete) {
+		this.sqlDelete = sqlDelete;
+	}
+
+	public String getSqlUpdate() {
+		return sqlUpdate;
+	}
+
+	public void setSqlUpdate(String sqlUpdate) {
+		this.sqlUpdate = sqlUpdate;
+	}
+
+	public String getSqlInsert() {
+		return sqlInsert;
+	}
+
+	public void setSqlInsert(String sqlInsert) {
+		this.sqlInsert = sqlInsert;
+	}
+	
+	public String getSqlFindById() {
+		return sqlFindById;
+	}
+
+	public void setSqlFindById(String sqlFindById) {
+		this.sqlFindById = sqlFindById;
+	}
+
+	public String getSqlFindAll() {
+		return sqlFindAll;
+	}
+
+	public void setSqlFindAll(String sqlFindAll) {
+		this.sqlFindAll = sqlFindAll;
+	}
+
+	public GenericJDBCTemplateDAO() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	@SuppressWarnings("rawtypes")
+	class GenericRowMapper implements RowMapper<T>{
+
+		GenericJDBCTemplateDAO caller;
+		
+		public GenericJDBCTemplateDAO getCaller() {
+			return caller;
+		}
+
+		public void setCaller(GenericJDBCTemplateDAO caller) {
+			this.caller = caller;
+		}
+
+		public GenericRowMapper( GenericJDBCTemplateDAO caller ) {
+			this.caller = caller;
+		}
+		
+		@Override
+		public T mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+			try {
+				@SuppressWarnings("unchecked")
+				T obj = (T) this.caller.unpackage(rs);
+				
+				return obj;
+				
+			} catch (Exception e) {
+				return null;
+			}			
+		}
+		
+	}
+	
+	public abstract T unpackage( ResultSet rs);
+	
+    public T findById(T obj) {
+    	return (T) namedJdbcTemplate.queryForObject(getSqlFindById(), 
+    												new BeanPropertySqlParameterSource(obj),
+    												new GenericRowMapper(this) );
+    }
+
+    public List<T> findAll(){
+		return namedJdbcTemplate.query(getSqlFindAll(), new GenericRowMapper(this) );
+    }
+    
+    public int insert(T obj) {
+    	return namedJdbcTemplate.update(this.sqlInsert, new BeanPropertySqlParameterSource(obj));
+    }
+
+    public int update(T obj) {
+    	return namedJdbcTemplate.update(this.sqlUpdate, new BeanPropertySqlParameterSource(obj));
+    }
+    
+    public int delete(T obj) {
+    	return namedJdbcTemplate.update(this.sqlDelete, new BeanPropertySqlParameterSource(obj));
+    }
+}
+
+
+
+
+
+
+package net.springbooth2.entity;
+
+public class Customer {
+
+	private Integer id;
+	private String name;
+	private String rating;
+	private String numberPhone;
+	
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+
+	public String getRating() {
+		return rating;
+	}
+
+	public void setRating(String rating) {
+		this.rating = rating;
+	}
+
+	public String getNumberPhone() {
+		return numberPhone;
+	}
+
+	public void setNumberPhone(String numberPhone) {
+		this.numberPhone = numberPhone;
+	}
+
+	public Customer() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public Customer(Integer id, String name, String rating, String numberPhone) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.rating = rating;
+		this.numberPhone = numberPhone;
+	}
+
+	public Customer(Integer id) {
+		super();
+		this.id = id;
+	}
+	
+	@Override
+	public String toString() {
+		return "\n Customer [id=" + id + ", name=" + name + ", rating=" + rating + ", numberPhone=" + numberPhone + "]";
+	}
+
+	
+	
+}
+
+
+
+
+
+
+package net.springbooth2.jdbc;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.springframework.stereotype.Repository;
+
+import net.springbooth2.entity.Customer;
+
+@Repository
+public class CustomerDAO extends GenericJDBCTemplateDAO<Customer, Integer> {
+
+	public CustomerDAO() {
+		this.setSqlFindById("SELECT * FROM customer WHERE id = :id");
+		
+		this.setSqlFindAll("SELECT * FROM customer");
+		
+		this.setSqlInsert("INSERT INTO customer(name, rating, numberPhone) " +
+							"VALUES(:name, :rating, :numberPhone) ");
+		
+		this.setSqlUpdate("UPDATE customer " +
+						  "SET name = :name, " +
+						  "		rating = :rating, " +
+						  "		numberPhone = :numberPhone " +
+						  "WHERE id = :id");
+		
+		this.setSqlDelete("DELETE FROM customer WHERE id = :id");
+	
+	}
+
+	@Override
+	public Customer unpackage(ResultSet rs) {
+		
+		Customer c = new Customer();
+		
+		try {
+			c.setId(rs.getInt("id"));
+			c.setName(rs.getString("name"));
+			c.setRating(rs.getString("rating"));
+			c.setNumberPhone(rs.getString("numberPhone"));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return c;
+	}
+
+}
+
+
+
+
+. Deixe a classe lançadora da aplicação proximo da classe abaixo:
+
+package net.springbooth2;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import net.springbooth2.entity.Customer;
+import net.springbooth2.jdbc.CustomerDAO;
+
+@SpringBootApplication
+public class SpringBootH2Application implements CommandLineRunner {
+
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Autowired
+	private CustomerDAO customerDAO;
+	
+	public static void main(String[] args) {
+		
+		SpringApplication.run(SpringBootH2Application.class, args);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		logger.info("\nCustomerDAO.findById(1) -> {}", customerDAO.findById(new Customer(1)));
+		logger.info("\nCustomerDAO.insert() -> {} ", customerDAO.insert( new Customer(0,"CIELO Cartoes","B","987652341")));
+		logger.info("\nCustomerDAO.update(1) -> {} ", customerDAO.update( new Customer(1,"KLABIN Celulose","D","1234567")));
+		logger.info("\nCustomerDAO.delete(2) -> {} ", customerDAO.delete(new Customer(2)));
+		logger.info("\nCustomerDAO.findAll() -> {} ", customerDAO.findAll());
+		
+		
+	}
+
+}
+
+
+

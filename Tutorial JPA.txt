@@ -1,0 +1,417 @@
+http://www.k19.com.br/artigos/configurando-hibernate-com-mysql/
+
+
+
+
+
+
+1. Criar projeto java simples;
+
+2. Na pasta src criar as packages:
+
+br.com.ativo
+br.com.pattern
+
+3. Na pasta src criar a folder:
+
+META-INF
+
+4. Na pasta raiz criar as folders:
+
+lib
+resource
+
+5. Criar as classes:
+
+
+VeiculoBean
+------------
+package br.com.ativo;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+
+@Entity
+@Table(name="veiculo")
+public class VeiculoBean {
+
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Integer	id_veiculo;
+
+	@Column(name="ano_fabricacao")
+	private int	anoFabricacao;
+
+	@Column(name="marca")
+	private String marca;
+
+	@Column(name="placa")
+	private String placa;
+
+	public Integer getId_veiculo() {
+		return id_veiculo;
+	}
+	public void setId_veiculo(Integer id_veiculo) {
+		this.id_veiculo = id_veiculo;
+	}
+	public int getanoFabricacao() {
+		return anoFabricacao;
+	}
+	public void setanoFabricacao(int anoFabricacao) {
+		this.anoFabricacao = anoFabricacao;
+	}
+	public String getMarca() {
+		return marca;
+	}
+	public void setMarca(String marca) {
+		this.marca = marca;
+	}
+	public String getPlaca() {
+		return placa;
+	}
+	public void setPlaca(String placa) {
+		this.placa = placa;
+	}
+
+	public VeiculoBean(Integer idVeiculo, int anoFabricacao, String marca,
+			String placa) {
+		super();
+		this.id_veiculo = idVeiculo;
+		this.anoFabricacao = anoFabricacao;
+		this.marca = marca;
+		this.placa = placa;
+	}
+
+
+	public VeiculoBean(Integer id_veiculo) {
+		super();
+		this.id_veiculo = id_veiculo;
+	}
+	public VeiculoBean(){
+		super();
+	}
+}
+
+
+
+
+
+VeiculoDAO
+----------
+package br.com.ativo;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.Query;
+
+import br.com.pattern.IDAO;
+
+public class VeiculoDAO implements IDAO<VeiculoBean> {
+
+	private static EntityManagerFactory emf;
+	private  EntityManager em;
+
+	@Override
+	public boolean update(VeiculoBean t) {
+		EntityManager em = this.getEntityManager();
+
+		try {
+			em.getTransaction().begin();
+			em.merge(t);
+			em.getTransaction().commit();
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			em.getTransaction().rollback();
+			return false;
+		} finally {
+			em.close();
+		}
+	}
+
+	@Override
+	public boolean delete(VeiculoBean t) {
+		EntityManager em = this.getEntityManager();
+
+		try {
+			em.getTransaction().begin();
+			t = em.merge(t);
+			em.remove(t);
+			em.getTransaction().commit();
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			em.getTransaction().rollback();
+			return false;
+		} finally {
+			em.close();
+		}
+	}
+
+	@Override
+	public boolean insert(VeiculoBean t) {
+		EntityManager em = this.getEntityManager();
+
+		try {
+			em.getTransaction().begin();
+			em.persist(t);
+			em.getTransaction().commit();
+			return true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			em.getTransaction().rollback();
+			return false;
+		} finally {
+			em.close();
+		}
+
+	}
+
+	@Override
+	public List<VeiculoBean> findAll() {
+		EntityManager em = this.getEntityManager();
+
+		try {
+			Query usu = em.createQuery("select object(v) from VeiculoBean as v");
+			return usu.getResultList();
+		} catch (Exception e) {
+			return null;
+		} finally {
+			em.close();
+		}
+	}
+
+	public VeiculoDAO() {
+		super();
+
+		try{
+			this.emf = Persistence.createEntityManagerFactory("PU");
+		}catch( Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public EntityManager getEntityManager() {
+		return emf.createEntityManager();
+	}
+}
+
+
+
+
+VeiculoService
+--------------
+package br.com.ativo;
+
+import java.util.List;
+
+import br.com.pattern.IDAO;
+import br.com.pattern.IService;
+
+public class VeiculoService implements IService<VeiculoBean> {
+
+	private final IDAO veiculoDAO = new VeiculoDAO();
+
+	@Override
+	public boolean insert(VeiculoBean veiculo) {
+		return veiculoDAO.insert(veiculo);
+	}
+
+	@Override
+	public boolean update(VeiculoBean veiculo) {
+		return veiculoDAO.update(veiculo);
+	}
+
+	@Override
+	public boolean delete(VeiculoBean veiculo) {
+		return veiculoDAO.delete(veiculo);
+	}
+
+	@Override
+	public List<VeiculoBean> findAll() {
+		return veiculoDAO.findAll();
+
+	}
+
+}
+
+
+
+
+VeiculoTest
+-----------
+
+package br.com.ativo;
+
+import junit.framework.TestCase;
+
+import org.junit.Test;
+
+public class VeiculoTest extends TestCase {
+
+	/**
+	 * @param args
+	 */
+	private final VeiculoService veiculoService = new VeiculoService();
+	private static Integer idVeiculoGerado;
+
+	@Test
+	public void testInsert(){
+		VeiculoBean veiculoBean = new VeiculoBean(null, 2012,"FORD","GCD1531");
+
+		try{
+			assertTrue(veiculoService.insert(veiculoBean));
+		}catch(Exception e){
+			e.printStackTrace();
+			assertEquals(" " + e.getMessage(), e.getMessage());
+		}finally{
+			this.idVeiculoGerado = veiculoBean.getId_veiculo();
+		}
+	}
+
+	@Test
+	public void testUpdate(){
+		VeiculoBean veiculoBean = new VeiculoBean(this.idVeiculoGerado, 2012,"FORD","GCD1531");
+
+		try{
+			assertTrue(veiculoService.update(veiculoBean));
+		}catch(Exception e){
+			e.printStackTrace();
+			assertEquals(" " + e.getMessage(), e.getMessage());
+		}
+	}
+
+	@Test
+	public void testDelete(){
+		VeiculoBean veiculoBean = new VeiculoBean(this.idVeiculoGerado);
+
+		try{
+			assertTrue(veiculoService.delete(veiculoBean));
+		}catch(Exception e){
+			e.printStackTrace();
+			assertEquals(" " + e.getMessage(), e.getMessage());
+		}
+	}
+
+	@Test
+	public void testFindAll(){
+		try{
+			assertTrue(veiculoService.findAll().size()>0);
+		}catch(Exception e){
+			e.printStackTrace();
+			assertEquals(" " + e.getMessage(), e.getMessage());
+		}
+	}
+
+}
+
+
+
+
+
+IDAO
+----
+package br.com.pattern;
+
+import java.util.List;
+
+public interface IDAO<T> {
+
+	public boolean insert( T t);
+
+	public boolean update( T t);
+
+	public boolean delete( T t);
+
+	public List<T> findAll();
+
+}
+
+
+
+IService
+--------
+
+package br.com.pattern;
+
+import java.util.List;
+
+public interface IService<T> {
+
+	public boolean insert(T t);
+
+	public boolean update(T t);
+
+	public boolean delete(T t);
+
+	public List<T> findAll();
+
+}
+
+
+
+6. Na pasta META-INF criar o arquivo persistence.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+	<persistence-unit name="PU" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<class>br.com.ativo.VeiculoBean</class>
+
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://srvwebapp:3306/estoque" />
+			<property name="javax.persistence.jdbc.user" value="root" />
+			<property name="javax.persistence.jdbc.password" value="aawandwer01" />
+		</properties>
+	</persistence-unit>
+</persistence>
+
+
+7. Na pasta resource criar o arquivo de log4j.properties
+
+log4j.rootCategory=INFO, CONSOLE
+log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender
+log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout
+log4j.appender.CONSOLE.layout.ConversionPattern=%r [%t] %-5p %c - %m%n
+
+
+8. Adicionar as libs abaixo no projeto
+
+antlr-2.7.6.jar
+c3p0-0.9.1.jar
+cglib-2.2.jar
+commons-collections-3.1.jar
+dom4j-1.6.1.jar
+ehcache-1.3.0.jar
+hibernate-jpa-2.0-api-1.0.0.Final.jar
+hibernate-testing-3.3.1.GA-sources.jar
+hibernate3.jar
+infinispan-core-4.2.1.CR1.jar
+javassist-3.12.0.GA.jar
+jbosscache-core-3.2.1.GA.jar
+jta-1.1.jar
+lib.txt
+log4j-1.2.16.jar
+mysql-connector-java-5.1.5-bin.jar
+oscache-2.1.jar
+proxool-0.8.3.jar
+slf4j-api-1.6.1.jar
+swarmcache-1.0RC2.jar
+
+
+9. Selecionar todos os jars e colocar no classpath da aplicação:
+

@@ -1,0 +1,671 @@
+https://hellokoding.com/spring-boot-hello-world-example-with-jsp/
+
+1. Crie um projeto Spring Boot App com as dependências:
+
+    . spring-boot-starter-web 
+    . tomcat-embed-jasper
+    . spring-boot-devtools
+
+2. Após criado o projeto a estrutura dele deverá ficar como abaixo:
+
+    ├── src
+    │   └── main
+    │       ├── java
+    │       │   └── com
+    │       │       └── hellokoding
+    │       │           └── springboot
+    │       │               └── view
+    │       │                   ├── Application.java
+    │       │                   └── HelloController.java
+    │       ├── resources
+    │       │   ├── static
+    │       │   │   ├── css
+    │       │   │   │   └── main.css
+    │       │   │   └── js
+    │       │   │       └── main.js
+    │       │   └── application.properties
+    │       └── webapp
+    │           └── WEB-INF
+    │               └── jsp
+    │                   └── hello.jsp
+    └── pom.xml
+
+3. O pom.xml deverá ficar da seguinte forma:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.hellokoding.springboot</groupId>
+    <artifactId>springboot-jsp-helloworld</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.2.3.RELEASE</version>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.8</java.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-jasper</artifactId>
+Terms & Conditions Privacy
+Roy Tutorials
+Technical… Theoretical… Practical…
+
+ 
+HOME CATEGORY INTERVIEWS PRODUCTS CONTACT
+Home » Spring Boot MVC with Tiles and AJAX
+
+￼
+ 
+Spring Boot MVC with Tiles and AJAX
+AJAX Spring Boot Spring MVC 
+In my previous tutorials I have shown how to create a Spring Boot MVC application, here I will show you how to create an AJAX based Spring Boot MVC application with Tiles.
+
+What is Tiles (https://tiles.apache.org/)
+A free open-sourced templating framework for modern Java applications.
+Based upon the Composite pattern it is built to simplify the development of user interfaces.
+For complex web sites it remains the easiest and most elegant way to work alongside any MVC technology.
+
+￼
+ 
+In summary, tiles allows authors to define page fragments which can be assembled into a complete pages at runtime. These fragments, or tiles, can be used as simple includes in order to reduce the duplication of common page elements or embedded within other tiles to develop a series of reusable templates. These templates streamline the development of a consistent look and feel across an entire application.
+
+
+Prerequisites
+The following configurations are required in order to run the application
+Eclipse Kepler
+JDK 1.8
+Tomcat 8
+Have maven 3 installed and configured
+Spring 4, Tiles dependencies in pom.xml
+Now we will see the below steps how to create a maven based project in Eclipse
+Step 1. Create a maven based web project in Eclipse
+
+Go to File -> New -> Other. On popup window under Maven select Maven Project. Then click on Next. Select the workspace location – either default or browse the location. Click on Next. Now in next window select the row as highlighted from the below list of archtypes and click on Next button.
+
+maven-arctype-webapp
+Now enter the required fields (Group Id, Artifact Id) as shown below
+Group Id : com.roytuts
+Artifact Id : spring-boot-tiles-ajax
+
+
+Step 2. Modify the pom.xml file as shown below.
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.roytuts</groupId>
+	<artifactId>spring-boot-tiles-ajax</artifactId>
+	<packaging>war</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>spring-boot-tiles-ajax Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.4.0.RELEASE</version>
+	</parent>
+	<properties>
+		<java.version>1.8</java.version>
+	</properties>
+	<dependencies>
+		<!-- mysql java connector -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<!-- jstl -->
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+		<!-- tiles jsp -->
+		<dependency>
+			<groupId>org.apache.tiles</groupId>
+			<artifactId>tiles-jsp</artifactId>
+			<version>3.0.7</version>
+		</dependency>
+		<!-- spring jdbc -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+		<!-- spring boot -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>spring-boot-tiles-ajax</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
+Step 3. If you see JRE System Library[J2SE-1.5] then change the version by below process
+
+Do right-click on the project and go to Build -> Configure build path, under Libraries tab click on JRE System Library[J2SE-1.5], click on Edit button and select the appropriate jdk 1.8 from the next window. Click on Finish then Ok.
+
+Change also the Compiler compliance level as 1.8 from Java -> Compiler.
+
+Step 4. Now when the build process finished then delete web.xml file from WEB-INF
+
+Step 5. Create application.properties file put under src/main/resources
+
+#database configuration
+spring.datasource.url=jdbc:mysql://localhost:3306/roytuts
+spring.datasource.username=root
+spring.datasource.password=
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+Step 6. Create a directory called layouts under src/main/webapp directory for putting jsp views, then put below template.jsp file
+
+<%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles"%>
+<html>
+<head>
+<title><tiles:getAsString name="title" /></title>
+<script type="text/javascript"
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+</head>
+<body>
+	<table>
+		<tr>
+			<td colspan="2"><tiles:insertAttribute name="header" /></td>
+		</tr>
+		<tr>
+			<td><tiles:insertAttribute name="menu" /></td>
+			<td><tiles:insertAttribute name="body" /></td>
+		</tr>
+		<tr>
+			<td colspan="2"><tiles:insertAttribute name="footer" /></td>
+		</tr>
+	</table>
+</body>
+</html>
+
+Step 7. Create a directory called tiles under src/main/webapp directory for putting jsp views, then put below files inside this folder.
+header.jsp
+
+<p>Header</p>
+<hr />
+menu.jsp
+
+<ul>
+	<li>Menu 1</li>
+	<li>Menu 2</li>
+</ul>
+footer.jsp
+
+<hr />
+<p>Copyright 2014-2016 roytuts.com</p>
+Step 8. Create a directory called views under src/main/webapp directory for putting jsp views, then put below files under it
+index.jsp
+
+<html>
+<body>
+	<h2>Spring Boot Tiles and AJAX Example | Roy Tutorials</h2>
+	<br />
+	<br />
+	<a href="http://roytuts.com">Roy Tutorials Home Page</a>
+	<br />
+	<br />
+	<a href="/contact">Contact Here</a>
+</body>
+</html>
+contact.jsp
+
+￼
+ 
+<h2>Contact Here</h2>
+<div id="msg"></div>
+<form id="contact_form">
+	<table>
+		<tr>
+			<td><label>Name</label></td>
+			<td><input type="text" name="name" /></td>
+		</tr>
+		<tr>
+			<td><label>Address</label></td>
+			<td><textarea name="address"></textarea></td>
+		</tr>
+		<tr>
+			<td><label>Phone</label></td>
+			<td><input type="text" name="phone" /></td>
+		</tr>
+		<tr>
+			<td colspan="2"><input type="submit" value="Save Contact" /></td>
+		</tr>
+	</table>
+</form>
+<script type="text/javascript">
+	$(document).ready(function(e) {
+		$("#contact_form").bind("submit", function(event) {
+			event.preventDefault();
+			$.ajax({
+				url : '/saveContact', // point to server-side controller
+				dataType : 'html', // what to expect back from the controller
+				cache : false,
+				data : $("#contact_form").serialize(),
+				type : 'post',
+				success : function(response) {
+					$('#msg').html('<span style="color:green;">'+response+'</span>'); // display success response from the controller
+				},
+				error : function(response) {
+					$('#msg').html('<span style="color:red;">'+response+'</span>'); // display error response from the controller
+				}
+			});
+		});
+	});
+</script>
+
+Step 9. Create a tiles definition XML file, tiles.xml, then put it in WEB-INF directory. You can read about tiles definition here https://tiles.apache.org/framework/tutorial/basic/pages.html
+
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+<tiles-definitions>
+	<definition name="roytuts.com.homepage" template="/layouts/template.jsp">
+		<put-attribute name="title" value="Roy Tutorials homepage" />
+		<put-attribute name="header" value="/tiles/header.jsp" />
+		<put-attribute name="menu" value="/tiles/menu.jsp" />
+		<put-attribute name="body" value="/views/index.jsp" />
+		<put-attribute name="footer" value="/tiles/footer.jsp" />
+	</definition>
+	<definition name="roytuts.com.contactpage" extends="roytuts.com.homepage">
+		<put-attribute name="title" value="Spring Boot Tiles AJAX | Contact Form" />
+		<put-attribute name="body" value="/views/contact.jsp" />
+	</definition>
+</tiles-definitions>
+
+Step 10. Create a tiles configuration class with below source code because we are not going to create web.xml file in Spring Boot application so that we could have put it in web.xml file
+
+package com.roytuts.spring.boot.tiles.ajax.views;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
+import org.springframework.web.servlet.view.tiles3.TilesView;
+import org.springframework.web.servlet.view.tiles3.TilesViewResolver;
+@Configuration
+public class TilesConfiguration {
+	/**
+	 * Initialise Tiles on application startup and identify the location of the
+	 * tiles configuration file, tiles.xml.
+	 *
+	 * @return tiles configurer
+	 */
+	@Bean
+	public TilesConfigurer tilesConfigurer() {
+		final TilesConfigurer configurer = new TilesConfigurer();
+		configurer.setDefinitions(new String[] { "WEB-INF/tiles.xml" });
+		configurer.setCheckRefresh(true);
+		return configurer;
+	}
+	/**
+	 * Introduce a Tiles view resolver, this is a convenience implementation
+	 * that extends URLBasedViewResolver.
+	 *
+	 * @return tiles view resolver
+	 */
+	@Bean
+	public TilesViewResolver tilesViewResolver() {
+		final TilesViewResolver resolver = new TilesViewResolver();
+		resolver.setViewClass(TilesView.class);
+		return resolver;
+	}
+}
+Step 11. Create a model class Contact.java
+
+package com.roytuts.spring.boot.tiles.ajax.model;
+public class Contact {
+	private int contactId;
+	private String contactName;
+	private String contactAddress;
+	private String contactPhone;
+	public Contact() {
+	}
+	public Contact(int contactId, String contactName, String contactAddress, String contactPhone) {
+		this.contactId = contactId;
+		this.contactName = contactName;
+		this.contactAddress = contactAddress;
+		this.contactPhone = contactPhone;
+	}
+	public int getContactId() {
+		return contactId;
+	}
+	public void setContactId(int contactId) {
+		this.contactId = contactId;
+	}
+	public String getContactName() {
+		return contactName;
+	}
+	public void setContactName(String contactName) {
+		this.contactName = contactName;
+	}
+	public String getContactAddress() {
+		return contactAddress;
+	}
+	public void setContactAddress(String contactAddress) {
+		this.contactAddress = contactAddress;
+	}
+	public String getContactPhone() {
+		return contactPhone;
+	}
+	public void setContactPhone(String contactPhone) {
+		this.contactPhone = contactPhone;
+	}
+}
+Step 12. Create MySQL table contact in database roytuts
+
+USE `roytuts`;
+/*Table structure for table `contact` */
+DROP TABLE IF EXISTS `contact`;
+CREATE TABLE `contact` (
+  `contact_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `contact_name` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
+  `contact_address` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `contact_phone` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`contact_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+Step 13. Create a row mapper class which will map Contact object to each row of database table
+
+package com.roytuts.spring.boot.tiles.ajax.mapper;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.springframework.jdbc.core.RowMapper;
+import com.roytuts.spring.boot.tiles.ajax.model.Contact;
+public class ContactRowMapper implements RowMapper<Contact> {
+	@Override
+	public Contact mapRow(ResultSet rs, int row) throws SQLException {
+		Contact contact = new Contact();
+		contact.setContactId(rs.getInt("contact_id"));
+		contact.setContactName(rs.getString("contact_name"));
+		contact.setContactAddress(rs.getString("contact_address"));
+		contact.setContactPhone(rs.getString("contact_phone"));
+		return contact;
+	}
+}
+Step 14. Create a DAO interface
+
+package com.roytuts.spring.boot.tiles.ajax.dao;
+import com.roytuts.spring.boot.tiles.ajax.model.Contact;
+public interface ContactDao {
+	void saveContact(Contact contact);
+}
+Step 15. Create a DAO interface implementation class. Here I have used NamedParameterJdbcTemplate so that I can map Contact class attribute with table column.
+
+package com.roytuts.spring.boot.tiles.ajax.dao.impl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import com.roytuts.spring.boot.tiles.ajax.dao.ContactDao;
+import com.roytuts.spring.boot.tiles.ajax.model.Contact;
+@Repository
+@Transactional
+public class ContactDaoImpl implements ContactDao {
+	@Autowired
+	private NamedParameterJdbcTemplate template;
+	@Override
+	public void saveContact(Contact contact) {
+		final String SQL_INSERT_CONTACT_NAMED_PARAMETER = "insert into contact(contact_name, contact_address,contact_phone) values(:contactName, :contactAddress, :contactPhone)";
+		SqlParameterSource sqlParameterSource = new BeanPropertySqlParameterSource(contact);
+		template.update(SQL_INSERT_CONTACT_NAMED_PARAMETER, sqlParameterSource);
+	}
+}
+Step 16. Create a Service interface.
+
+package com.roytuts.spring.boot.tiles.ajax.service;
+import com.roytuts.spring.boot.tiles.ajax.model.Contact;
+public interface ContactService {
+	void saveContact(Contact contact);
+}
+Step 17. Create a Service interface implementation class.
+
+package com.roytuts.spring.boot.tiles.ajax.service.impl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.roytuts.spring.boot.tiles.ajax.dao.ContactDao;
+import com.roytuts.spring.boot.tiles.ajax.model.Contact;
+import com.roytuts.spring.boot.tiles.ajax.service.ContactService;
+@Service
+public class ContactServiceImpl implements ContactService {
+	@Autowired
+	private ContactDao contactDao;
+	@Override
+	public void saveContact(Contact contact) {
+		contactDao.saveContact(contact);
+	}
+}
+Step 18. Create a Spring Controller
+
+package com.roytuts.spring.boot.tiles.ajax.controller;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.roytuts.spring.boot.tiles.ajax.model.Contact;
+import com.roytuts.spring.boot.tiles.ajax.service.ContactService;
+@Controller
+public class ContactController {
+	@Autowired
+	private ContactService contactService;
+	@RequestMapping(value = "/home", method = RequestMethod.GET)
+	public String home() {
+		return "roytuts.com.homepage";
+	}
+	@RequestMapping(value = "/contact", method = RequestMethod.GET)
+	public String contactPage() {
+		return "roytuts.com.contactpage";
+	}
+	@RequestMapping(value = "/saveContact", method = RequestMethod.POST)
+	@ResponseBody
+	public String saveContact(@RequestParam(value = "name") String name,
+			@RequestParam(value = "address") String address, @RequestParam(value = "phone") String phone/*
+																										 * HttpServletRequest
+																										 * request
+																										 */) {
+		System.out.println("name : " + name + ", address : " + address + ", phone : " + phone);
+		// or using HttpServletRequest, System.out.println("name : " + request.getParameter("name"));
+		// create contact object
+		Contact contact = new Contact();
+		contact.setContactName(name);
+		contact.setContactAddress(address);
+		contact.setContactPhone(phone);
+		// save contact to database
+		contactService.saveContact(contact);
+		return "Contact successfully saved";
+	}
+}
+Step 19. Create a Spring Boot main class for starting up the application
+
+package com.roytuts.spring.boot.tiles.ajax.test;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+@SpringBootApplication
+@ComponentScan(basePackages = "com.roytuts.spring.boot.tiles.ajax")
+public class SpringBootTilesAjaxApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(SpringBootTilesAjaxApplication.class, args);
+	}
+}
+Step 20. Now run the above class and once the main class successfully runs, then hit the below URL in the browser
+
+http://localhost:8080/home
+￼
+
+Step 21. Now hit URL http://localhost:8080/contact or click on Contact Here link on home page in the browser and filled input fields and click on Save Contact button.
+
+￼
+ 
+￼
+The value gets saved in the database successfully
+￼
+Thanks for reading.
+
+Tags: Apache • NamedParameterJdbcTemplate
+￼
+ 
+AJAX Multiple Files Upload using Codeigniter, jQuerySpring MVC Custom Validator
+Leave a Reply
+Your email address will not be published. Required fields are marked *
+
+Comment ￼
+
+Name * ￼
+
+Email * ￼
+
+Website ￼
+
+￼Post Comment
+Search for:￼￼Search
+￼
+ 
+￼
+ 
+￼
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+4. Crie a classe abaixo:
+
+package com.hellokoding.springboot.view;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+public class HelloController {
+    @GetMapping({"/", "/hello"})
+    public String hello(Model model, @RequestParam(value="name", required=false, defaultValue="World") String name) {
+        model.addAttribute("name", name);
+        return "hello";
+    }
+}
+
+
+/*
+
+@Controller indicates the annotated class is a web controller
+
+@GetMapping maps HTTP GET request for "/" (home page) and "/hello" to the hello method
+
+@RequestParam binds method parameter name to request query string parameter (value="name",...)
+
+Model is an object sharing data between handler and view template
+
+The view template name is defined by the return statement of the handler and the spring.mvc.view.suffix config property which defined in the below application.properties file. So in this hello handler method, the return view is hello.jsp
+
+*/
+
+
+
+5. Crie a página jsp abaixo:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello ${name}!</title>
+    <link href="/css/main.css" rel="stylesheet">
+</head>
+<body>
+    <h2 class="hello-title">Hello ${name}!</h2>
+    <script src="/js/main.js"></script>
+</body>
+</html>
+
+
+
+
+6. Crie os objetos estáticos abaixo:
+
+main.css
+
+.hello-title{
+    color: darkgreen;
+}
+
+main.js
+
+(function(){
+    console.log("Hello World!");
+})();
+
+
+6. Verifique se a classe que inicia o projeto ficou como abaixo:
+
+
+package com.hellokoding.springboot.view;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+
+
+7. Insira no arquivo application.properties as linhas abaixo:
+
+spring.mvc.view.prefix: /WEB-INF/jsp/
+spring.mvc.view.suffix: .jsp
+
+

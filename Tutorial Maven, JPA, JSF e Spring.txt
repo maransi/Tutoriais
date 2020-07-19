@@ -1,0 +1,1136 @@
+1. Criar a tabela:
+
+CREATE TABLE USER (
+   id int(11) NOT NULL,
+   name varchar(45) NOT NULL,
+   surname varchar(45) NOT NULL,
+   PRIMARY KEY (`id`)
+);
+
+
+
+2. Criar projeto Maven maven-archetype-webapp
+
+
+
+3. Atualizar o pom.xml, conforme abaixo:
+
+
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>marco</groupId>
+	<artifactId>turmalina</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>war</packaging>
+
+	<name>usuario</name>
+
+	<properties>
+		<org.springframework-version>3.0.5.RELEASE</org.springframework-version>
+		<org.slf4j-version>1.5.10</org.slf4j-version>
+		<jsf-version>2.0.3</jsf-version>
+		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<dependencies>
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${org.springframework-version}</version>
+			<exclusions>
+				<!-- Exclude Commons Logging in favor of SLF4j -->
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>${org.springframework-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>${org.springframework-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${org.springframework-version}</version>
+		</dependency>
+		<!-- Database, JPA -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>3.5.0-Final</version>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${org.slf4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${org.slf4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${org.slf4j-version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.15</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.mail</groupId>
+					<artifactId>mail</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.jms</groupId>
+					<artifactId>jms</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jdmk</groupId>
+					<artifactId>jmxtools</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jmx</groupId>
+					<artifactId>jmxri</artifactId>
+				</exclusion>
+			</exclusions>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Servlet -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- JSR 303 with Hibernate Validator -->
+		<!-- JAXB is needed when running on Java 5. In this environment these dependencies
+			have to be added (unless xml configuration is explicitly disabled via Configuration.ignoreXmlConfiguration)
+			On Java 6 jaxb is part of the runtime environment. -->
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.1</version>
+		</dependency>
+		<!-- Test -->
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>2.5.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${org.springframework-version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>6.0</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.primefaces.themes</groupId>
+			<artifactId>cupertino</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.primefaces</groupId>
+			<artifactId>primefaces</artifactId>
+			<version>3.2</version>
+		</dependency>
+		<!-- MySQL Java Connector dependency -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.17</version>
+		</dependency>
+		<!-- Configuração para JSF -->
+		<dependency>
+			<groupId>com.sun.faces</groupId>
+			<artifactId>jsf-api</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.faces</groupId>
+			<artifactId>jsf-impl</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<!-- Fim -->
+	</dependencies>
+	<repositories>
+		<!-- Maven Central -->
+		<repository>
+			<id>org.maven.central</id>
+			<name>Maven Central Repository</name>
+			<url>http://repo1.maven.org/maven2</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<!-- For testing against latest Spring snapshots -->
+		<repository>
+			<id>org.springframework.maven.snapshot</id>
+			<name>Spring Maven Snapshot Repository</name>
+			<url>http://maven.springframework.org/snapshot</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<!-- For developing against latest Spring milestones -->
+		<repository>
+			<id>org.springframework.maven.milestone</id>
+			<name>Spring Maven Milestone Repository</name>
+			<url>http://maven.springframework.org/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<!-- For Mojarra 2.x -->
+		<repository>
+			<id>java.net.release</id>
+			<name>Repository for Projects On Hosted on java.net</name>
+			<url>http://download.java.net/maven/2</url>
+		</repository>
+		<repository>
+			<id>prime-repo</id>
+			<name>PrimeFaces Maven Repository</name>
+			<url>http://repository.primefaces.org</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<compilerArguments>
+						<endorseddirs>${endorsed.dir}</endorseddirs>
+					</compilerArguments>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.1.1</version>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+
+4. Criar a Source Folder Package:
+
+src/main/java
+
+
+
+
+5. Criar as packages, na source folder criada:
+
+com.otv.managed.bean
+com.otv.model
+com.otv.user.dao
+com.otv.user.service
+
+
+6. Criar o ManagedBean
+
+package com.otv.managed.bean;
+
+import com.otv.model.User;
+import com.otv.user.service.IUserService;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
+import javax.faces.bean.RequestScoped;
+import javax.faces.bean.SessionScoped;
+import org.springframework.dao.DataAccessException;
+
+/**
+ *
+ * User Managed Bean
+ *
+ * @author onlinetechvision.com
+ * @since 25 Mar 2012
+ * @version 1.0.0
+ *
+ */
+@ManagedBean
+
+public class UserManagedBean implements Serializable {
+
+ private static final long serialVersionUID = 1L;
+ private static final String SUCCESS = "success";
+ private static final String ERROR   = "error";
+
+ //Spring User Service is injected...
+ @ManagedProperty(value="#{userService}")
+ IUserService userService;
+
+ List<User> userList;
+
+ private int id;
+ private String name;
+ private String surname;
+
+ /**
+  * Add User
+  *
+  * @return String - Response Message
+  */
+ public String addUser() {
+  try {
+   User user = new User();
+   user.setId(getId());
+   user.setName(getName());
+   user.setSurname(getSurname());
+   getUserService().addUser(user);
+   return SUCCESS;
+  } catch (DataAccessException e) {
+   e.printStackTrace();
+  }  
+
+  return ERROR;
+ }
+
+ /**
+  * Reset Fields
+  *
+  */
+ public void reset() {
+  this.setId(0);
+  this.setName("");
+  this.setSurname("");
+ }
+
+ /**
+  * Get User List
+  *
+  * @return List - User List
+  */
+ public List<User> getUserList() {
+  userList = new ArrayList<User>();
+  userList.addAll(getUserService().getUsers());
+  return userList;
+ }
+
+ /**
+  * Get User Service
+  *
+  * @return IUserService - User Service
+  */
+ public IUserService getUserService() {
+  return userService;
+ }
+
+ /**
+  * Set User Service
+  *
+  * @param IUserService - User Service
+  */
+ public void setUserService(IUserService userService) {
+  this.userService = userService;
+ }
+
+ /**
+  * Set User List
+  *
+  * @param List - User List
+  */
+ public void setUserList(List<User> userList) {
+  this.userList = userList;
+ }
+
+ /**
+  * Get User Id
+  *
+  * @return int - User Id
+  */
+ public int getId() {
+  return id;
+ }
+
+ /**
+  * Set User Id
+  *
+  * @param int - User Id
+  */
+ public void setId(int id) {
+  this.id = id;
+ }
+
+ /**
+  * Get User Name
+  *
+  * @return String - User Name
+  */
+ public String getName() {
+  return name;
+ }
+
+ /**
+  * Set User Name
+  *
+  * @param String - User Name
+  */
+ public void setName(String name) {
+  this.name = name;
+ }
+
+ /**
+  * Get User Surname
+  *
+  * @return String - User Surname
+  */
+ public String getSurname() {
+  return surname;
+ }
+
+ /**
+  * Set User Surname
+  *
+  * @param String - User Surname
+  */
+ public void setSurname(String surname) {
+  this.surname = surname;
+ }
+
+}
+
+
+
+
+7. Criar o Bean:
+
+
+package com.otv.model;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+/**
+ *
+ * User Entity
+ *
+ * @author onlinetechvision.com
+ * @since 25 Mar 2012
+ * @version 1.0.0
+ *
+ */
+@Entity
+@Table(name="USER")
+public class User {
+
+ private int id;
+ private String name;
+ private String surname;
+
+ /**
+  * Get User Id
+  *
+  * @return int - User Id
+  */
+ @Id
+ @Column(name="ID", unique = true, nullable = false)
+ public int getId() {
+  return id;
+ }
+
+ /**
+  * Set User Id
+  *
+  * @param int - User Id
+  */
+ public void setId(int id) {
+  this.id = id;
+ }
+
+ /**
+  * Get User Name
+  *
+  * @return String - User Name
+  */
+ @Column(name="NAME", unique = true, nullable = false)
+ public String getName() {
+  return name;
+ }
+
+ /**
+  * Set User Name
+  *
+  * @param String - User Name
+  */
+ public void setName(String name) {
+  this.name = name;
+ }
+
+ /**
+  * Get User Surname
+  *
+  * @return String - User Surname
+  */
+ @Column(name="SURNAME", unique = true, nullable = false)
+ public String getSurname() {
+  return surname;
+ }
+
+ /**
+  * Set User Surname
+  *
+  * @param String - User Surname
+  */
+ public void setSurname(String surname) {
+  this.surname = surname;
+ } 
+
+ @Override
+ public String toString() {
+  StringBuffer strBuff = new StringBuffer();
+  strBuff.append("id : ").append(getId());
+  strBuff.append(", name : ").append(getName());
+  strBuff.append(", surname : ").append(getSurname());
+  return strBuff.toString();
+ }
+}
+
+
+
+
+8. Criar a interface e classe DAO
+
+
+package com.otv.user.dao;
+
+import java.util.List;
+
+import com.otv.model.User;
+
+/**
+ *
+ * User DAO Interface
+ *
+ * @author onlinetechvision.com
+ * @since 25 Mar 2012
+ * @version 1.0.0
+ *
+ */
+public interface IUserDAO {
+
+ /**
+  * Add User
+  *
+  * @param  User user
+  */
+ public void addUser(User user);
+
+ /**
+  * Update User
+  *
+  * @param  User user
+  */
+ public void updateUser(User user);
+
+ /**
+  * Delete User
+  *
+  * @param  User user
+  */
+ public void deleteUser(User user);
+
+ /**
+  * Get User
+  *
+  * @param  int User Id
+  */
+ public User getUserById(int id);
+
+ /**
+  * Get User List
+  *
+  */
+ public List<User> getUsers();
+}
+
+
+
+9. Criar a classe DAO
+
+package com.otv.user.dao;
+
+import com.otv.model.User;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import org.springframework.stereotype.Repository;
+
+/**
+ *
+ * User DAO
+ *
+ * @author onlinetechvision.com
+ * @since 25 Mar 2012
+ * @version 1.0.0
+ *
+ */
+@Repository
+public class UserDAO implements IUserDAO {
+    
+    
+    
+@PersistenceContext(unitName = "PU")
+ private EntityManager em;
+
+    public EntityManager getEm() {
+        return em;
+    }
+
+    public void setEm(EntityManager em) {
+        this.em = em;
+    }
+
+ 
+ /**
+  * Add User
+  *
+  * @param  User user
+  */
+ public void addUser(User user) {
+  getEm().persist(user);
+ }
+
+ /**
+  * Delete User
+  *
+  * @param  User user
+  */
+ public void deleteUser(User user) {
+  getEm().remove(user);
+ }
+
+ /**
+  * Update User
+  *
+  * @param  User user
+  */
+ public void updateUser(User user) {
+  getEm().merge(user);
+ }
+
+ /**
+  * Get User
+  *
+  * @param  int User Id
+  * @return User
+  */
+ public User getUserById(int id) {
+  List list = getEm().createQuery("from User where id=?").setParameter(0, id).getResultList();
+  return (User)list.get(0);
+ }
+
+ /**
+  * Get User List
+  *
+  * @return List - User list
+  */
+ public List<User> getUsers() {
+  List list = getEm().createQuery("from User").getResultList();
+  return list;
+ }
+
+}
+
+
+10. Criar a interface e classe Service
+
+
+package com.otv.user.service;
+
+import java.util.List;
+
+import com.otv.model.User;
+
+/**
+ *
+ * User Service Interface
+ *
+ * @author onlinetechvision.com
+ * @since 25 Mar 2012
+ * @version 1.0.0
+ *
+ */
+public interface IUserService {
+
+ /**
+  * Add User
+  *
+  * @param  User user
+  */
+ public void addUser(User user);
+
+ /**
+  * Update User
+  *
+  * @param  User user
+  */
+ public void updateUser(User user);
+
+ /**
+  * Delete User
+  *
+  * @param  User user
+  */
+ public void deleteUser(User user);
+
+ /**
+  * Get User
+  *
+  * @param  int User Id
+  */
+ public User getUserById(int id);
+
+ /**
+  * Get User List
+  *
+  * @return List - User list
+  */
+ public List<User> getUsers();
+}
+
+
+
+
+11. Criar a classe UserService
+
+package com.otv.user.service;
+
+import java.util.List;
+
+import org.springframework.transaction.annotation.Transactional;
+
+import com.otv.model.User;
+import com.otv.user.dao.IUserDAO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ *
+ * User Service
+ *
+ * @author onlinetechvision.com
+ * @since 25 Mar 2012
+ * @version 1.0.0
+ *
+ */
+@Service
+@Transactional(readOnly = true)
+public class UserService implements IUserService {
+
+ // UserDAO is injected...
+    @Autowired
+ IUserDAO userDAO;
+
+ /**
+  * Add User
+  *
+  * @param  User user
+  */
+ @Transactional(readOnly = false)
+ public void addUser(User user) {
+  getUserDAO().addUser(user);
+ }
+
+ /**
+  * Delete User
+  *
+  * @param  User user
+  */
+ @Transactional(readOnly = false)
+ public void deleteUser(User user) {
+  getUserDAO().deleteUser(user);
+ }
+
+ /**
+  * Update User
+  *
+  * @param  User user
+  */
+ @Transactional(readOnly = false)
+ public void updateUser(User user) {
+  getUserDAO().updateUser(user);
+ }
+
+ /**
+  * Get User
+  *
+  * @param  int User Id
+  */
+ public User getUserById(int id) {
+  return getUserDAO().getUserById(id);
+ }
+
+ /**
+  * Get User List
+  *
+  */
+ public List<User> getUsers() {
+  return getUserDAO().getUsers();
+ }
+
+ /**
+  * Get User DAO
+  *
+  * @return IUserDAO - User DAO
+  */
+ public IUserDAO getUserDAO() {
+  return userDAO;
+ }
+
+ /**
+  * Set User DAO
+  *
+  * @param IUserDAO - User DAO
+  */
+ public void setUserDAO(IUserDAO userDAO) {
+  this.userDAO = userDAO;
+ }
+}
+
+
+
+
+12. Criar as paginas error.xhtml
+
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>Welcome to JSF_PrimeFaces_Spring_Hibernate Project</title>
+    </h:head>
+    <body>
+        <f:view>
+            <h:form>
+                <h:outputText value="Transaction Error has occurred!"></h:outputText>
+            </h:form>
+        </f:view>
+    </body>
+</html>
+
+
+
+
+13. Criar as paginas index.xhtml
+
+
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Welcome to OTV_JSF_Spring_Hibernate_Project</title>
+    </h:head>
+    <h:body>
+        <h:form>
+            <table>
+                <tr>
+                    <td><h:outputLabel for="id" value="Id : " /></td>
+                    <td><p:inputText id="id" value="#{userManagedBean.id}">
+                            <!--<f:converter converterId="javax.faces.Integer" />-->
+                            <p:ajax event="blur" update="idMsg" />
+                        </p:inputText> <p:message id="idMsg" for="id" display="icon" /></td>
+                </tr>
+                <tr>
+                    <td><h:outputLabel for="name" value="Name : " /></td>
+                    <td><p:inputText id="name" value="#{userManagedBean.name}">
+                           <!-- <f:validateLength minimum="5" />-->
+                            <p:ajax event="blur" update="nameMsg" />
+                        </p:inputText> <p:message id="nameMsg" for="name" display="icon" /></td>
+                </tr>
+                <tr>
+                    <td><h:outputLabel for="surname" value="Surname : " /></td>
+                    <td><p:inputText id="surname" value="#{userManagedBean.surname}">
+                          <!--  <f:validateLength minimum="5" />-->
+                            <p:ajax event="blur" update="surnameMsg" />
+                        </p:inputText> <p:message id="surnameMsg" for="surname" display="icon" /></td>
+                </tr>
+                <tr>
+                    <td><h:commandButton id="addUser" value="Add"
+                                         action="#{userManagedBean.addUser}" /></td>
+                    <td><h:commandButton id="reset" value="Reset"
+                                         action="#{userManagedBean.reset}"  /></td>                   
+                </tr>
+            </table>
+        </h:form>
+    </h:body>
+</html>
+
+
+14. Criar as paginas success.xhtml
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Welcome to OTV_JSF_Spring_Hibernate_Project</title>
+    </h:head>
+    <h:body>
+        <h:form>
+            <h:outputText value="USERs : "></h:outputText>
+            <p:dataTable id="users" var="user" value="#{userManagedBean.userList}"
+                         style="width: 10%">
+                <p:column>
+                    <f:facet name="header">
+                        <h:outputText value="ID" />
+                    </f:facet>
+                    <h:outputText value="#{user.id}" />
+                </p:column>
+                <p:column>
+                    <f:facet name="header">
+                        <h:outputText value="Name" />
+                    </f:facet>
+                    <h:outputText value="#{user.name}" />
+                </p:column>
+                <p:column>
+                    <f:facet name="header">
+                        <h:outputText value="Surname" />
+                    </f:facet>
+                    <h:outputText value="#{user.surname}" />
+                </p:column>
+            </p:dataTable>
+        </h:form>
+    </h:body>
+
+</html>
+
+
+
+15. Criar o applicationContext.xhtml na pasta WEB-INF
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+	<!-- Seta anotaçoes para serem usadas pelo Spring -->
+    <context:annotation-config />
+	<!-- Define o pacote onde o Spring vai procurar por beans anotados -->
+    <context:component-scan base-package="com" />
+
+	<!-- define que as transaçoes irao ser anotadas -->
+    <tx:annotation-driven />
+	<!-- Configuracao do Banco de Dados -->
+	<!-- <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop> 
+		<prop key="hibernate.connection.url">jdbc:mysql://srvwebapp:3306/estoque</prop> 
+		<prop key="hibernate.connection.username">root</prop> <prop key="hibernate.connection.password">aawandwer01</prop> 
+		<prop key="hibernate.show_sql">true</prop> <prop key="hibernate.current_session_context_class">thread</prop> 
+		<prop key="hibernate.hbm2ddl.auto">update</prop> -->
+
+    <bean id="dataSource"
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://srvwebapp:3306/estoque" />
+        <property name="username" value="root" />
+        <property name="password" value="aawandwer01" />
+    </bean>
+
+	<!-- Configuracao do Hibernate -->
+    <bean id="entityManagerFactory"
+          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="persistenceUnitName" value="PU" />
+        <property name="dataSource" ref="dataSource" />
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="databasePlatform" value="org.hibernate.dialect.MySQLDialect" />
+                <property name="showSql" value="true" />
+            </bean>
+        </property>
+    </bean>
+	<!-- Configuracao do gerente de transacoes do Spring -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+	<!-- <bean id="User" class="com.otv.model.User" /> <bean id="UserService" 
+		class="com.otv.user.service.UserService"> <property name="userDAO" ref="UserDAO" 
+		/> </bean> <bean id="UserDAO" class="com.otv.user.dao.UserDAO"> <property 
+		name="sessionFactory" ref="SessionFactory" /> </bean> -->
+</beans>
+
+
+
+16. Criar o faces-config.xml na pasta WEB-INF
+
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+			http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
+    			version="2.0">
+
+   <!-- JSF and Spring are integrated -->
+    <application>
+        <el-resolver>
+            org.springframework.web.jsf.el.SpringBeanFacesELResolver
+        </el-resolver>
+    </application>
+
+ <!-- configuration of navigation rules -->
+    <navigation-rule>
+        <from-view-id>/index.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>success</from-outcome>
+            <to-view-id>/success.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>error</from-outcome>
+            <to-view-id>/error.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+</faces-config>
+
+
+
+
+17. Atualizar o web.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         id="WebApp_ID"
+         version="2.5">
+    <display-name>OTV_JSF_PrimeFaces_Spring_Hibernate</display-name>
+   <!-- Spring Context Configuration' s Path definition -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            /WEB-INF/applicationContext.xml
+        </param-value>
+    </context-param>
+   <!-- The Bootstrap listener to start up and shut down Spring's root WebApplicationContext. It is registered to Servlet Container -->
+    <listener>
+        <listener-class>
+            org.springframework.web.context.ContextLoaderListener
+        </listener-class>
+    </listener>
+    <listener>
+        <listener-class>
+            org.springframework.web.context.request.RequestContextListener
+        </listener-class>
+    </listener>
+
+   <!-- Project Stage Level -->
+    <context-param>
+        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-value>Development</param-value>
+    </context-param>
+
+   <!-- Welcome Page -->
+    <welcome-file-list>
+        <welcome-file>index.xhtml</welcome-file>
+    </welcome-file-list>
+
+   <!-- JSF Servlet is defined to container -->
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+   <!-- Mapping with servlet and url for the http requests. -->
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>*.jsf</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>*.xhtml</url-pattern>
+    </servlet-mapping>
+</web-app>
+
+
+18. Criar o folder META-INF na source folder src/main/resources
+
+
+19. Criar o persistence.xml na pasta META-INF
+
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
+	<persistence-unit name="PU">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<class>com.otv.model.User</class>
+
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+			<property name="hibernate.hbm2ddl.auto" value="update" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+			<property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
+			<property name="javax.persistence.jdbc.url" value="jdbc:mysql://srvwebapp:3306/estoque" />
+			<property name="javax.persistence.jdbc.user" value="root" />
+			<property name="javax.persistence.jdbc.password" value="aawandwer01" />
+		</properties>
+	</persistence-unit>
+</persistence>
+
+

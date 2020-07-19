@@ -1,0 +1,369 @@
+1. Crie um projeto Spring Start Boot:
+
+    . Ctrl + N
+    . Digite Spring Start Boot -> Next
+    . Altere as propriedades:
+        Packaging : jar
+        Group : net.marco
+        Artefact : DemoRestful
+        Package : net.marco.demo -> Next
+    . Escolha:
+        Spring Web -> Next
+    . Finish
+
+
+
+2. Crie a classe de modelo Student como abaixo:
+
+package net.marco.demo.model;
+
+import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public class Student {
+	private UUID id;
+	private final Integer age;
+	private final String firstName;
+	private final String lastName;
+	private final String course;
+
+	public UUID getId() {
+		return id;
+	}
+	
+	public void setId(UUID id) {
+		this.id = id;
+	}
+
+	public Integer getAge() {
+		return age;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public String getCourse() {
+		return course;
+	}
+
+	public Student(@JsonProperty("id") UUID id, @JsonProperty("age") Integer age,
+			@JsonProperty("firstName") String firstName, @JsonProperty("lastName") String lastName,
+			@JsonProperty("course") String course) {
+		super();
+		this.id = id;
+		this.age = age;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.course = course;
+	}
+
+}
+
+
+
+3. Crie as classes DAOs como abaixo:
+
+package net.marco.demo.dao;
+
+import java.util.List;
+import java.util.UUID;
+
+import net.marco.demo.model.Student;
+
+public interface StudentDAO {
+
+	int insertNewStudent(UUID studentId, Student student);
+
+	Student selectStudentById(UUID studentId);
+
+	List<Student> selectAllStudents();
+
+	int updateStudentById(UUID studentId, Student student);
+
+	int deleteStudentById(UUID studentId);
+
+}
+
+
+
+
+
+package net.marco.demo.dao;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.stereotype.Repository;
+
+import net.marco.demo.model.Student;
+
+@Repository("studentDAOImpl")
+public class StudentDAOImpl implements StudentDAO {
+	Map<UUID, Student> database;
+
+	public StudentDAOImpl() {
+		database = new HashMap<>();
+		
+		UUID studentId = UUID.randomUUID();
+		
+		database.put( studentId, new Student(studentId, 14, "Marco","Silva","Data Sciency" ));
+	
+	}
+
+	@Override
+	public int insertNewStudent(UUID studentId, Student student) {
+		database.put(studentId, student);
+
+		return 1;
+	}
+
+	@Override
+	public Student selectStudentById(UUID studentId) {
+		return database.get( studentId );
+	}
+
+	@Override
+	public List<Student> selectAllStudents() {
+		return new ArrayList<>(database.values());
+	}
+
+	@Override
+	public int updateStudentById(UUID studentId, Student student) {
+		student.setId(studentId);
+		
+		database.put(studentId, student);
+		
+		return 1;
+	}
+
+	@Override
+	public int deleteStudentById(UUID studentId) {
+		database.remove( studentId );
+		// TODO Auto-generated method stub
+		return 1;
+	}
+
+}
+
+
+
+
+4. Crie a classe de serviço StudentService como abaixo:
+
+package net.marco.demo.service;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import net.marco.demo.dao.StudentDAO;
+import net.marco.demo.model.Student;
+
+@Service
+public class StudentService {
+	
+	private StudentDAO studentDAO;
+	
+	public int persistNewStudent(UUID studentId, Student student) {
+		UUID studentUId = studentId == null ? UUID.randomUUID() : studentId;
+		
+		student.setId(studentUId);
+		
+		return studentDAO.insertNewStudent(studentUId, student);
+	}
+
+	public Student getStudentById(UUID studentId) {
+		return studentDAO.selectStudentById(studentId);
+	}
+
+	public List<Student> getAllStudents(){
+		return studentDAO.selectAllStudents();
+	}
+
+	public int updateStudentById(UUID studentId, Student student) {
+		return studentDAO.updateStudentById(studentId, student);
+	}
+
+	public int deleteStudentById(UUID studentId) {
+		return studentDAO.deleteStudentById(studentId);
+	}
+
+	@Autowired
+	public StudentService(@Qualifier("studentDAOImpl") StudentDAO studantDAO) {
+		this.studentDAO = studantDAO;
+	}
+
+}
+
+
+
+
+
+5. Crie a classe de visão StudentResource como abaixo:
+
+package net.marco.demo.controller;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
+import net.marco.demo.model.Student;
+import net.marco.demo.service.StudentService;
+
+@RestController
+@RequestMapping("api/v1/students")
+public class StudentResource {
+
+	private final StudentService studentService;
+	
+	@Autowired
+	public StudentResource( StudentService studentService) {
+		this.studentService = studentService;
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE 
+	)
+	public List<Student> getAllStudents(){
+		return studentService.getAllStudents();
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE,
+			path = "{studentId}"
+	)
+	public Student getStudentsById(@PathVariable("studentId") UUID studentId){
+		return studentService.getStudentById(studentId);
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.POST, consumes=MediaType.APPLICATION_JSON_VALUE 
+	)
+	public void insertNewStudent( @RequestBody Student student ){
+		studentService.persistNewStudent(UUID.randomUUID(), student );
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.PUT, 
+			consumes=MediaType.APPLICATION_JSON_VALUE,
+			path = "{studentId}"
+	)
+	
+	public void updateStudent( @PathVariable UUID studentId, @RequestBody Student student ){
+		studentService.updateStudentById(studentId, student);
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.DELETE, produces=MediaType.APPLICATION_JSON_VALUE,
+			path = "{studentId}"
+	)
+	public void deleteStudentsById(@PathVariable("studentId") UUID studentId){
+		studentService.deleteStudentById(studentId);
+	}
+
+}
+
+
+
+
+6. Abra o Postman e execute os links abaixo:
+
+    . Teste para obter todos os registros
+    =====================================
+
+    http://localhost:8080/api/v1/students
+
+    Method : GET
+
+    .Teste para obter um registro especifico
+    ========================================
+
+    . Selecione o id da consulta anterior e execute o link abaixo substituindo o último parâmetro pelo selecionado
+
+    http://localhost:8080/api/v1/students/04cdeb1a-50a3-4fc9-b00e-c58a3174d165
+
+    Method : GET
+
+
+    . Teste para inserir um registro
+    ================================
+
+    . No mesmo postman altere os parâmetros de pesquisa deixando e execute o link logo abaixo:
+
+    Method : POST
+    Body : raw JSON
+
+    {
+        "age": 22,
+        "firstName": "Gustavo",
+        "lastName": "Rocha",
+        "course": "Chemical Engennier"
+    }
+
+    http://localhost:8080/api/v1/students
+
+    Method : GET
+
+
+    . Teste para atualizar um registro
+    ==================================
+
+    . No mesmo postman altere os parâmetros de pesquisa deixando e execute o link logo abaixo:
+
+    http://localhost:8080/api/v1/students
+
+    Method : GET
+
+    . Selecione um dos itens JSON apresentado, altere as informações como o age, ou firstName. 
+
+    . Altere os parâmetros abaixo e execute o link abaixo:
+
+    Method : PUT
+    Body : raw JSON
+
+    {
+        "id": "2dec3913-2822-4160-8690-573eeb7c508a",
+        "age": 60,
+        "firstName": "Vitor",
+        "lastName": "Rocha",
+        "course": "Aposentado"
+    }
+
+    http://localhost:8080/api/v1/students/2dec3913-2822-4160-8690-573eeb7c508a
+    
+
+    . Teste para deletar um registro
+    ================================
+
+    . No mesmo postman altere os parâmetros de pesquisa deixando e execute o link logo abaixo:
+
+    http://localhost:8080/api/v1/students
+
+    Method : GET
+
+    . Selecione um dos itens JSON apresentado, altere as informações como o age, ou firstName. 
+
+    . Altere os parâmetros abaixo e execute o link abaixo:
+
+    Method : DELETE
+
+    http://localhost:8080/api/v1/students/2dec3913-2822-4160-8690-573eeb7c508a

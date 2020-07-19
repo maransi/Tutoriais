@@ -1,0 +1,163 @@
+1. Create Maven Project  -> maven-archetype-webapp
+=====================================================================================================================
+
+
+2. Montagem do pom.xml
+=====================================================================================================================
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>br.com.arcade</groupId>
+	<artifactId>arcade</artifactId>
+	<packaging>war</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>arcade Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Configuração para JSF -->
+		<dependency>
+			<groupId>com.sun.faces</groupId>
+			<artifactId>jsf-api</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.faces</groupId>
+			<artifactId>jsf-impl</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<!-- Fim -->
+
+	</dependencies>
+	<build>
+		<finalName>arcade</finalName>
+	</build>
+</project>
+
+
+3. Montagem do web.xml
+=====================================================================================================================
+
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="3.0"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+	<display-name>Archetype Created Web Application</display-name>
+	<context-param>
+		<param-name>javax.faces.CONFIG_FILES</param-name>
+		<param-value>/WEB-INF/faces-config.xml</param-value>
+	</context-param>
+	<!-- Configuracao DO JSF -->
+	<servlet>
+		<servlet-name>Faces Servlet</servlet-name>
+		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Faces Servlet</servlet-name>
+		<url-pattern>*.jsf</url-pattern>
+		<url-pattern>*.xhtml</url-pattern>
+	</servlet-mapping>
+	<welcome-file-list>
+		<welcome-file>proprietario.jsf</welcome-file>
+	</welcome-file-list>
+</web-app>
+
+
+4. Montagem do faces-config.xml
+=====================================================================================================================
+
+<faces-config version="2.0" xmlns="http://java.sun.com/xml/ns/javaee"
+ xmlns:xi="http://www.w3.org/2001/XInclude"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"/>
+
+
+5. Criação do Source Folder, ATENÇÃO: NÃO SÃO AS PACKAGES.
+=====================================================================================================================
+
+Add new Source Folder;
+
+Project Name = arcade
+Folder Name = src/main/java
+
+
+6.Criar as packages
+=====================================================================================================================
+
+br.com.controller
+
+7.Montar a classe ManagedBean
+=====================================================================================================================
+
+package br.com.controller;
+
+import java.io.Serializable;
+
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+
+@ManagedBean(name="proprietarioMBean")
+@SessionScoped
+public class ProprietarioMBean implements Serializable {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+	private String name;
+	private String password;
+
+	public String getName() { return name; }
+	public void setName(String newValue) { name = newValue; }
+
+	public String getPassword() { return password; }
+	public void setPassword(String newValue) { password = newValue; }
+
+}
+
+
+8. Montagem da pagina XHTML
+=====================================================================================================================
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core">
+<h:head>
+	<title>Welcome</title>
+</h:head>
+<h:body>
+	<h:form>
+		<h3>Please enter your name and password.</h3>
+		<table>
+			<tr>
+				<td>Name:</td>
+				<td><h:inputText value="#{proprietarioMBean.name}" /></td>
+			</tr>
+			<tr>
+				<td>Password:</td>
+				<td><h:inputSecret value="#{proprietarioMBean.password}" /></td>
+			</tr>
+		</table>
+		<p>
+			<h:commandButton value="Login" action="welcome" />
+		</p>
+	</h:form>
+</h:body>
+
+
+</html>
