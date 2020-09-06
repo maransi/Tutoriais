@@ -1,0 +1,2071 @@
+1. Crie um projeto Spring Boot com as seguintes dependências:
+
+    Web
+    JPA
+    JDBC
+    Thymeleaf
+    devtools
+    postgresql
+
+    . Deixe o groupId = com.maransi; e artefactId = demo-boot-jquery-datatable
+
+2. Deixe o pom.xml como abaixo:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.3.1.RELEASE</version>
+<!-- 		<version>2.2.7.RELEASE</version> -->
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.maransi</groupId>
+	<artifactId>demo-boot-jquery-datatable</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>demo-boot-jquery-datatable</name>
+	<description>Demo project for Spring Boot + JQuery + Datatables</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<jaction.xml.version>2.7.3</jaction.xml.version>
+	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>webjars-locator-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>bootstrap</artifactId>
+			<version>4.4.1-1</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.webjars.bower</groupId>
+			<artifactId>open-iconic</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>jquery</artifactId>
+			<version>3.5.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars.bower</groupId>
+			<artifactId>jquery-mask-plugin</artifactId>
+			<version>1.14.15</version>
+		</dependency>
+		<dependency>
+			<groupId>nz.net.ultraq.thymeleaf</groupId>
+			<artifactId>thymeleaf-layout-dialect</artifactId>
+		</dependency>
+		
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- Especifico do projeto -->
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>webjars-locator-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>bootstrap</artifactId>
+			<version>4.4.1-1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.bower</groupId>
+			<artifactId>open-iconic</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>jquery</artifactId>
+			<version>3.5.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.bower</groupId>
+			<artifactId>jquery-mask-plugin</artifactId>
+			<version>1.14.15</version>
+		</dependency>
+		<dependency>
+			<groupId>nz.net.ultraq.thymeleaf</groupId>
+			<artifactId>thymeleaf-layout-dialect</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>2.0.1.Final</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/net.sourceforge.nekohtml/nekohtml -->
+		<dependency>
+			<groupId>net.sourceforge.nekohtml</groupId>
+			<artifactId>nekohtml</artifactId>
+			<version>1.9.21</version><!--$NO-MVN-MAN-VER$ -->
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+
+3. Copie no application.properties
+
+spring.main.banner-mode=off
+logging.level.org.springframework=error
+
+# Connection
+spring.datasource.platform=postgres
+spring.datasource.url=jdbc:postgresql://localhost:5432/desenv
+spring.datasource.username=supervisor
+spring.datasource.password=brasil2
+
+
+#Show all queries
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.open-in-view=true
+#logging.level.org.hibernate.type=error
+
+#spring.mvc.view.prefix=/templates/
+#spring.thymeleaf.suffix=.html
+
+# https://frontbackend.com/thymeleaf/thymeleaf-default-spring-boot-application-properties
+# Allow Thymeleaf templates to be reloaded at dev time
+spring.thymeleaf.cache: false
+spring.thymeleaf.mode: html
+spring.thymeleaf.encoding=UTF-8
+
+spring.mvc.view.prefix=/templates/
+spring.thymeleaf.suffix=.xhtml
+
+
+4. Copie o conteúdo abaixo no arquivo schema.sql dentro da pasta /src/main/resources
+
+create table pessoa( sequencial   SERIAL NOT NULL PRIMARY KEY,
+                      cpf  VARCHAR(15),
+                      nome VARCHAR(100),
+                      datNasc DATE,
+                      endereco VARCHAR(150),
+                      cidade VARCHAR(100),
+                      estado VARCHAR(5),
+                      cep VARCHAR(10),
+                      foneRes VARCHAR(30),
+                      salario DECIMAL(11,2));
+
+CREATE INDEX idxPessoa_CPF ON pessoa( cpf );
+
+psql -q -h localhost -d desenv -U supervisor -f /home/marco/git/demo-boot-jquery-datatable/demo-boot-jquery-datatable/src/main/resources/data.sql
+
+5. Considere o arquivo data.sql, caso contrário trabalhe com o conteúdo abaixo e crie o arquivo data.sql na pasta src/main/resources
+
+INSERT INTO pessoa (sequencial, cpf, nome, datNasc, endereco, cidade, estado, cep, foneRes, salario) VALUES 
+  (1, '000.000.611-40', 'ELISANGELA APARECIDA DE ALMEIDA', '1983-03-10', 'RUA CINQUENTA , QD 12 ', 'VARZEA GRANDE', 'MT', '78145000', '84148158', 1119),
+  (2, '000.002.953-02', 'JEAN CARLOS FERREIRA NASCIMENTO', NULL, '', '', '', '', '', NULL),
+  (3, '000.004.632-99', 'TARCIA TAMIRES REIS DE MELO', '1989-12-16', 'RUA GLOXINIA ', 'MANAUS', 'AM', '69023235', '', 1084.92),
+  (4, '000.006.713-04', 'FRANCISCO BRISAMAR DE AGUIAR ROCHA FILHO ', '1947-03-18', 'RUA VIS DE CAIRU ', 'FORTALEZA', 'CE', '60182130', '9677-8549', NULL),
+  (5, '000.012.242-47', 'ELKILENE  DE SOUSA DIAS', '1987-08-22', 'ET CURUCAMBA OESTE', 'ANANINDEUA', 'PA', '67145034', '', NULL),
+  (6, '000.012.398-64', 'HELIO RODRIGUES DE MOURA', '1958-02-02', 'R HERMES FONTES ', 'MOGI DAS CRUZES', 'SP', '08810360', '23120312', NULL),
+  (7, '000.012.467-20', 'MARTHA LUCIENE OLIVEIRA DOS SANTOS', '1967-11-12', 'TV BELIZARIO ', 'SAO GONCALO', 'RJ', '24410030', '26389040', NULL),
+  (8, '000.015.202-10', 'CRISTINA IVONE NAKANO TAVARES', '1935-03-14', 'AV ENGENHEIRO FERNANDO GUILHON  , 1591', 'BELEM', 'PA', '66033310', '32410493', NULL),
+  (9, '000.015.302-83', 'RAFAEL GUIMARAES FERREIRA', '1987-06-17', 'AV 7 DE SETEMBRO', 'PORTO VELHO', 'RO', '76824412', '', 1056),
+  (10, '000.018.662-73', 'FRANCISCO ADRIANO FERREIRA DE ARAUJO', '1981-03-26', 'TV-WE-69 CJ GUAJARA I', 'ANANINDEUA', 'PA', '67143450', '99646353', 1291),
+  (11, '000.020.313-02', 'MARIVALDO MOURA SILVA ', '1982-06-04', 'RUA PEDRO NEIVA DE SANTANA ', 'S�O LUIS', 'MA', '65076240', '', NULL),
+  (12, '000.021.498-18', 'DEMERVAL BALBINO DOS SANTOS', '1952-05-03', 'R ALFREDO BERNARDO LEITE 986', 'S.BERNARDO CAMPO', 'SP', '09670000', '43631529', NULL),
+  (13, '000.021.832-42', 'ADENILTON DO SANTOS CARVALHO', '1986-02-14', 'AV SAO JORGE 650', 'MANAUS', 'AM', '69033300', '32283134', 0),
+  (14, '000.022.690-40', 'DAVI DA ROSA PADILHA', NULL, '', '', '', '', '', NULL),
+  (15, '000.022.708-03', 'IVO MARQUES DE SOUSA FILHO', '1955-07-12', 'R SILVA JARDIM ', 'ARACATUBA', 'SP', '16015240', '36258560', 3485),
+  (16, '000.022.885-08', 'RENIVALDO SILVA SANTOS', '1980-09-04', 'CJ LOTEAMENTO VIDA NOVA', 'LAURO DE FREITAS', 'BA', '42700000', '', 1306),
+  (17, '000.023.073-16', 'FRANCISCO PEREIRA LUZ ', '1970-08-14', 'SITIO RIACHO VERDE  22', 'SENADOR POMPEU ', 'CE', '63600000', '', 545),
+  (18, '000.023.988-77', 'MARIA JOSE DA SILVA', '1955-03-19', 'RUA JOSE BEGOSSO', 'CANDIDO MOTA', 'SP', '19880000', '', 1809),
+  (19, '000.025.781-82', 'JOEL SANTANA', '1932-04-01', 'R HERMANN TELES RIBEIRO ', 'SAO PAULO', 'SP', '03348010', '24251132', NULL),
+  (20, '000.026.402-44', 'EVANDRO DOUGLAS DA SILVA', '1934-08-13', 'TV ANGUSTURA 287 CASA A', 'BELEM', 'PA', '66120230', '30853043', 2167.27),
+  (21, '000.026.808-90', 'MOACIR BRANDAO', '1949-12-16', 'R FERNANDO DE MELLO VIANA ', 'SOROCABA', 'SP', '18066130', '30166369', NULL),
+  (22, '000.027.261-22', 'MARIA DE FATIMA LIRA RODRIGUES', '1980-05-13', 'Q QNN 19 CONJUNTO L LOTE 47 AP', 'CEIL�NDIA', 'DF', '72225202', '____-____', NULL),
+  (23, '000.028.042-98', 'IURE ANTONIO LOPES SILVA', '1993-10-13', 'Q VINTE E NOVE ', 'MARABA', 'PA', '68512630', '9125-2967', NULL),
+  (24, '000.031.978-32', 'JOSE BENEDITO FARIA', '1948-09-15', 'R. MARIO GON�ALVES DOS CAMPOS, 65', 'JACARE�', 'SP', '12312195', '39523818', 773.77),
+  (25, '000.032.406-06', 'NELSON DOUGLAS MARCOS OLIVEIRA', '1974-09-08', 'RUA DOIS DE OUTUBRO', 'MARIANA', 'MG', '35420000', '', 504),
+  (26, '000.033.178-38', 'SEBASTIAO LOPES', '1951-07-27', 'R PEDRO PEREIRA DOS SANTOS  ', 'HORTOL�NDIA', 'SP', '13186130', '32190744', 1355),
+  (27, '000.034.910-05', 'MAURICIO MACIEL', '1971-03-20', 'RUA D ', 'GRAVATAI', 'RS', '94010970', '86143689', 531),
+  (28, '000.034.978-01', 'SEBASTIANA BENEDITA FLORENTINO', '1948-09-07', 'JOAO VAZ DE LIMA', 'LINS', 'SP', '16400000', '35321095', NULL),
+  (29, '000.035.327-20', 'LUIZ CARLOS DE ANDRADE', '1966-05-04', 'Rua Envira', 'Rio de Janeiro', 'RJ', '21775120', '33093875', 1318),
+  (30, '000.036.184-47', 'MAURICIO ALVES DA SILVA', '1975-06-25', 'RUA JOSE MARCONE RAMOS SILVA', 'JO�O PESSOA', 'PB', '58000000', '', 839),
+  (31, '000.036.880-62', 'PRISCILLA VISMARA SCHMIDT BELLOLI', '1982-03-21', 'R CONCEICAO ', 'VIAMAO', 'RS', '94475590', '34928975', 806.33),
+  (32, '000.037.859-39', 'CLAUDETE LUIZ COSTA', '1960-11-21', 'R LAURINDO JANUARIO DA SILVEIRA ', 'FLORIANOPOLIS', 'SC', '88062200', '32344940', 2067),
+  (33, '000.038.304-03', 'EVERALDO DA SILVA SOUSA', NULL, '', '', '', '', '', NULL),
+  (34, '000.038.306-67', 'ANDREA ALVES VILACA', '1974-04-03', 'RUA DIANA N� 60', 'SABAR�', 'MG', '34500000', '34851290', 0),
+  (35, '000.038.479-85', 'LEONOR MELO CARSOSO', '1918-11-30', 'R. JOSE FIRMINO DE NOVAIS , 917  / 204', 'S�O JOS�', 'SE', '88100000', '2592213', 0),
+  (36, '000.039.698-27', 'SHUKITE ORLANDO IZU ', '1952-06-06', 'R GENERAL HUMBERTO DE SOUZA MELLO ', 'PRAIA GRANDE', 'SP', '11700440', '34731005', 5381),
+  (37, '000.039.781-41', 'RAFAEL ANTONIO RIBEIRO BORTHOLACCI', '1984-05-07', 'R ALBERTO VELHO MOREIRA ', 'CUIAB� ', 'MT', '78010180', '', 1887.07),
+  (38, '000.041.955-90', 'NELSUITA DE MORAIS SOUZA SANTANA ', '1979-09-06', 'R FORTALEZA ', 'SANTO ANTONIO DE JESUS ', 'BA', '44570410', '8296-5941', NULL),
+  (39, '000.042.556-74', 'CARLA BATISTA DA SILVA', '1975-10-01', 'R CELSO BAETA NEVES ', 'BELO HORIZONTE', 'MG', '31370500', '', 675),
+  (40, '000.045.328-56', 'VERA LUCIA DE FREITAS SANTOS', '1950-06-30', 'AV. PEDRO LESSA,  616       APTO. 22', 'SANTOS', 'SP', '11025000', '32369908', 0),
+  (41, '000.046.959-92', 'ROSA MARIA SILVA SANTOS', '1969-10-09', 'R CAMPOS NOVOS ', 'PALHOCA', 'SC', '88134245', '', 798.42),
+  (42, '000.047.558-04', 'VALDENICE FORTUNATO GOMES', '1950-10-06', 'R DOS PINHEIROS 120', 'FRANCISCO MORATO', 'SP', '07929040', '44888555', NULL),
+  (43, '000.048.196-32', 'JUDITH LOUREDO FERNANDES', '1926-07-19', 'R. FLORESTAL , 40', 'BELO HORIZONTE', 'MG', '31035210', '34848585', 0),
+  (44, '000.050.825-01', 'ANAILTON PEREIRA DE LIMA', '1964-08-09', 'LOT CHACARA DO ALECRIM ', 'EUNAPOLIS', 'BA', '45826485', '', NULL),
+  (45, '000.051.126-99', 'ADRIANA MITRE FERNANDES LEMOS ', '1974-03-17', 'RUA DES. DARIO LINS', 'BELO HORIZONTE ', 'MG', '30460260', '7112 6910', NULL),
+  (46, '000.051.560-41', 'ADRIANA SILVEIRA PEREIRA', '1981-10-13', 'RUA ASSOCIACAO ATLETICA TRIENON', 'PORTO ALEGRE', 'RS', '91780180', '85768956', NULL),
+  (47, '000.052.152-34', 'ROSIRIS DA FONSECA SANTOS', '1937-09-22', 'AV. ALMIRANTE WALDENKOLK 350', 'BELEM-PA', 'PA', '66055030', '32226250', 0),
+  (48, '000.052.327-59', 'COSME DA SILVA SOUZA', '1964-09-27', 'RUA DALVA RAPOSA', 'S�O GON�ALO', 'RJ', '24754190', '2603-8212', NULL),
+  (49, '000.053.996-10', 'MARCIO PAULINO DA SILVA', '1974-01-03', 'R. CHILE , 394', 'CONTAGEM', 'MG', '32145240', '33944539', 0),
+  (50, '000.054.429-90', 'MARIVANIA FREITAS', '1977-02-10', 'Rua Jos� Luiz Vieira', 'Florian�polis', 'SC', '88095380', '32408887', 636.47),
+  (51, '000.055.336-00', 'THERESINO CALDEIRA BRANT', '1917-12-17', 'R. MONTE ALEGRE , 270  APTO- 201', 'BELO HORIZONTE', 'MG', '30240230', '32218754', 0),
+  (52, '000.055.399-94', 'DENICE DAS GRACAS MELO DOS PRAZERES', '1951-05-10', 'AVENIDA SETE DE SETEMBRO', 'ARARANGUA', 'SC', '88900970', '', 3305.24),
+  (53, '000.057.138-54', 'JURACI DE LIMA', '1951-12-05', 'R. PASSEIO IMPERATRIZ , 417', 'I. SOLTEIRA', 'SP', '15385000', '37432692', 0),
+  (54, '000.059.414-82', 'KIVYA DAS NEVES SILVA', '1974-11-18', 'Avenida Doze de Outubro', 'Jo�o Pessoa', 'PB', '58015330', NULL, 748.12),
+  (55, '000.060.637-56', 'EZEQUIAS RODRIGUES DA SILVA ', '1966-02-20', 'R PAULO MADUREIRA LEBRAO ', 'SAO JOSE DOS CAMPOS', 'SP', '12211240', '3941-9289', NULL),
+  (56, '000.060.736-38', 'ALEXANDRE MIRANDA GONCALVES', '1975-04-06', 'R.  UM, 1035', 'CACHOEIRA CAMPO', 'MG', '35400000', '35532852', 0),
+  (57, '000.062.580-93', 'EDSON MACHADO WERGUTZ', '1983-10-08', 'R: GOVERNADOR MARIO COVAS 60', 'SAO JOSE DOS PINHAIS', 'PR', '83045720', '', 0),
+  (58, '000.063.649-50', 'SIMONE FABIANA VIEIRA LIMA', '1975-07-10', 'RUA ANTONIO CARLOS FERREIRA', 'FLORIANOPOLIS', 'SC', '88025211', '', NULL),
+  (59, '000.063.909-51', 'ALESSANDRO ANTONIO DE PAULA', '1978-06-10', 'TV S�O DAMI�O', 'FLORIANOPOLIS', 'SC', '88090585', NULL, 1513),
+  (60, '000.064.671-72', 'LUIZ GOMES BEGUITO', '1934-01-15', 'SQSW ,304 G , 407', 'BRASILIA', 'DF', '70673407', '33423238', 0),
+  (61, '000.066.532-00', 'ANTONIO CARLOS MIRANDA CAVALEIRO', '1943-06-12', 'PSG MARYLUCY 133', 'BELEM', 'PA', '66613890', NULL, 4498.72),
+  (62, '000.067.367-69', 'JAQUELINE SOUZA CERQUEIRA', '1967-10-05', 'R. ANGELICA 103', 'HORTOLANDIA', 'SP', '13187164', '', 0),
+  (63, '000.067.641-18', 'PRISCILLA MOREIRA LOUZADA DIAS', '1983-03-02', 'AV PAULISTA ', 'SAO PAULO', 'SP', '01311000', '3253-0914', NULL),
+  (64, '000.068.122-95', 'ROBSON PALHETA DA SILVA ', '1986-11-28', 'RD AM 010 KM 135 VILA 6 DE JANEIRO', 'RIO PRETO DA EVA', 'AM', '69117000', NULL, 810),
+  (65, '000.068.671-97', 'ELAINE LINS DE CARVALHO', '1985-01-04', 'QUADRA 104 CONJUNTO 05 CASA 21', 'BRASILIA', 'DF', '72600405', '', NULL),
+  (66, '000.070.706-67', 'CINTIA LOPES VILAS BOAS', '1972-08-24', 'RUA GUERRA JUNQUEIRA', 'ITU', 'SP', '13305491', '', NULL),
+  (67, '000.070.749-05', 'VALQUIRIA LUCIA DA SILVA ', '1976-01-17', 'R GENERAL VIEIRA DA ROSA ', 'FLORIANOPOLIS', 'SC', '88020420', NULL, 2338.39),
+  (68, '000.070.858-50', 'ANA MACIEL DE CASTRO SILVA ', '1950-12-16', 'R RODRIGUES ALVES ', 'CRUZEIRO', 'SP', '12730000', '', NULL),
+  (69, '000.071.608-10', 'MILTON EGIDIO DO NASCIMENTO', '1940-03-29', 'RUA LU�S CL�UDIO C�SAR ', 'PINDAMONHANGABA', 'SP', '12423340', '', 1976),
+  (70, '000.071.909-99', 'ELISIANE DA COSTA BRINHOSA', '1975-06-20', 'RUA STO ANTONIO 390 BL A AP 201', 'SAO JOSE', 'SC', '88117351', '32584533', 0),
+  (71, '000.073.180-30', 'KAREN FREITAS TEIXEIRA', '1981-10-15', 'RUA ADAO COUTO', 'GUAIBA', 'RS', '92500000', NULL, 2120),
+  (72, '000.073.379-22', 'ADRIANE B KRETZER', '1975-09-19', 'AV FRANCISCO ROBERTO DA SILVA', 'BIGUA', 'SC', '88160000', '3272-1921', NULL),
+  (73, '000.074.087-06', 'WELLINGTON DE JESUS', '1968-10-11', 'RUA FELIPE CAMARAO', 'RIO DE JANEIRO', 'RJ', '21044251', '22702214', 2254.34),
+  (74, '000.074.298-86', 'DINA VILLELA MARTINS', '1942-02-14', 'RUA DA PADROEIRA', 'CAMPINAS', 'SP', '13060643', '32236079', 1530),
+  (75, '000.074.586-30', 'MARIA CLAUDIA DA FONSECA DA SILVA', '1969-06-20', 'R VISTA  ALEGRE ', 'SABARA', 'MG', '34525230', '36742226', 607),
+  (76, '000.075.392-07', 'JONYLSON ALEX BARROS DE ALMEIDA', '1992-10-26', 'TRAVESSA  WE-61 CJ CIDADE NOVA VI', 'ANANINDEUA', 'PA', '67140030', '', 874.49),
+  (77, '000.077.426-06', 'MARIA APARECIDA DA SILVA', '1974-09-14', 'R ESTRELA QUE BRILHA ', 'SAO PAULO', 'SP', '04859399', '', 1018.87),
+  (78, '000.079.138-50', 'CARMELITA ROSA DA SILVA', '1940-07-10', 'ALVARO FONSECA', 'ARACATUBA', 'SP', '16013090', '3441-2481', NULL),
+  (79, '000.079.701-45', 'PEDRO CHIZELINI  LACERDA GALLER', NULL, '', '', '', '', '', NULL),
+  (80, '000.080.950-00', 'ARTHUR CAZEMIRO CIPOLATTI CASANOVA', '1933-06-02', 'R. DIRETOR AUGUSTO PESTANA , 1424', 'POA', 'RS', '90250100', '96681436', 3760.1),
+  (81, '000.081.639-60', 'CLAUDIO JOSE CORDOVA DA ROSA', '1975-10-23', 'RUA : DOS APOSTOLOS ', 'PALHO�A', 'SC', '88132555', '33426155', 0),
+  (82, '000.081.836-43', 'TEREZINHA MARIA DA APARECIDA DOS SANTOS', '1958-11-27', 'AV  PRINCIPE DUARTE ', 'RIBEIRAO DAS NEVES', 'MG', '33933150', NULL, NULL),
+  (83, '000.082.327-92', 'ELIZABETE CRISTINA FERREIRA  CARDOSO', '1968-06-01', 'RUA CRISTALINA ', 'RIO DE JANEIRO', 'RJ', '21725770', '34640851', 3561.89),
+  (84, '000.083.637-06', 'SERGIO EDUARDO DA SILVA CRUZ ', '1967-12-17', 'RUA IVAN SERPA  480', 'RIO DE JANEIRO ', 'RJ', '23075350', '34061887', NULL),
+  (85, '000.084.376-88', 'SONIA CRISTINA DE PADUA', '1975-09-24', 'R JOAQUIM DE FIGUEIREDO ', 'BELO HORIZONTE', 'MG', '30642225', '33845585', 1050.22),
+  (86, '000.085.046-28', 'VANDERLEI MOURAO KAZINILKI', '1975-04-08', 'Rua Luiz Pedro Ferreira', 'Belo Horizonte', 'MG', '30660025', '36583044', 1769.97),
+  (87, '000.087.702-63', 'LUIZ EUCLYDES ALVES DE ARAUJO', '1941-03-26', 'AV. GENTIL BITENCOURT, 124 - ED.PRES APTO 202', 'BELEM', 'PA', '66015140', '32231002', 0),
+  (88, '000.089.402-82', 'RENATO FERREIRA LOPES', '1941-09-03', 'QD. 29  C. 11  CJ. GERALDO PALMEIRA', 'ANANINDEUA', 'BA', '57040325', '', 0),
+  (89, '000.090.020-65', 'TADEU FRANCO DE SOUZA', '1978-06-19', 'RUA VOLFRAM METZLER', 'PORTO ALEGRE', 'RS', '91250320', '31096597', NULL),
+  (90, '000.090.037-03', 'RONALDO RODRIGUES DE FREITAS', '1966-08-07', 'RODOLFO SIQUEIRA  S/N', 'SAO GON�ALO ', 'RJ', '24726000', '26232627', 2308.43),
+  (91, '000.090.149-00', 'ARLENE DA SILVA VAZ', '1947-03-08', 'R JOSE LICINIO LOPES ', 'FLORIANOPOLIS', 'SC', '88070780', '32441113', 2828),
+  (92, '000.091.831-83', 'WESLEY ROSA BORGES', '1983-03-06', 'Rua Sebasti�o In�cio de Souza', 'Itumbiara', 'GO', '75520090', '', 954),
+  (93, '000.093.048-27', 'LEONIDAS NERIS SANTANA', '1940-04-23', 'RUA TTE ARMANDO O GONZAGA', 'AGUDOS', 'SP', '17120000', '32617293', 551.6),
+  (94, '000.098.861-84', 'MARCIO RENATO DOS SANTOS SILVA', '1984-04-26', 'RUA CHINA', 'ANGELICA', 'MS', '79800000', '', NULL),
+  (95, '000.105.151-27', 'RAMON AMANCIO SOLLES NETO', '1986-03-19', 'R AFRANIO PEIXOTO ', 'CAMPO GRANDE', 'MS', '79100500', '', NULL),
+  (96, '000.107.122-08', 'AGNER DA SILVA  COSTA', '1989-09-13', 'AV BRASIL', 'JARU', 'RO', '76890000', '35212210', 1718),
+  (97, '000.111.091-81', 'TIAGO OLIVEIRA PEREIRA', '1982-11-07', 'Q C 05 BL I APTO 102', 'VALPARAISO', 'GO', '72878321', '', 0),
+  (98, '000.114.553-30', 'JULIANA DE SOUSA CARVALHO MELO', '1982-10-22', 'Q DIRCEU ARCOVERDE I -', 'TERESINA', 'PI', '64077020', '', 1161.01),
+  (99, '000.114.912-13', 'WELLIGTON DE SOUSA MEIRELLES', '1990-03-07', 'R CAMPO GRANDE ', 'MANAUS', 'AM', '69047000', '', NULL),
+  (100, '000.115.058-85', 'EXPEDITO ADRIANO DE ALMEIDA', '1940-07-14', 'R BENEDITO DE PROEN�A 44 CASA 02', 'CARAPICUIBA', 'SP', '06311130', '41817158', 1206.38),
+
+ALTER SEQUENCE pessoa_sequencial_seq RESTART WITH 17501;
+
+UPDATE pessoa
+SET estado = UPPER(estado);
+
+UPDATE pessoa
+SET estado = 'SP'
+WHERE estado IS NULL OR estado = '';
+
+
+
+6. Crie as classes abaixo dentro do pacote src/main/java:
+
+PessoaController
+----------------
+
+package com.maransi.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class PessoaController {
+
+	@RequestMapping("pessoa/home")
+	public String cadastro() {
+		
+		return "pessoa/pessoa2";
+	}
+	
+}
+
+PessoaResource
+--------------
+
+package com.maransi.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.maransi.model.Pessoa;
+import com.maransi.service.PessoaService;
+
+import groovy.util.logging.Slf4j;
+
+@RestController
+@RequestMapping("pessoa/api")
+public class PessoaResource {
+
+	@Autowired
+	PessoaService pessoaService;
+
+	
+// Testar ( Retornar o @RquestBody; No construtor da classe Pessoa adcionar a annotation @JsonProperty	
+	
+	@RequestMapping(// value="/nome",
+			method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, 
+					headers = "Accept=*/*")
+//	@GetMapping(produces = "application/json")	
+//  No postman colocar os parametros como "form-data"
+	public @ResponseBody Map<String, List<Pessoa>> findPessoa( Pessoa pessoa) {
+		List<Pessoa> pessoas = null;
+
+		if ( pessoa.getNome() != null && pessoa.getNome().trim() != "") {
+			pessoas = pessoaService.findByNome(pessoa.getNome());
+		} else if ( pessoa.getCpf() != null && pessoa.getCpf().trim() != "" ) {
+			pessoas = new ArrayList<Pessoa>();
+
+			Optional<Pessoa> p = pessoaService.findByCpf(pessoa.getCpf());
+
+			if (p.isPresent()) {
+				pessoas.add(p.get());
+			}
+		} else if ( pessoa.getSequencial() != null && pessoa.getSequencial() > 0 ) {
+			pessoas = new ArrayList<Pessoa>();
+
+			Optional<Pessoa> p = pessoaService.findById(pessoa.getSequencial());
+
+			if (p.isPresent()) {
+				pessoas.add(p.get());
+			}
+		}
+
+		Map<String, List<Pessoa>> mapa = new TreeMap<String, List<Pessoa>>();
+		
+		mapa.put("data", pessoas);
+		
+		return mapa;
+	}
+	
+	@RequestMapping( method=RequestMethod.POST, 
+					headers = "Accept=*/*")
+//					consumes=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Pessoa> insertPessoa( Pessoa pessoa) {
+		try {
+			Pessoa pessoaInserted = pessoaService.insert(pessoa);
+			
+//			return ResponseEntity.ok(pessoaInserted);
+			return new ResponseEntity<Pessoa>(HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@RequestMapping( method = RequestMethod.PUT,
+//						consumes = MediaType.APPLICATION_JSON_VALUE,
+						headers = "Accept=*/*",
+						path = "{sequencial}")
+	public ResponseEntity<Pessoa> updatePessoa( @PathVariable Long sequencial, 
+												Pessoa pessoa){
+		try {
+			if (!pessoaService.findById(pessoa.getSequencial()).isPresent() ) {
+	//			ResponseEntity.badRequest().build();
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		
+			Pessoa pessoaUpdated = pessoaService.update(pessoa);
+
+			return new ResponseEntity<Pessoa>( HttpStatus.OK );
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
+		
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.DELETE, 
+//			produces=MediaType.APPLICATION_JSON_VALUE,
+			path = "{sequencial}"
+	)
+	public ResponseEntity<Pessoa> deletePessoaById(@PathVariable("sequencial") Long sequencial){
+		try {
+			if (!pessoaService.findById(sequencial).isPresent() ) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+
+			pessoaService.delete(sequencial);
+			
+			return new ResponseEntity<Pessoa>( HttpStatus.OK );
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	
+}
+
+
+Pessoa
+------
+
+package com.maransi.model;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.format.annotation.NumberFormat;
+import org.springframework.format.annotation.NumberFormat.Style;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.maransi.util.CpfCnpj;
+import com.maransi.util.UF;
+
+
+@Entity
+@Table( indexes = { @Index( name="idxPessoa_CPF", columnList="cpf") } )
+@NamedQueries({ @NamedQuery(name="pessoa.cpf", query="Select p from Pessoa p Where p.cpf = :cpf" ),
+				@NamedQuery(name="pessoa.nome", query="Select p from Pessoa p Where p.nome like :nome")
+			  })
+public class Pessoa {
+
+	@Id
+	@GeneratedValue( strategy=GenerationType.IDENTITY)
+	private Long sequencial;
+	
+	@Column(nullable=false)
+	@NotNull(message="CPF não pode ser vazio")
+	@CpfCnpj
+	private String cpf;
+	
+	@Column( length=100, nullable=false)
+	@NotNull(message="Nome não pode ser vazio")
+	@Size(min=10, max=100, message="Nome deve conter tamanho minimo de 10 dígitos")
+	private String nome;
+	
+	@Column(name="datnasc", columnDefinition="DATE", nullable=false)
+//	@NotNull(message="Data Inválida")
+	@DateTimeFormat( iso = ISO.DATE)
+//	@Past(message="Data inválida")
+	private LocalDate datNasc;
+	
+	@Column(length=150, nullable=false)
+	@NotNull(message="Endereço não pode ser vazio")
+	@Size(min=10, max=150, message="Nome deve conter tamanho minimo de 10 dígitos")
+	private String endereco;
+	
+	@Column(length=100, nullable=false)
+	@NotNull(message="Cidade não pode ser vazio")
+	@Size(min=10, max=100, message="Cidade deve conter tamanho minimo de 10 dígitos")
+	private String cidade;
+	
+	@Column(nullable=false, length=2, name="estado")
+	@NotNull(message="Estado não pode ser vazio")
+	@Enumerated(EnumType.STRING)	// Informa ao bd que o conteúdo deverá ser salvo como STRING
+	private UF estado;
+	
+	@Column(length=10, nullable=false)
+	@NotNull(message="CEP não pode ser vazio")
+	private String cep;
+	
+	@Column(name = "foneres", length=30)
+	private String foneRes;
+	
+	@Positive( message="Salário inválido")
+	@NumberFormat(style=Style.CURRENCY, pattern = "###,###,##0.00" )
+	@Digits( integer = 9, fraction = 2)
+	private BigDecimal salario;
+
+	public Pessoa() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public Pessoa( @JsonProperty("cpf") String cpf, @JsonProperty("nome") String nome, 
+			@JsonProperty("datNasc") LocalDate datNasc, @JsonProperty("endereco") String endereco, 
+			@JsonProperty("cidade") String cidade, @JsonProperty("cep") String cep,
+			@JsonProperty("foneRes") String foneRes, @JsonProperty("salario") BigDecimal salario, 
+			@JsonProperty("estado") UF estado) {
+		super();
+		this.cpf = cpf;
+		this.nome = nome;
+		this.datNasc = datNasc;
+		this.endereco = endereco;
+		this.cidade = cidade;
+		this.estado = estado;
+		this.cep = cep;
+		this.foneRes = foneRes;
+		this.salario = salario;
+	}
+
+	public Long getSequencial() {
+		return sequencial;
+	}
+
+	public void setSequencial(Long sequencial) {
+		this.sequencial = sequencial;
+	}
+
+	public String getCpf() {
+		return cpf;
+	}
+
+	public void setCpf(String cpf) {
+		this.cpf = cpf;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public LocalDate getDatNasc() {
+		return datNasc;
+	}
+
+	public void setDatNasc(LocalDate datNasc) {
+		this.datNasc = datNasc;
+	}
+
+	public String getEndereco() {
+		return endereco;
+	}
+
+	public void setEndereco(String endereco) {
+		this.endereco = endereco;
+	}
+
+	public String getCidade() {
+		return cidade;
+	}
+
+	public void setCidade(String cidade) {
+		this.cidade = cidade;
+	}
+
+	public UF getEstado() {
+		return estado;
+	}
+
+	public void setEstado(UF estado) {
+		this.estado = estado;
+	}
+
+	public String getCep() {
+		return cep;
+	}
+
+	public void setCep(String cep) {
+		this.cep = cep;
+	}
+
+	public String getFoneRes() {
+		return foneRes;
+	}
+
+	public void setFoneRes(String foneRes) {
+		this.foneRes = foneRes;
+	}
+
+	public BigDecimal getSalario() {
+		return salario;
+	}
+
+	public void setSalario(BigDecimal salario) {
+		this.salario = salario;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((cep == null) ? 0 : cep.hashCode());
+		result = prime * result + ((cidade == null) ? 0 : cidade.hashCode());
+		result = prime * result + ((cpf == null) ? 0 : cpf.hashCode());
+		result = prime * result + ((endereco == null) ? 0 : endereco.hashCode());
+		result = prime * result + ((estado == null) ? 0 : estado.hashCode());
+		result = prime * result + ((foneRes == null) ? 0 : foneRes.hashCode());
+		result = prime * result + ((nome == null) ? 0 : nome.hashCode());
+		result = prime * result + ((sequencial == null) ? 0 : sequencial.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Pessoa other = (Pessoa) obj;
+		if (cep == null) {
+			if (other.cep != null)
+				return false;
+		} else if (!cep.equals(other.cep))
+			return false;
+		if (cidade == null) {
+			if (other.cidade != null)
+				return false;
+		} else if (!cidade.equals(other.cidade))
+			return false;
+		if (cpf == null) {
+			if (other.cpf != null)
+				return false;
+		} else if (!cpf.equals(other.cpf))
+			return false;
+		if (endereco == null) {
+			if (other.endereco != null)
+				return false;
+		} else if (!endereco.equals(other.endereco))
+			return false;
+		if (estado == null) {
+			if (other.estado != null)
+				return false;
+		} else if (!estado.equals(other.estado))
+			return false;
+		if (foneRes == null) {
+			if (other.foneRes != null)
+				return false;
+		} else if (!foneRes.equals(other.foneRes))
+			return false;
+		if (nome == null) {
+			if (other.nome != null)
+				return false;
+		} else if (!nome.equals(other.nome))
+			return false;
+		if (sequencial == null) {
+			if (other.sequencial != null)
+				return false;
+		} else if (!sequencial.equals(other.sequencial))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "\n Pessoa [sequencial=" + sequencial + ", cpf=" + cpf + ", nome=" + nome + ", endereco=" + endereco
+				+ ", cidade=" + cidade + ", estado=" + estado + ", cep=" + cep + ", foneRes=" + foneRes + "]";
+	}
+	
+	
+	
+}
+
+
+PessoaRepository
+----------------
+
+package com.maransi.repository;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.maransi.model.Pessoa;
+
+@Repository("pessoaRepository")
+public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
+
+	Optional<Pessoa> findByCpf(String cpf);
+	
+	@Query("Select p From Pessoa p Where nome like :nome")
+	List<Pessoa> findByNome( String nome );
+}
+
+
+PessoaService
+-------------
+
+package com.maransi.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.maransi.model.Pessoa;
+import com.maransi.repository.PessoaRepository;
+
+@Service("pessoaService")
+public class PessoaService {
+	
+	@Autowired
+	private PessoaRepository pessoaRepository; 
+	
+	
+	public List<Pessoa> findByNome(String nome){
+		return pessoaRepository.findByNome("%" + nome + "%");
+	}
+	
+	public Optional<Pessoa> findByCpf( String cpf ) {
+		return pessoaRepository.findByCpf(cpf);
+	}
+
+	public Optional<Pessoa> findById( Long id ){
+		return pessoaRepository.findById(id);
+	}
+	
+	public Pessoa update( Pessoa pessoa) throws Exception{
+		return pessoaRepository.save(pessoa);
+	}
+	
+	public Pessoa insert( Pessoa pessoa ) throws Exception{
+		return pessoaRepository.save(pessoa);
+	}
+	
+	public void delete( Long sequencial ) throws Exception{
+		pessoaRepository.deleteById(sequencial);
+	}
+	
+}
+
+
+AbstractEntity
+--------------
+
+package com.maransi.util;
+
+import java.io.Serializable;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
+@SuppressWarnings("serial")
+@MappedSuperclass
+public abstract class AbstractEntity< ID extends Serializable> implements Serializable {
+
+	@Id
+	@GeneratedValue( strategy = GenerationType.IDENTITY)
+	private ID id;
+	
+	public AbstractEntity() {
+		// TODO Auto-generated constructor stub
+	}
+
+	public ID getId() {
+		return id;
+	}
+
+	public void setId(ID id) {
+		this.id = id;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AbstractEntity<?> other = (AbstractEntity<?>) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "\n[id = " + id + "]";
+	}
+
+}
+
+
+CpfCnpj
+-------
+
+package com.maransi.util;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import javax.validation.Constraint;
+import javax.validation.Payload;
+
+
+/**
+ * 
+ * @author Clairton Luz - clairton.c.l@gmail.com
+ *
+ */	
+@Constraint(validatedBy = {CpfCnpjValidator.class})
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(value = RetentionPolicy.RUNTIME)
+@Documented
+public @interface CpfCnpj {
+
+  String message() default "CPF/CNPJ inválido";
+
+  Class<?>[] groups() default {};
+
+  Class<? extends Payload>[] payload() default {};
+}
+
+
+CpfCnpjValidator
+----------------
+
+package com.maransi.util;
+
+import java.util.InputMismatchException;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
+
+
+/**
+ * 
+ * @author Clairton Luz - clairton.c.l@gmail.com
+ *
+ */
+public class CpfCnpjValidator implements ConstraintValidator<CpfCnpj, String> {
+
+  @Override
+  public void initialize(CpfCnpj constraintAnnotation) {}
+
+  @Override
+  public boolean isValid(String value, ConstraintValidatorContext context) {
+    return value == null || value.isEmpty() || isCpf(value) || isCnpj(value);
+  }
+
+  /**
+   * Realiza a validação do CPF.
+   * 
+   * @param cpf número de CPF a ser validado pode ser passado no formado 999.999.999-99 ou
+   *        99999999999
+   * @return true se o CPF é válido e false se não é válido
+   */
+  private boolean isCpf(String cpf) {
+    cpf = cpf.replace(".", "");
+    cpf = cpf.replace("-", "");
+    
+    try{
+      Long.parseLong(cpf);
+    } catch(NumberFormatException e){
+      return false;
+    }
+
+    int d1, d2;
+    int digito1, digito2, resto;
+    int digitoCPF;
+    String nDigResult;
+
+    d1 = d2 = 0;
+    digito1 = digito2 = resto = 0;
+
+    for (int nCount = 1; nCount < cpf.length() - 1; nCount++) {
+      digitoCPF = Integer.valueOf(cpf.substring(nCount - 1, nCount)).intValue();
+
+      // multiplique a ultima casa por 2 a seguinte por 3 a seguinte por 4
+      // e assim por diante.
+      d1 = d1 + (11 - nCount) * digitoCPF;
+
+      // para o segundo digito repita o procedimento incluindo o primeiro
+      // digito calculado no passo anterior.
+      d2 = d2 + (12 - nCount) * digitoCPF;
+    };
+
+    // Primeiro resto da divisão por 11.
+    resto = (d1 % 11);
+
+    // Se o resultado for 0 ou 1 o digito é 0 caso contrário o digito é 11
+    // menos o resultado anterior.
+    if (resto < 2)
+      digito1 = 0;
+    else
+      digito1 = 11 - resto;
+
+    d2 += 2 * digito1;
+
+    // Segundo resto da divisão por 11.
+    resto = (d2 % 11);
+
+    // Se o resultado for 0 ou 1 o digito é 0 caso contrário o digito é 11
+    // menos o resultado anterior.
+    if (resto < 2)
+      digito2 = 0;
+    else
+      digito2 = 11 - resto;
+
+    // Digito verificador do CPF que está sendo validado.
+    String nDigVerific = cpf.substring(cpf.length() - 2, cpf.length());
+
+    // Concatenando o primeiro resto com o segundo.
+    nDigResult = String.valueOf(digito1) + String.valueOf(digito2);
+
+    // comparar o digito verificador do cpf com o primeiro resto + o segundo
+    // resto.
+    return nDigVerific.equals(nDigResult);
+  }
+
+  /**
+   * Realiza a validação de um cnpj
+   * 
+   * @param cnpj String - o CNPJ pode ser passado no formato 99.999.999/9999-99 ou 99999999999999
+   * @return boolean
+   */
+  private boolean isCnpj(String cnpj) {
+    cnpj = cnpj.replace(".", "");
+    cnpj = cnpj.replace("-", "");
+    cnpj = cnpj.replace("/", "");
+    
+    try{
+      Long.parseLong(cnpj);
+    } catch(NumberFormatException e){
+      return false;
+    }
+    
+    // considera-se erro CNPJ's formados por uma sequencia de numeros iguais
+    if (cnpj.equals("00000000000000") || cnpj.equals("11111111111111")
+        || cnpj.equals("22222222222222") || cnpj.equals("33333333333333")
+        || cnpj.equals("44444444444444") || cnpj.equals("55555555555555")
+        || cnpj.equals("66666666666666") || cnpj.equals("77777777777777")
+        || cnpj.equals("88888888888888") || cnpj.equals("99999999999999") || (cnpj.length() != 14))
+      return (false);
+    char dig13, dig14;
+    int sm, i, r, num, peso; // "try" - protege o código para eventuais
+                             // erros de conversao de tipo (int)
+    try {
+      // Calculo do 1o. Digito Verificador
+      sm = 0;
+      peso = 2;
+      for (i = 11; i >= 0; i--) {
+        // converte o i-ésimo caractere do CNPJ em um número: // por
+        // exemplo, transforma o caractere '0' no inteiro 0 // (48 eh a
+        // posição de '0' na tabela ASCII)
+        num = (int) (cnpj.charAt(i) - 48);
+        sm = sm + (num * peso);
+        peso = peso + 1;
+        if (peso == 10)
+          peso = 2;
+      }
+
+      r = sm % 11;
+      if ((r == 0) || (r == 1))
+        dig13 = '0';
+      else
+        dig13 = (char) ((11 - r) + 48);
+
+      // Calculo do 2o. Digito Verificador
+      sm = 0;
+      peso = 2;
+      for (i = 12; i >= 0; i--) {
+        num = (int) (cnpj.charAt(i) - 48);
+        sm = sm + (num * peso);
+        peso = peso + 1;
+        if (peso == 10)
+          peso = 2;
+      }
+      r = sm % 11;
+      if ((r == 0) || (r == 1))
+        dig14 = '0';
+      else
+        dig14 = (char) ((11 - r) + 48);
+      // Verifica se os dígitos calculados conferem com os dígitos
+      // informados.
+      if ((dig13 == cnpj.charAt(12)) && (dig14 == cnpj.charAt(13)))
+        return (true);
+      else
+        return (false);
+    } catch (InputMismatchException erro) {
+      return (false);
+    }
+  }
+}
+
+
+UF
+--
+
+package com.maransi.util;
+
+public enum UF {
+	AC("AC", "Acre"), 
+	AL("AL", "Alagoas"),
+	AM("AM", "Amazonas"),
+	AP("AP", "Amapá"),
+	BA("BA", "Bahia"),
+	CE("CE", "Ceará"),
+	DF("DF", "Distrito Federal"),
+	ES("ES", "Espírito Santo"),
+	GO("GO", "Goiás"),
+	MA("MA", "Maranhão"),
+	MT("MT", "Mato Grosso"),
+	MS("MS", "Mato Grosso do Sul"),
+	MG("MG", "Minas Gerais"),
+	PA("PA", "Pará"),
+	PB("PB", "Paraíba"),
+	PR("PR", "Paraná"),
+	PE("PE", "Pernambuco"),
+	PI("PI", "Piauí"),
+	RJ("RJ", "Rio de Janeiro"),
+	RN("RN", "Rio Grande do Norte"),
+	RS("RS", "Rio Grande do Sul"),
+	RO("RO", "Rondônia"),
+	RR("RR", "Roraima"),
+	SC("SC", "Santa Catarina"),
+	SP("SP", "São Paulo"),
+	SE("SE", "Sergipe"),
+	TO("TO", "Tocantins");
+	
+	private String sigla;
+	
+	private String descricao;
+
+	UF(String sigla, String descricao) {
+		this.sigla = sigla;
+		this.descricao = descricao;
+	}
+
+	public String getSigla() {
+		return sigla;
+	}
+
+	public void setSigla(String sigla) {
+		this.sigla = sigla;
+	}
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
+	}
+}
+
+
+7. Dentro da pasta src/main/resources/static crie as pastas abaixo:
+
+css
+docs
+fontes
+js
+
+8. Copie os arquivos abaixo na pasta css:
+
+main.css
+--------
+
+body{
+    background-color:#dee2e6;
+  
+}
+/*
+ table.dataTable thead {
+    background: #007bff;
+    color:white;
+}
+*/
+.caja{
+  /* border: 1px solid; */
+  padding: 5px;
+  box-shadow: 10px 10px 50px 1px #7c7c81;
+  border-radius: 10px;
+}
+
+/*
+div.dataTables_wrapper {
+        width: 80%;
+        margin: 0 auto;
+}
+*/
+
+
+style.css
+---------
+
+/*
+ * Base structure
+ */
+html, body {
+	height: 100%;
+}
+
+body {
+	padding-top: 30px;
+	padding-left: 0;
+} 
+
+/*
+ * main layout
+ */
+.layout-main {
+    display: flex;
+    min-height: calc(100vh - 52px);
+    overflow: hidden;
+}
+
+/*
+ * Content
+ */
+.layout-content {
+    width: 100%;
+    padding-top: 0px;
+}
+
+.container {
+	width: 100%;
+	padding-top: 0px;
+}
+
+/*
+ * Sidebar
+ */
+.sidebar {
+    width: 0px;
+    height: 100vh;
+    border-top: 1px solid #eee;
+    border-right: 1px solid #eee;    
+    background-color: #f8f9fa;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: width .5s;
+}
+
+.sidebar .nav {
+	margin-bottom: 0px;
+}
+
+.sidebar .nav-item {
+	width: 100%;
+}
+
+.sidebar .nav-item {
+	margin-left: 0;
+}
+
+.sidebar .nav-link {
+	border-radius: 0;
+} 
+
+.sidebar ul li:hover a, .menu ul li.active a{
+    color: #777777;
+}
+
+.sidebar ul{
+    list-style: none;
+    padding: 10px 0px;
+}
+
+.sidebar ul li a{
+    display: block;
+    color:#1a1a1a;
+    padding: 10px 15px;
+    white-space: nowrap;
+}
+
+.sidebar.sidebar-open {
+    width: 300px;
+}
+
+/*
+ * nav-pills home
+ */
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+	color: #fff;
+	background-color: #1e94d2;
+}
+
+/*
+ * toogle do navbar do menu
+ */ 
+
+.navbar-toggle {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+/*
+ * Footer
+ */
+.layout-footer {
+	position: relative;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: 0;
+	height: 50px;
+	border-top: 1px solid #eeeeee;
+}
+
+.footer-copy {
+	font-size: 92%;
+	display: block;
+	color: #777777;
+	text-align: center;
+}
+
+
+9. Copie o arquivo abaixo dentro da pasta docs:
+
+{
+	"sProcessing":   "Processando...",
+	"sLengthMenu":   "Mostrar _MENU_ Registos por Página",
+	"sZeroRecords":  "Nenhum Registro Encontrado",
+	"sInfo":         "Mostrando de _START_ até _END_ de _TOTAL_ registos",
+	"sInfoEmpty":    "Mostrando de 0 até 0 de 0 registos",
+	"sInfoFiltered": "(filtrado de _MAX_ registros no total)",
+	"sInfoPostFix":  "",
+	"sSearch":       "Procurar por:",
+	"sUrl":          "",
+	"oPaginate": {
+	    "sFirst":    "Primeiro",
+	    "sPrevious": "Anterior",
+	    "sNext":     "Próximo",
+	    "sLast":     "Último"
+	}
+}
+
+10. copie os arquivos da pasta fonts para dentro da pasta fonts do projeto
+
+11. Copie o conteúdo abaixo no arquivo js/main.js:
+
+$(document).ready(function() {
+	moment.locale("pt-br");
+	
+	var table = $("#pessoaTable").DataTable( {	
+					"dom":' <"search"f><"top"l>rt<"bottom"ip><"clear">',
+					"language" : {
+						"url" : "../docs/portuguese.json"
+					},
+			        "columns": [
+			        	{ "data" : null},
+						{ "data" : "sequencial" }, 
+						{ "data" : "cpf" }, 
+						{ "data" : "nome" }, 
+						{ "data" : "endereco" }, 
+						{"data" : "cidade" }, 
+						{ "data" : "estado" }, 
+						{ "data" : "cep" }, 
+						{"data" : "datNasc", 
+									render: function(datNasc){ 
+												return moment(datNasc).format("L"); 
+											} 
+						}, 
+						{"data" : "foneRes"}, 
+						{"data" : "salario", render: $.fn.dataTable.render.number( '.', ',', 2, 'R$' )}
+			        ],
+					"columnDefs": [{
+                		"className": "small",
+                		"targets": "_all"
+            		}] //columnDefs for align text to center
+				});
+
+	//para limpiar los campos antes de dar de Alta una Persona
+	$("#btnNuevo").click(function(){
+	    $("#formulario-pessoa").trigger("reset");
+
+
+	    $(".modal-header").css( "background-color", "#17a2b8");
+	    $(".modal-header").css( "color", "white" );
+	    $(".modal-title").text("Criar Pessoa");
+	    $('#modalCRUD').modal('show');	    
+	});
+	
+    $('#btn-pesquisar').on('click',function(){
+		$('#pessoaTable').DataTable( {
+			 "destroy" : true,
+			"scrollY" : "300px",
+			"scrollX" : true,
+			"select" : true,
+            "serverSide" : false,
+			"sAjaxDataProp" : "data",
+			"scrollCollapse" : true,
+			"info" : false,
+			"language" : {
+				"decimal" : ",",
+				"thousands" : "."
+			},
+			"pagingType" : "full_numbers",
+			"language" : {
+				"url" : "../docs/portuguese.json"
+			},
+			"sPaginationType" : "bootstrap",
+			"contentType" : "application/json; charset=utf-8",
+			"aLengthMenu" : [ [ 5, 10, 20, 100, -1 ],
+					[ 5, 10, 20, 100, "Todos" ] ],
+			"pageLength": 5,
+			"lengthChange" : true,
+			"processing" : true,
+			"serverSide" : false,
+	        "ajax": {
+                    "url": "../pessoa/api",
+                    "type": "GET",
+                    "data": {
+                        'cpf': $('#cpf-busca').val(),
+                        'nome': $('#nome-busca').val()
+                    },
+				"dataType": "json"                               
+            },
+	        "columns": [
+	        	{"defaultContent":"<div class='text-center'>"+
+	        						"<div class='btn-group'>"+
+	        							"<button class='btn btn-light btn-sm btnEditar'><i class='material-icons'>edit</i></button>&nbsp;"+
+	        							"<button class='btn btn-light btn-sm btnBorrar'><i class='material-icons'>delete</i></button>"+
+	        						"</div>"+
+	        					   "</div>"}, 
+				{ "data" : "sequencial" }, 
+				{ "data" : "cpf" }, 
+				{ "data" : "nome" }, 
+				{ "data" : "endereco" }, 
+				{"data" : "cidade" }, 
+				{ "data" : "estado" }, 
+				{ "data" : "cep" }, 
+				{"data" : "datNasc", 
+							render: function(datNasc){ 
+										return moment(datNasc).format("L"); 
+									} 
+				}, 
+				{"data" : "foneRes"}, 
+				{"data" : "salario", render: $.fn.dataTable.render.number( '.', ',', 2, 'R$' )}
+	         ],
+		"columnDefs": [{
+    		"className": "small",
+    		"targets": "_all"
+	        }  ],
+	        select: true,
+	        colReorder: true,
+	    } );
+		
+    });
+
+	//Editar        
+	$(document).on("click", ".btnEditar", function(){
+		var pessoaReturn;		        
+	    fila = $(this).closest("tr");	        
+	    sequencial = parseInt(fila.find('td:eq(1)').text()); //capturo el ID
+	    
+        $.ajax({
+          url: "../pessoa/api",
+          type: "GET",
+          datatype:"json",    
+          data:  {sequencial : sequencial} ,    
+          success: function(response) {
+				$('#sequencial').val(response.data[0].sequencial);
+				$('#cpf').val(response.data[0].cpf);
+				$('#nome').val(response.data[0].nome);
+				$('#endereco').val(response.data[0].endereco);
+				$('#cidade').val(response.data[0].cidade);
+				$('#estado').val(response.data[0].estado);
+				$('#cep').val(response.data[0].cep);
+				$('#foneRes').val( response.data[0].foneRes );
+				$('#datNasc').val(response.data[0].datNasc);
+				$('#salario').val(response.data[0].salario);
+				$(".modal-header").css("background-color", "#007bff");
+				$(".modal-header").css("color", "white" );
+				$(".modal-title").text("Editar Pessoa");		
+           }
+        });	
+	    
+	    $('#modalCRUD').modal('show');
+	});
+
+
+	// Incluir e Alterar
+	$('#formulario-pessoa').submit(function(e){                         
+	    e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+	    
+	    
+		var _method;
+		var _params;
+			    
+		var sequencial = $('#sequencial').val();
+        var cpf = $('#cpf').val();
+        var nome = $('#nome').val();
+        var endereco = $('#endereco').val();
+        var cidade = $('#cidade').val();
+        var estado = $('#estado').val();
+        var cep = $('#cep').val();
+        var foneRes = $('#foneRes').val();
+        var datNasc = $('#datNasc').val();
+        var salario = $('#salario').val();
+
+		if (sequencial !== ''){
+			_params = { url : '../pessoa/api/' + $('#sequencial').val(),
+						type : 'PUT',
+						datatype : 'json',
+						data : { sequencial	: $('#sequencial').val(),
+									cpf 		: cpf,
+									nome 		: nome,
+									endereco 	: endereco,
+									cidade 		: cidade,
+									estado 		: estado,
+									cep 		: cep,
+									foneRes 	: foneRes,
+									datNasc 	: datNasc,
+									salario 	: salario 
+								},
+						success : function( data ){
+									$('#pessoaTable').DataTable().ajax.reload(null, false);
+								},
+						error : function( error ){
+							alert(error);
+						}
+					};
+		} else {
+			_params = { url : '../pessoa/api',
+						type : 'POST',
+						datatype : 'json',
+						data : { 	sequencial	: null,
+									cpf 		: cpf,
+									nome 		: nome,
+									endereco 	: endereco,
+									cidade 		: cidade,
+									estado 		: estado,
+									cep 		: cep,
+									foneRes 	: foneRes,
+									datNasc 	: datNasc,
+									salario 	: salario 
+						},
+						success : function( data ){
+							$('#cpf-busca').val( cpf );
+							$('#nome-busca').val('');
+							$('#btn-pesquisar').click();
+						},
+						error : function( error ){
+							alert(error);
+						}
+					 };
+		}
+	                            
+        $.ajax(	_params );			        
+
+	    $('#modalCRUD').modal('hide');											     			
+	});
+
+	// Deletar
+	$(document).on("click", ".btnBorrar", function(){
+	    fila = $(this);           
+	    user_id = parseInt($(this).closest('tr').find('td:eq(0)').text()) ;		
+	    opcion = 3; //eliminar        
+
+	    var fila = $(this).closest("tr");	        
+	    var sequencial = parseInt(fila.find('td:eq(1)').text()); //capturo el ID
+	    var cpf = fila.find('td:eq(2)').text();
+	    var nome = fila.find('td:eq(3)').text();
+
+
+	    var resposta = confirm("Confirma a exclusão do CPF " + cpf + " - " + nome); 
+	                   
+	    if (resposta) {
+	        $.ajax({
+	          url: '../pessoa/api/' + sequencial,
+	          type: "DELETE",
+	          datatype:"json",    
+	          success: function() {
+					$('#pessoaTable').DataTable().ajax.reload(null, false);
+					alert('Eliminação concluída com sucesso');
+	           },
+				error : function( error, exception ){
+					alert(error.status + " - " + exception);
+				}
+	           
+	        });	
+	    }
+	 });
+
+
+
+});
+/*
+				        	
+				        	
+				        	"<button id='btn-abrir' class='btn btn-default btn-sm'>A</button>&nbsp;" +
+				           				  "<button id='btn-eliminar' class='btn btn-default btn-sm' >D</button>"}
+				           				  
+							{ "data": null, render: function ( data, type, row ) {
+				                // Combine the first and last names into a single table field
+				                return data.cpf+' '+data.nome;
+				            } }
+
+
+
+
+
+
+
+
+
+
+	var user_id, opcion;
+	opcion = 4;
+	    
+	tablaUsuarios = $('#tablaUsuarios').DataTable({  
+	    "ajax":{            
+	        "url": "bd/crud.php", 
+	        "method": 'POST', //usamos el metodo POST
+	        "data":{opcion:opcion}, //enviamos opcion 4 para que haga un SELECT
+	        "dataSrc":""
+	    },
+	    "columns":[
+	        {"data": "user_id"},
+	        {"data": "username"},
+	        {"data": "first_name"},
+	        {"data": "last_name"},
+	        {"data": "gender"},
+	        {"data": "password"},
+	        {"data": "status"},
+	        {"defaultContent": "<div class='text-center'><div class='btn-group'><button class='btn btn-primary btn-sm btnEditar'><i class='material-icons'>edit</i></button><button class='btn btn-danger btn-sm btnBorrar'><i class='material-icons'>delete</i></button></div></div>"}
+	    ]
+	});     
+	
+	var fila; //captura la fila, para editar o eliminar
+	//submit para el Alta y Actualización
+	$('#formUsuarios').submit(function(e){                         
+	    e.preventDefault(); //evita el comportambiento normal del submit, es decir, recarga total de la página
+	    username = $.trim($('#username').val());    
+	    first_name = $.trim($('#first_name').val());
+	    last_name = $.trim($('#last_name').val());    
+	    gender = $.trim($('#gender').val());    
+	    password = $.trim($('#password').val());
+	    status = $.trim($('#status').val());                            
+	        $.ajax({
+	          url: "bd/crud.php",
+	          type: "POST",
+	          datatype:"json",    
+	          data:  {user_id:user_id, username:username, first_name:first_name, last_name:last_name, gender:gender, password:password ,status:status ,opcion:opcion},    
+	          success: function(data) {
+	            tablaUsuarios.ajax.reload(null, false);
+	           }
+	        });			        
+	    $('#modalCRUD').modal('hide');											     			
+	});
+	        
+	 
+	
+	//para limpiar los campos antes de dar de Alta una Persona
+	$("#btnNuevo").click(function(){
+	    opcion = 1; //alta           
+	    user_id=null;
+	    $("#formUsuarios").trigger("reset");
+	    $(".modal-header").css( "background-color", "#17a2b8");
+	    $(".modal-header").css( "color", "white" );
+	    $(".modal-title").text("Alta de Usuario");
+	    $('#modalCRUD').modal('show');	    
+	});
+	
+	//Editar        
+	$(document).on("click", ".btnEditar", function(){		        
+	    opcion = 2;//editar
+	    fila = $(this).closest("tr");	        
+	    user_id = parseInt(fila.find('td:eq(0)').text()); //capturo el ID		            
+	    username = fila.find('td:eq(1)').text();
+	    first_name = fila.find('td:eq(2)').text();
+	    last_name = fila.find('td:eq(3)').text();
+	    gender = fila.find('td:eq(4)').text();
+	    password = fila.find('td:eq(5)').text();
+	    status = fila.find('td:eq(6)').text();
+	    $("#username").val(username);
+	    $("#first_name").val(first_name);
+	    $("#last_name").val(last_name);
+	    $("#gender").val(gender);
+	    $("#password").val(password);
+	    $("#status").val(status);
+	    $(".modal-header").css("background-color", "#007bff");
+	    $(".modal-header").css("color", "white" );
+	    $(".modal-title").text("Editar Usuario");		
+	    $('#modalCRUD').modal('show');		   
+	});
+	
+	//Borrar
+	$(document).on("click", ".btnBorrar", function(){
+	    fila = $(this);           
+	    user_id = parseInt($(this).closest('tr').find('td:eq(0)').text()) ;		
+	    opcion = 3; //eliminar        
+	    var respuesta = confirm("¿Está seguro de borrar el registro "+user_id+"?");                
+	    if (respuesta) {            
+	        $.ajax({
+	          url: "bd/crud.php",
+	          type: "POST",
+	          datatype:"json",    
+	          data:  {opcion:opcion, user_id:user_id},    
+	          success: function() {
+	              tablaUsuarios.row(fila.parents('tr')).remove().draw();                  
+	           }
+	        });	
+	    }
+	 });
+});    
+*/
+
+
+12. Copie o conteúdo abaixo no arquivo templates/pessoa/pessoa2.xhtml
+
+<!DOCTYPE html>
+<html lang="pt" xmlns="http://www.w3.org/1999¹xhtml" 
+				xmlns:th="http://www.thymeleaf.org"
+				xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+	<title>Spring Boot + JPA + Datatables</title>
+    <!-- Required meta tags -->
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<meta name="description" content="" />
+	<meta name="author" content="" />
+
+	<!-- Bootstrap core CSS -->
+	<link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
+	<link th:href="@{/webjars/open-iconic/font/css/open-iconic-bootstrap.min.css}" rel="stylesheet" />
+	
+	<!-- Custom styles for this template -->
+	<link th:href="@{/css/style.css}" rel="stylesheet" />
+	<link rel="stylesheet"
+			href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+	<link rel="stylesheet"
+				href="https://cdn.datatables.net/buttons/1.6.2/css/buttons.dataTables.min.css">
+	<link rel="stylesheet"
+				href="https://cdn.datatables.net/select/1.3.1/css/select.dataTables.min.css">
+	<link rel="stylesheet"
+			href="https://editor.datatables.net/extensions/Editor/css/editor.dataTables.min.css">
+		
+    <link rel="shortcut icon" href="#" />  
+	<link rel="icon" th:href="@{/image/favicon.png}" />
+    <!-- Bootstrap CSS -->
+    <!-- CSS personalizado --> 
+    <link rel="stylesheet" th:href="@{/css/main.css}">  
+      
+      
+    <!--datables estilo bootstrap 4 CSS-->  
+    <link rel="stylesheet"  type="text/css" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">    
+      
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">  
+  </head>
+    
+  <body> 
+     <header>
+     <h3 class='text-center'></h3>
+     </header>    
+      
+    <div class="container-fluid">
+		<div class="card">
+		  <div class="card-header">
+		    Filtros
+		  </div>
+		  <div class="card-body">
+		  	<form>
+                <div class="form-row  col-md-10">
+                    <div class="form-group col-md-3">
+                        <input 	type="text" 
+                        		class="form-control  form-control-sm" 
+                        		id="cpf-busca"
+                        		data-mask="000.000.000-00"
+								placeholder="CPF do cliente"
+                               	autofocus="autofocus" />
+                    </div>
+                    <div class="form-group col-md-5">
+                        <input 	type="text" value="MARCO%SILVA"
+                        		class="form-control form-control-sm" 
+                        		id="nome-busca" 
+                        		placeholder="Nome"/>
+                    </div>
+                    
+                    <div class="form-group col-md-1">
+			            <button id="btn-pesquisar" type="button" class="btn btn-light btn-sm" data-toggle="tooltip" title="Buscar"><i class="material-icons">search</i></button>
+                    </div>
+                    <div class="form-group col-md-1">
+			            <button id="btnNuevo" type="button" class="btn btn-light btn-sm" data-toggle="tooltip" title="Novo"><span class="material-icons">add_circle</span></button>
+			            <!--  
+                     	<a href="#" id="btn-pesquisar" class="btn btn-primary">Pesquisar</a>
+			            <i class="material-icons">library_add</i></button>
+			            	href="https://fonts.googleapis.com/icon?family=Material+Icons" : Através desse link conseguimos ter
+			            																	 acesso a configuração dos icones através de classes 
+			            	https://material.io/resources/icons/?style=baseline : Site para pesquisar icones
+			            
+			            
+			            
+			             -->
+			                
+                    </div>
+                </div>
+		  	</form>
+		  </div>
+		</div>
+ 		<div class="card" >
+			<div class="card-body">
+		 
+		        <div class="row">
+		            <div class="col-lg-12 col-xs-12 col-sm-12 col-md-12">
+			            <div class="table-responsive">        
+			                <table id="pessoaTable" class="nowrap compact hover" style="width:100%" >
+			                    <thead class="text-center">
+			                        <tr>
+			                        	<th>Ação</th>
+			                        	<th>#</th>
+										<th>CPF</th>
+										<th>Nome</th>
+										<th>Endereço</th>
+										<th>Cidade</th>
+										<th>UF</th>
+										<th>CEP</th>
+										<th>Dt Nasc</th>
+										<th>Telefone</th>
+										<th>Salário</th>
+			                        </tr>
+			                    </thead>
+			                </table>               
+			            </div>
+		            </div>
+		        </div>  
+		    </div>   
+   		</div>   
+    </div>    
+
+
+	<!--Modal para CRUD-->
+	<div class="modal fade" id="modalCRUD" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	    <div class="modal-dialog" role="document">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="exampleModalLabel"></h5>
+	                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+	                </button>
+	            </div>
+	        <form id="formulario-pessoa">   
+				<input type="hidden" id="sequencial"/>
+	            <div class="modal-body">
+	                <div class="row">
+	                    <div class="col-lg-6">
+		                    <div class="form-group">
+			                    <label for="" class="col-form-label">CPF:</label>
+			                    <input type="text" class="form-control" id="cpf">
+		                    </div>
+	                    </div>
+	                    <div class="col-lg-6">
+		                    <div class="form-group">
+			                    <label for="" class="col-form-label">Nome:</label>
+			                    <input type="text" class="form-control" id="nome">
+		                    </div> 
+	                    </div>    
+	                </div>
+	                <div class="row"> 
+	                    <div class="col-lg-6">
+		                    <div class="form-group">
+			                    <label for="" class="col-form-label">Endereço:</label>
+			                    <input type="text" class="form-control" id="endereco">
+		                    </div>               
+	                    </div>
+	                    <div class="col-lg-6">
+		                    <div class="form-group">
+			                    <label for="" class="col-form-label">Cidade</label>
+			                    <input type="text" class="form-control" id="cidade">
+		                    </div>
+	                    </div>  
+	                </div>
+	                <div class="row">
+	                    <div class="col-lg-9">
+	                        <div class="form-group">
+	                        <label for="" class="col-form-label">Estado</label>
+	                        <input type="text" class="form-control" id="estado">
+	                        </div>
+	                    </div>    
+	                    <div class="col-lg-3">    
+	                        <div class="form-group">
+	                        <label for="" class="col-form-label">CEP</label>
+	                        <input type="number" class="form-control" id="cep">
+	                        </div>            
+	                    </div>    
+	                </div>                
+	                <div class="row">
+	                    <div class="col-lg-3">
+	                        <div class="form-group">
+	                        <label for="" class="col-form-label">Data de Nasc</label>
+	                        <input type="text" class="form-control" id="datNasc">
+	                        </div>
+	                    </div>    
+	                    <div class="col-lg-3">    
+	                        <div class="form-group">
+	                        <label for="" class="col-form-label">Telefone</label>
+	                        <input type="number" class="form-control" id="foneRes">
+	                        </div>            
+	                    </div>    
+	                    <div class="col-lg-3">    
+	                        <div class="form-group">
+	                        <label for="" class="col-form-label">Salário</label>
+	                        <input type="number" class="form-control" id="salario">
+	                        </div>            
+	                    </div>    
+	                </div>                
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-light" data-dismiss="modal">Cancelar</button>
+	                <button type="submit" id="btnGuardar" class="btn btn-dark">Salvar</button>
+	            </div>
+	        </form>    
+	        </div>
+	    </div>
+	</div>  
+</body>
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script	src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script th:src="@{/webjars/jquery-mask-plugin/dist/jquery.mask.min.js}"></script>
+<script	src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js"></script>      
+<!-- <script	src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script> -->
+<script type="text/javascript" th:src="@{/js/main.js}"></script>  
+</html>
+
+
+13. Copie o conteúdo abaixo dentro do arquivo src/test/java/PessoaTests.java
+
+package com.maransi;
+
+
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.maransi.model.Pessoa;
+import com.maransi.service.PessoaService;
+import com.maransi.util.UF;
+
+@TestMethodOrder(OrderAnnotation.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes=DemoBootJqueryDatatableApplication.class)
+@Transactional
+class PessoaTests {
+	
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Autowired
+	private PessoaService pessoaService;
+
+	@Test
+	@Order(2)
+	void testFindByName() throws Exception{
+		logger.info("\n Testing testFindByName()");
+		
+		
+		try {
+			assertNotNull(pessoaService.findByNome("%MARCO ANTONIO DA SILVA%") ); // %NELSON DOUGLAS MARCOS OLIVEIRA%"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			throw new Exception( e.getMessage() );
+		}
+		
+		
+	}
+	
+	@Test
+	@Order(3)
+	void findByCpf() throws Exception{
+		
+		try {
+			assertNotNull( pessoaService.findByCpf("106.523.608-58"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			throw new Exception(e.getMessage());
+		}
+		
+		
+	}
+	
+	@Test
+	@Order(4)
+	void testFindById() throws Exception{
+		
+		try {
+			assertNotNull( pessoaService.findById(1L) );
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			throw new Exception( e.getMessage() );
+		}
+	}
+
+	@Test
+	@Order(5)
+	@Rollback(true)
+	void testCrud() throws Exception{
+		
+		try {
+			Pessoa pessoa = pessoaService.findById(1L).orElse(null);
+			
+			pessoa.setNome("ELISANGELA APARECIDA DE ALMEIDA Update");
+			
+			pessoaService.update(pessoa);
+			
+			pessoa = pessoaService.findById(1L).orElse(null);
+			
+			assertEquals("ELISANGELA APARECIDA DE ALMEIDA Update", pessoa.getNome() );
+			
+			logger.info("\n pessoaService.update {}", pessoa);
+			
+			pessoa = new Pessoa("037.440.710-06","JOSE DA SILVA", LocalDate.of(2001,1,1),"RUA DA BELEZAS 30","SÃO PAULO","00000000","11 9 65833040",new BigDecimal("10000"),UF.SP); 			
+			
+			pessoaService.insert(pessoa);
+						
+			pessoa = pessoaService.findByCpf("037.440.710-06").orElse(null);
+			
+			logger.info("\n pessoaService.insert {}", pessoa);
+
+			assertEquals("JOSE DA SILVA", pessoa.getNome());			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	
+/*	
+	public Optional<Pessoa> findByCpf( String cpf ) {
+		return pessoaRepository.findByCpf(cpf);
+	}
+
+	public Optional<Pessoa> findById( Long id ){
+		return pessoaRepository.findById(id);
+	}
+
+*/
+}
+
+14. Execute os testes
+
+15. Execute a URL http://localhost:8080/pessoa/home
+
+
+
+
