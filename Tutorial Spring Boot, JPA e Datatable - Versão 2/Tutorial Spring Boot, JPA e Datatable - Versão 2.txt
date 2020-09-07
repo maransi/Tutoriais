@@ -322,507 +322,7 @@ WHERE estado IS NULL OR estado = '';
 
 
 
-6. Crie as classes abaixo dentro do pacote src/main/java:
-
-PessoaController
-----------------
-
-package com.maransi.controller;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-@Controller
-public class PessoaController {
-
-	@RequestMapping("pessoa/home")
-	public String cadastro() {
-		
-		return "pessoa/pessoa2";
-	}
-	
-}
-
-PessoaResource
---------------
-
-package com.maransi.controller;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.maransi.model.Pessoa;
-import com.maransi.service.PessoaService;
-
-import groovy.util.logging.Slf4j;
-
-@RestController
-@RequestMapping("pessoa/api")
-public class PessoaResource {
-
-	@Autowired
-	PessoaService pessoaService;
-
-	
-// Testar ( Retornar o @RquestBody; No construtor da classe Pessoa adcionar a annotation @JsonProperty	
-	
-	@RequestMapping(// value="/nome",
-			method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, 
-					headers = "Accept=*/*")
-//	@GetMapping(produces = "application/json")	
-//  No postman colocar os parametros como "form-data"
-	public @ResponseBody Map<String, List<Pessoa>> findPessoa( Pessoa pessoa) {
-		List<Pessoa> pessoas = null;
-
-		if ( pessoa.getNome() != null && pessoa.getNome().trim() != "") {
-			pessoas = pessoaService.findByNome(pessoa.getNome());
-		} else if ( pessoa.getCpf() != null && pessoa.getCpf().trim() != "" ) {
-			pessoas = new ArrayList<Pessoa>();
-
-			Optional<Pessoa> p = pessoaService.findByCpf(pessoa.getCpf());
-
-			if (p.isPresent()) {
-				pessoas.add(p.get());
-			}
-		} else if ( pessoa.getSequencial() != null && pessoa.getSequencial() > 0 ) {
-			pessoas = new ArrayList<Pessoa>();
-
-			Optional<Pessoa> p = pessoaService.findById(pessoa.getSequencial());
-
-			if (p.isPresent()) {
-				pessoas.add(p.get());
-			}
-		}
-
-		Map<String, List<Pessoa>> mapa = new TreeMap<String, List<Pessoa>>();
-		
-		mapa.put("data", pessoas);
-		
-		return mapa;
-	}
-	
-	@RequestMapping( method=RequestMethod.POST, 
-					headers = "Accept=*/*")
-//					consumes=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Pessoa> insertPessoa( Pessoa pessoa) {
-		try {
-			Pessoa pessoaInserted = pessoaService.insert(pessoa);
-			
-//			return ResponseEntity.ok(pessoaInserted);
-			return new ResponseEntity<Pessoa>(HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-	}
-
-	@RequestMapping( method = RequestMethod.PUT,
-//						consumes = MediaType.APPLICATION_JSON_VALUE,
-						headers = "Accept=*/*",
-						path = "{sequencial}")
-	public ResponseEntity<Pessoa> updatePessoa( @PathVariable Long sequencial, 
-												Pessoa pessoa){
-		try {
-			if (!pessoaService.findById(pessoa.getSequencial()).isPresent() ) {
-	//			ResponseEntity.badRequest().build();
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			}
-		
-			Pessoa pessoaUpdated = pessoaService.update(pessoa);
-
-			return new ResponseEntity<Pessoa>( HttpStatus.OK );
-		} catch (Exception e) {
-			e.printStackTrace();
-			
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		
-		
-	}
-	
-	@RequestMapping(
-			method=RequestMethod.DELETE, 
-//			produces=MediaType.APPLICATION_JSON_VALUE,
-			path = "{sequencial}"
-	)
-	public ResponseEntity<Pessoa> deletePessoaById(@PathVariable("sequencial") Long sequencial){
-		try {
-			if (!pessoaService.findById(sequencial).isPresent() ) {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			}
-
-			pessoaService.delete(sequencial);
-			
-			return new ResponseEntity<Pessoa>( HttpStatus.OK );
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-	}
-	
-	
-}
-
-
-Pessoa
-------
-
-package com.maransi.model;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
-
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.annotation.DateTimeFormat.ISO;
-import org.springframework.format.annotation.NumberFormat;
-import org.springframework.format.annotation.NumberFormat.Style;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.maransi.util.CpfCnpj;
-import com.maransi.util.UF;
-
-
-@Entity
-@Table( indexes = { @Index( name="idxPessoa_CPF", columnList="cpf") } )
-@NamedQueries({ @NamedQuery(name="pessoa.cpf", query="Select p from Pessoa p Where p.cpf = :cpf" ),
-				@NamedQuery(name="pessoa.nome", query="Select p from Pessoa p Where p.nome like :nome")
-			  })
-public class Pessoa {
-
-	@Id
-	@GeneratedValue( strategy=GenerationType.IDENTITY)
-	private Long sequencial;
-	
-	@Column(nullable=false)
-	@NotNull(message="CPF não pode ser vazio")
-	@CpfCnpj
-	private String cpf;
-	
-	@Column( length=100, nullable=false)
-	@NotNull(message="Nome não pode ser vazio")
-	@Size(min=10, max=100, message="Nome deve conter tamanho minimo de 10 dígitos")
-	private String nome;
-	
-	@Column(name="datnasc", columnDefinition="DATE", nullable=false)
-//	@NotNull(message="Data Inválida")
-	@DateTimeFormat( iso = ISO.DATE)
-//	@Past(message="Data inválida")
-	private LocalDate datNasc;
-	
-	@Column(length=150, nullable=false)
-	@NotNull(message="Endereço não pode ser vazio")
-	@Size(min=10, max=150, message="Nome deve conter tamanho minimo de 10 dígitos")
-	private String endereco;
-	
-	@Column(length=100, nullable=false)
-	@NotNull(message="Cidade não pode ser vazio")
-	@Size(min=10, max=100, message="Cidade deve conter tamanho minimo de 10 dígitos")
-	private String cidade;
-	
-	@Column(nullable=false, length=2, name="estado")
-	@NotNull(message="Estado não pode ser vazio")
-	@Enumerated(EnumType.STRING)	// Informa ao bd que o conteúdo deverá ser salvo como STRING
-	private UF estado;
-	
-	@Column(length=10, nullable=false)
-	@NotNull(message="CEP não pode ser vazio")
-	private String cep;
-	
-	@Column(name = "foneres", length=30)
-	private String foneRes;
-	
-	@Positive( message="Salário inválido")
-	@NumberFormat(style=Style.CURRENCY, pattern = "###,###,##0.00" )
-	@Digits( integer = 9, fraction = 2)
-	private BigDecimal salario;
-
-	public Pessoa() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	public Pessoa( @JsonProperty("cpf") String cpf, @JsonProperty("nome") String nome, 
-			@JsonProperty("datNasc") LocalDate datNasc, @JsonProperty("endereco") String endereco, 
-			@JsonProperty("cidade") String cidade, @JsonProperty("cep") String cep,
-			@JsonProperty("foneRes") String foneRes, @JsonProperty("salario") BigDecimal salario, 
-			@JsonProperty("estado") UF estado) {
-		super();
-		this.cpf = cpf;
-		this.nome = nome;
-		this.datNasc = datNasc;
-		this.endereco = endereco;
-		this.cidade = cidade;
-		this.estado = estado;
-		this.cep = cep;
-		this.foneRes = foneRes;
-		this.salario = salario;
-	}
-
-	public Long getSequencial() {
-		return sequencial;
-	}
-
-	public void setSequencial(Long sequencial) {
-		this.sequencial = sequencial;
-	}
-
-	public String getCpf() {
-		return cpf;
-	}
-
-	public void setCpf(String cpf) {
-		this.cpf = cpf;
-	}
-
-	public String getNome() {
-		return nome;
-	}
-
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
-
-	public LocalDate getDatNasc() {
-		return datNasc;
-	}
-
-	public void setDatNasc(LocalDate datNasc) {
-		this.datNasc = datNasc;
-	}
-
-	public String getEndereco() {
-		return endereco;
-	}
-
-	public void setEndereco(String endereco) {
-		this.endereco = endereco;
-	}
-
-	public String getCidade() {
-		return cidade;
-	}
-
-	public void setCidade(String cidade) {
-		this.cidade = cidade;
-	}
-
-	public UF getEstado() {
-		return estado;
-	}
-
-	public void setEstado(UF estado) {
-		this.estado = estado;
-	}
-
-	public String getCep() {
-		return cep;
-	}
-
-	public void setCep(String cep) {
-		this.cep = cep;
-	}
-
-	public String getFoneRes() {
-		return foneRes;
-	}
-
-	public void setFoneRes(String foneRes) {
-		this.foneRes = foneRes;
-	}
-
-	public BigDecimal getSalario() {
-		return salario;
-	}
-
-	public void setSalario(BigDecimal salario) {
-		this.salario = salario;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((cep == null) ? 0 : cep.hashCode());
-		result = prime * result + ((cidade == null) ? 0 : cidade.hashCode());
-		result = prime * result + ((cpf == null) ? 0 : cpf.hashCode());
-		result = prime * result + ((endereco == null) ? 0 : endereco.hashCode());
-		result = prime * result + ((estado == null) ? 0 : estado.hashCode());
-		result = prime * result + ((foneRes == null) ? 0 : foneRes.hashCode());
-		result = prime * result + ((nome == null) ? 0 : nome.hashCode());
-		result = prime * result + ((sequencial == null) ? 0 : sequencial.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Pessoa other = (Pessoa) obj;
-		if (cep == null) {
-			if (other.cep != null)
-				return false;
-		} else if (!cep.equals(other.cep))
-			return false;
-		if (cidade == null) {
-			if (other.cidade != null)
-				return false;
-		} else if (!cidade.equals(other.cidade))
-			return false;
-		if (cpf == null) {
-			if (other.cpf != null)
-				return false;
-		} else if (!cpf.equals(other.cpf))
-			return false;
-		if (endereco == null) {
-			if (other.endereco != null)
-				return false;
-		} else if (!endereco.equals(other.endereco))
-			return false;
-		if (estado == null) {
-			if (other.estado != null)
-				return false;
-		} else if (!estado.equals(other.estado))
-			return false;
-		if (foneRes == null) {
-			if (other.foneRes != null)
-				return false;
-		} else if (!foneRes.equals(other.foneRes))
-			return false;
-		if (nome == null) {
-			if (other.nome != null)
-				return false;
-		} else if (!nome.equals(other.nome))
-			return false;
-		if (sequencial == null) {
-			if (other.sequencial != null)
-				return false;
-		} else if (!sequencial.equals(other.sequencial))
-			return false;
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "\n Pessoa [sequencial=" + sequencial + ", cpf=" + cpf + ", nome=" + nome + ", endereco=" + endereco
-				+ ", cidade=" + cidade + ", estado=" + estado + ", cep=" + cep + ", foneRes=" + foneRes + "]";
-	}
-	
-	
-	
-}
-
-
-PessoaRepository
-----------------
-
-package com.maransi.repository;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
-import com.maransi.model.Pessoa;
-
-@Repository("pessoaRepository")
-public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
-
-	Optional<Pessoa> findByCpf(String cpf);
-	
-	@Query("Select p From Pessoa p Where nome like :nome")
-	List<Pessoa> findByNome( String nome );
-}
-
-
-PessoaService
--------------
-
-package com.maransi.service;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.maransi.model.Pessoa;
-import com.maransi.repository.PessoaRepository;
-
-@Service("pessoaService")
-public class PessoaService {
-	
-	@Autowired
-	private PessoaRepository pessoaRepository; 
-	
-	
-	public List<Pessoa> findByNome(String nome){
-		return pessoaRepository.findByNome("%" + nome + "%");
-	}
-	
-	public Optional<Pessoa> findByCpf( String cpf ) {
-		return pessoaRepository.findByCpf(cpf);
-	}
-
-	public Optional<Pessoa> findById( Long id ){
-		return pessoaRepository.findById(id);
-	}
-	
-	public Pessoa update( Pessoa pessoa) throws Exception{
-		return pessoaRepository.save(pessoa);
-	}
-	
-	public Pessoa insert( Pessoa pessoa ) throws Exception{
-		return pessoaRepository.save(pessoa);
-	}
-	
-	public void delete( Long sequencial ) throws Exception{
-		pessoaRepository.deleteById(sequencial);
-	}
-	
-}
-
+6. Crie as classes abaixo:
 
 AbstractEntity
 --------------
@@ -1157,14 +657,657 @@ public enum UF {
 }
 
 
-7. Dentro da pasta src/main/resources/static crie as pastas abaixo:
+
+Pessoa
+------
+
+package com.maransi.model;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.format.annotation.NumberFormat;
+import org.springframework.format.annotation.NumberFormat.Style;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.maransi.util.CpfCnpj;
+import com.maransi.util.UF;
+
+
+@Entity
+@Table( indexes = { @Index( name="idxPessoa_CPF", columnList="cpf") } )
+@NamedQueries({ @NamedQuery(name="pessoa.cpf", query="Select p from Pessoa p Where p.cpf = :cpf" ),
+				@NamedQuery(name="pessoa.nome", query="Select p from Pessoa p Where p.nome like :nome")
+			  })
+public class Pessoa {
+
+	@Id
+	@GeneratedValue( strategy=GenerationType.IDENTITY)
+	private Long sequencial;
+	
+	@Column(nullable=false)
+	@NotNull(message="CPF não pode ser vazio")
+	@CpfCnpj
+	private String cpf;
+	
+	@Column( length=100, nullable=false)
+	@NotNull(message="Nome não pode ser vazio")
+	@Size(min=10, max=100, message="Nome deve conter tamanho minimo de 10 dígitos")
+	private String nome;
+	
+	@Column(name="datnasc", columnDefinition="DATE", nullable=false)
+//	@NotNull(message="Data Inválida")
+	@DateTimeFormat( iso = ISO.DATE)
+//	@Past(message="Data inválida")
+	private LocalDate datNasc;
+	
+	@Column(length=150, nullable=false)
+	@NotNull(message="Endereço não pode ser vazio")
+	@Size(min=10, max=150, message="Nome deve conter tamanho minimo de 10 dígitos")
+	private String endereco;
+	
+	@Column(length=100, nullable=false)
+	@NotNull(message="Cidade não pode ser vazio")
+	@Size(min=10, max=100, message="Cidade deve conter tamanho minimo de 10 dígitos")
+	private String cidade;
+	
+	@Column(nullable=false, length=2, name="estado")
+	@NotNull(message="Estado não pode ser vazio")
+	@Enumerated(EnumType.STRING)	// Informa ao bd que o conteúdo deverá ser salvo como STRING
+	private UF estado;
+	
+	@Column(length=10, nullable=false)
+	@NotNull(message="CEP não pode ser vazio")
+	private String cep;
+	
+	@Column(name = "foneres", length=30)
+	private String foneRes;
+	
+	@Positive( message="Salário inválido")
+	@NumberFormat(style=Style.CURRENCY, pattern = "###,###,##0.00" )
+	@Digits( integer = 9, fraction = 2)
+	private BigDecimal salario;
+
+	public Pessoa() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public Pessoa( @JsonProperty("cpf") String cpf, @JsonProperty("nome") String nome, 
+			@JsonProperty("datNasc") LocalDate datNasc, @JsonProperty("endereco") String endereco, 
+			@JsonProperty("cidade") String cidade, @JsonProperty("cep") String cep,
+			@JsonProperty("foneRes") String foneRes, @JsonProperty("salario") BigDecimal salario, 
+			@JsonProperty("estado") UF estado) {
+		super();
+		this.cpf = cpf;
+		this.nome = nome;
+		this.datNasc = datNasc;
+		this.endereco = endereco;
+		this.cidade = cidade;
+		this.estado = estado;
+		this.cep = cep;
+		this.foneRes = foneRes;
+		this.salario = salario;
+	}
+
+	public Long getSequencial() {
+		return sequencial;
+	}
+
+	public void setSequencial(Long sequencial) {
+		this.sequencial = sequencial;
+	}
+
+	public String getCpf() {
+		return cpf;
+	}
+
+	public void setCpf(String cpf) {
+		this.cpf = cpf;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public LocalDate getDatNasc() {
+		return datNasc;
+	}
+
+	public void setDatNasc(LocalDate datNasc) {
+		this.datNasc = datNasc;
+	}
+
+	public String getEndereco() {
+		return endereco;
+	}
+
+	public void setEndereco(String endereco) {
+		this.endereco = endereco;
+	}
+
+	public String getCidade() {
+		return cidade;
+	}
+
+	public void setCidade(String cidade) {
+		this.cidade = cidade;
+	}
+
+	public UF getEstado() {
+		return estado;
+	}
+
+	public void setEstado(UF estado) {
+		this.estado = estado;
+	}
+
+	public String getCep() {
+		return cep;
+	}
+
+	public void setCep(String cep) {
+		this.cep = cep;
+	}
+
+	public String getFoneRes() {
+		return foneRes;
+	}
+
+	public void setFoneRes(String foneRes) {
+		this.foneRes = foneRes;
+	}
+
+	public BigDecimal getSalario() {
+		return salario;
+	}
+
+	public void setSalario(BigDecimal salario) {
+		this.salario = salario;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((cep == null) ? 0 : cep.hashCode());
+		result = prime * result + ((cidade == null) ? 0 : cidade.hashCode());
+		result = prime * result + ((cpf == null) ? 0 : cpf.hashCode());
+		result = prime * result + ((endereco == null) ? 0 : endereco.hashCode());
+		result = prime * result + ((estado == null) ? 0 : estado.hashCode());
+		result = prime * result + ((foneRes == null) ? 0 : foneRes.hashCode());
+		result = prime * result + ((nome == null) ? 0 : nome.hashCode());
+		result = prime * result + ((sequencial == null) ? 0 : sequencial.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Pessoa other = (Pessoa) obj;
+		if (cep == null) {
+			if (other.cep != null)
+				return false;
+		} else if (!cep.equals(other.cep))
+			return false;
+		if (cidade == null) {
+			if (other.cidade != null)
+				return false;
+		} else if (!cidade.equals(other.cidade))
+			return false;
+		if (cpf == null) {
+			if (other.cpf != null)
+				return false;
+		} else if (!cpf.equals(other.cpf))
+			return false;
+		if (endereco == null) {
+			if (other.endereco != null)
+				return false;
+		} else if (!endereco.equals(other.endereco))
+			return false;
+		if (estado == null) {
+			if (other.estado != null)
+				return false;
+		} else if (!estado.equals(other.estado))
+			return false;
+		if (foneRes == null) {
+			if (other.foneRes != null)
+				return false;
+		} else if (!foneRes.equals(other.foneRes))
+			return false;
+		if (nome == null) {
+			if (other.nome != null)
+				return false;
+		} else if (!nome.equals(other.nome))
+			return false;
+		if (sequencial == null) {
+			if (other.sequencial != null)
+				return false;
+		} else if (!sequencial.equals(other.sequencial))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "\n Pessoa [sequencial=" + sequencial + ", cpf=" + cpf + ", nome=" + nome + ", endereco=" + endereco
+				+ ", cidade=" + cidade + ", estado=" + estado + ", cep=" + cep + ", foneRes=" + foneRes + "]";
+	}
+	
+	
+	
+}
+
+
+PessoaRepository
+----------------
+
+package com.maransi.repository;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.maransi.model.Pessoa;
+
+@Repository("pessoaRepository")
+public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
+
+	Optional<Pessoa> findByCpf(String cpf);
+	
+	@Query("Select p From Pessoa p Where nome like :nome")
+	List<Pessoa> findByNome( String nome );
+}
+
+
+
+PessoaService
+-------------
+
+package com.maransi.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.maransi.model.Pessoa;
+import com.maransi.repository.PessoaRepository;
+
+@Service("pessoaService")
+public class PessoaService {
+	
+	@Autowired
+	private PessoaRepository pessoaRepository; 
+	
+	
+	public List<Pessoa> findByNome(String nome){
+		return pessoaRepository.findByNome("%" + nome + "%");
+	}
+	
+	public Optional<Pessoa> findByCpf( String cpf ) {
+		return pessoaRepository.findByCpf(cpf);
+	}
+
+	public Optional<Pessoa> findById( Long id ){
+		return pessoaRepository.findById(id);
+	}
+	
+	public Pessoa update( Pessoa pessoa) throws Exception{
+		return pessoaRepository.save(pessoa);
+	}
+	
+	public Pessoa insert( Pessoa pessoa ) throws Exception{
+		return pessoaRepository.save(pessoa);
+	}
+	
+	public void delete( Long sequencial ) throws Exception{
+		pessoaRepository.deleteById(sequencial);
+	}
+	
+}
+
+
+
+07. Copie o conteúdo abaixo dentro do arquivo src/test/java/PessoaTests.java
+
+package com.maransi;
+
+
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.maransi.model.Pessoa;
+import com.maransi.service.PessoaService;
+import com.maransi.util.UF;
+
+@TestMethodOrder(OrderAnnotation.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes=DemoBootJqueryDatatableApplication.class)
+@Transactional
+class PessoaTests {
+	
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Autowired
+	private PessoaService pessoaService;
+
+	@Test
+	@Order(2)
+	void testFindByName() throws Exception{
+		logger.info("\n Testing testFindByName()");
+		
+		
+		try {
+			assertNotNull(pessoaService.findByNome("%MARCO ANTONIO DA SILVA%") ); // %NELSON DOUGLAS MARCOS OLIVEIRA%"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			throw new Exception( e.getMessage() );
+		}
+		
+		
+	}
+	
+	@Test
+	@Order(3)
+	void findByCpf() throws Exception{
+		
+		try {
+			assertNotNull( pessoaService.findByCpf("106.523.608-58"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			throw new Exception(e.getMessage());
+		}
+		
+		
+	}
+	
+	@Test
+	@Order(4)
+	void testFindById() throws Exception{
+		
+		try {
+			assertNotNull( pessoaService.findById(1L) );
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			throw new Exception( e.getMessage() );
+		}
+	}
+
+	@Test
+	@Order(5)
+	@Rollback(true)
+	void testCrud() throws Exception{
+		
+		try {
+			Pessoa pessoa = pessoaService.findById(1L).orElse(null);
+			
+			pessoa.setNome("ELISANGELA APARECIDA DE ALMEIDA Update");
+			
+			pessoaService.update(pessoa);
+			
+			pessoa = pessoaService.findById(1L).orElse(null);
+			
+			assertEquals("ELISANGELA APARECIDA DE ALMEIDA Update", pessoa.getNome() );
+			
+			logger.info("\n pessoaService.update {}", pessoa);
+			
+			pessoa = new Pessoa("037.440.710-06","JOSE DA SILVA", LocalDate.of(2001,1,1),"RUA DA BELEZAS 30","SÃO PAULO","00000000","11 9 65833040",new BigDecimal("10000"),UF.SP); 			
+			
+			pessoaService.insert(pessoa);
+						
+			pessoa = pessoaService.findByCpf("037.440.710-06").orElse(null);
+			
+			logger.info("\n pessoaService.insert {}", pessoa);
+
+			assertEquals("JOSE DA SILVA", pessoa.getNome());			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	
+/*	
+	public Optional<Pessoa> findByCpf( String cpf ) {
+		return pessoaRepository.findByCpf(cpf);
+	}
+
+	public Optional<Pessoa> findById( Long id ){
+		return pessoaRepository.findById(id);
+	}
+
+*/
+}
+
+
+
+08. Execute os testes
+
+
+9. Crie as classes abaixo dentro do pacote src/main/java:
+
+PessoaController
+----------------
+
+package com.maransi.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+public class PessoaController {
+
+	@RequestMapping("pessoa/home")
+	public String cadastro() {
+		
+		return "pessoa/pessoa2";
+	}
+	
+}
+
+PessoaResource
+--------------
+
+package com.maransi.controller;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.maransi.model.Pessoa;
+import com.maransi.service.PessoaService;
+
+import groovy.util.logging.Slf4j;
+
+@RestController
+@RequestMapping("pessoa/api")
+public class PessoaResource {
+
+	@Autowired
+	PessoaService pessoaService;
+
+	
+// Testar ( Retornar o @RquestBody; No construtor da classe Pessoa adcionar a annotation @JsonProperty	
+	
+	@RequestMapping(// value="/nome",
+			method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE, 
+					headers = "Accept=*/*")
+//	@GetMapping(produces = "application/json")	
+//  No postman colocar os parametros como "form-data"
+	public @ResponseBody Map<String, List<Pessoa>> findPessoa( Pessoa pessoa) {
+		List<Pessoa> pessoas = null;
+
+		if ( pessoa.getNome() != null && pessoa.getNome().trim() != "") {
+			pessoas = pessoaService.findByNome(pessoa.getNome());
+		} else if ( pessoa.getCpf() != null && pessoa.getCpf().trim() != "" ) {
+			pessoas = new ArrayList<Pessoa>();
+
+			Optional<Pessoa> p = pessoaService.findByCpf(pessoa.getCpf());
+
+			if (p.isPresent()) {
+				pessoas.add(p.get());
+			}
+		} else if ( pessoa.getSequencial() != null && pessoa.getSequencial() > 0 ) {
+			pessoas = new ArrayList<Pessoa>();
+
+			Optional<Pessoa> p = pessoaService.findById(pessoa.getSequencial());
+
+			if (p.isPresent()) {
+				pessoas.add(p.get());
+			}
+		}
+
+		Map<String, List<Pessoa>> mapa = new TreeMap<String, List<Pessoa>>();
+		
+		mapa.put("data", pessoas);
+		
+		return mapa;
+	}
+	
+	@RequestMapping( method=RequestMethod.POST, 
+					headers = "Accept=*/*")
+//					consumes=MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Pessoa> insertPessoa( Pessoa pessoa) {
+		try {
+			Pessoa pessoaInserted = pessoaService.insert(pessoa);
+			
+//			return ResponseEntity.ok(pessoaInserted);
+			return new ResponseEntity<Pessoa>(HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@RequestMapping( method = RequestMethod.PUT,
+//						consumes = MediaType.APPLICATION_JSON_VALUE,
+						headers = "Accept=*/*",
+						path = "{sequencial}")
+	public ResponseEntity<Pessoa> updatePessoa( @PathVariable Long sequencial, 
+												Pessoa pessoa){
+		try {
+			if (!pessoaService.findById(pessoa.getSequencial()).isPresent() ) {
+	//			ResponseEntity.badRequest().build();
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		
+			Pessoa pessoaUpdated = pessoaService.update(pessoa);
+
+			return new ResponseEntity<Pessoa>( HttpStatus.OK );
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
+		
+	}
+	
+	@RequestMapping(
+			method=RequestMethod.DELETE, 
+//			produces=MediaType.APPLICATION_JSON_VALUE,
+			path = "{sequencial}"
+	)
+	public ResponseEntity<Pessoa> deletePessoaById(@PathVariable("sequencial") Long sequencial){
+		try {
+			if (!pessoaService.findById(sequencial).isPresent() ) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+
+			pessoaService.delete(sequencial);
+			
+			return new ResponseEntity<Pessoa>( HttpStatus.OK );
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	
+}
+
+
+
+10. Dentro da pasta src/main/resources/static crie as pastas abaixo:
 
 css
 docs
 fontes
 js
 
-8. Copie os arquivos abaixo na pasta css:
+11. Copie os arquivos abaixo na pasta css:
 
 main.css
 --------
@@ -1930,141 +2073,8 @@ $(document).ready(function() {
 </html>
 
 
-13. Copie o conteúdo abaixo dentro do arquivo src/test/java/PessoaTests.java
 
-package com.maransi;
-
-
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.maransi.model.Pessoa;
-import com.maransi.service.PessoaService;
-import com.maransi.util.UF;
-
-@TestMethodOrder(OrderAnnotation.class)
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes=DemoBootJqueryDatatableApplication.class)
-@Transactional
-class PessoaTests {
-	
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
-	
-	@Autowired
-	private PessoaService pessoaService;
-
-	@Test
-	@Order(2)
-	void testFindByName() throws Exception{
-		logger.info("\n Testing testFindByName()");
-		
-		
-		try {
-			assertNotNull(pessoaService.findByNome("%MARCO ANTONIO DA SILVA%") ); // %NELSON DOUGLAS MARCOS OLIVEIRA%"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			
-			throw new Exception( e.getMessage() );
-		}
-		
-		
-	}
-	
-	@Test
-	@Order(3)
-	void findByCpf() throws Exception{
-		
-		try {
-			assertNotNull( pessoaService.findByCpf("106.523.608-58"));
-		} catch (Exception e) {
-			e.printStackTrace();
-			
-			throw new Exception(e.getMessage());
-		}
-		
-		
-	}
-	
-	@Test
-	@Order(4)
-	void testFindById() throws Exception{
-		
-		try {
-			assertNotNull( pessoaService.findById(1L) );
-		} catch (Exception e) {
-			e.printStackTrace();
-			
-			throw new Exception( e.getMessage() );
-		}
-	}
-
-	@Test
-	@Order(5)
-	@Rollback(true)
-	void testCrud() throws Exception{
-		
-		try {
-			Pessoa pessoa = pessoaService.findById(1L).orElse(null);
-			
-			pessoa.setNome("ELISANGELA APARECIDA DE ALMEIDA Update");
-			
-			pessoaService.update(pessoa);
-			
-			pessoa = pessoaService.findById(1L).orElse(null);
-			
-			assertEquals("ELISANGELA APARECIDA DE ALMEIDA Update", pessoa.getNome() );
-			
-			logger.info("\n pessoaService.update {}", pessoa);
-			
-			pessoa = new Pessoa("037.440.710-06","JOSE DA SILVA", LocalDate.of(2001,1,1),"RUA DA BELEZAS 30","SÃO PAULO","00000000","11 9 65833040",new BigDecimal("10000"),UF.SP); 			
-			
-			pessoaService.insert(pessoa);
-						
-			pessoa = pessoaService.findByCpf("037.440.710-06").orElse(null);
-			
-			logger.info("\n pessoaService.insert {}", pessoa);
-
-			assertEquals("JOSE DA SILVA", pessoa.getNome());			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		
-	}
-	
-	
-/*	
-	public Optional<Pessoa> findByCpf( String cpf ) {
-		return pessoaRepository.findByCpf(cpf);
-	}
-
-	public Optional<Pessoa> findById( Long id ){
-		return pessoaRepository.findById(id);
-	}
-
-*/
-}
-
-14. Execute os testes
-
-15. Execute a URL http://localhost:8080/pessoa/home
+13. Execute a URL http://localhost:8080/pessoa/home
 
 
 
