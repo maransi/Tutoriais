@@ -1227,10 +1227,10 @@ public class PessoaResource {
 //  No postman colocar os parametros como "form-data"
 	public @ResponseBody Map<String, List<Pessoa>> findPessoa( Pessoa pessoa) {
 		List<Pessoa> pessoas = null;
-
-		if ( !"".equals(pessoa.getNome())) {
+//		if ( ! pessoa.getNome().isEmpty() ) {
+		if ( ! "".equals(pessoa.getNome()) && pessoa.getNome() != null ) {
 			pessoas = pessoaService.findByNome(pessoa.getNome());
-		} else if ( ! "".equals(pessoa.getCpf()) ) {
+		} else if ( pessoa.getCpf() != null && ! "".equals(pessoa.getCpf()) ) {
 			pessoas = new ArrayList<Pessoa>();
 
 			Optional<Pessoa> p = pessoaService.findByCpf(pessoa.getCpf());
@@ -1484,7 +1484,10 @@ body {
 }
 
 
-9. Copie o arquivo abaixo dentro da pasta docs:
+9. Copie o arquivo abaixo dentro da pasta docs com o nome de portuguese.json:
+
+portuguese.json
+---------------
 
 {
 	"sProcessing":   "Processando...",
