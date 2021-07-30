@@ -752,5 +752,3 @@ Click na seta Run As -> JUnit Test ( a seta está ao lado do botão Run na toolb
 Observe na aba JUnit se os testes foram concluido com sucesso. Se a barra de progresso
 			estiver verde é porque foi tudo bem, caso contrário acesse os metodos da classe
 			para entender o que aconteceu.
-
-.
