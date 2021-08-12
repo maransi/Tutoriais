@@ -1,0 +1,16 @@
+1. Acessar o site da NVIDIA para pegar as especificações técnicas:
+
+    https://www.nvidia.com/en-us/geforce/graphics-cards/geforce-gtx-770/performance/
+
+2. Baixar o software PassMark Software
+
+    https://www.passmark.com/products/performancetest/download.php
+
+3. Executar os softwares abaixo:
+
+    GPU-Z
+
+    PassMark
+
+    FurMark
+
