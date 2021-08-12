@@ -1,0 +1,15 @@
+Recomendo que siga os passos abaixo no Windows para resolução deste comportamento:
+
+1. Pressione as teclas Windows + R para abrir o Executa”;
+
+2. Digite regedit e pressione ok;
+3. No Editor de Registro, navegue até  a chave abaixo:
+
+HKEY_LOCAL_MACHINE \ SYSTEM \ CurrentControlSet \ Control \   TimeZoneInformation;
+
+4. Clique com o botão direto do mouse sobre TimeZoneInformation;
+5. Clique em Novo e em seguida clique em Valor DWORD;
+6. Na coluna nome, digite RealTimeIsUniversal para criar o valor;
+7. Dê um duplo clique sobre o valor que acabamos de criar e digite 1 no campo Dados do valor;
+8. Clique em OK e reinicie o computador. Verifique se o comportamento persiste.
+
