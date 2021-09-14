@@ -414,5 +414,3 @@ swarmcache-1.0RC2.jar
 
 
 9. Selecionar todos os jars e colocar no classpath da aplica��o:
-
- 
