@@ -1,4 +1,4 @@
-1. Acesse o seu banco e database;
+1. Acesse o seu banco e database; 
 
 2. Crie a tabela abaixo:
 
