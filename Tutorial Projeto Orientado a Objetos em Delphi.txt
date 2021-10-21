@@ -1,0 +1,468 @@
+Projeto
+
+. Criar um projeto "VCL Forms Application"
+
+. Acessar o formulário padrão do projeto e alterar a propriedade "name" para :
+
+    frmPessoa
+
+. Acessar a aba "code" do formulário e alterar na primeira linha o nome da "Unit"
+    para "Pessoa":
+
+
+    unit Pessoa;
+
+    interface
+
+    uses
+    Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+    Vcl.Controls, Vcl.Forms, Vcl.Dialogs;
+
+    type
+        TfrmPessoa = class(TForm)
+        private
+            { Private declarations }
+        public
+            { Public declarations }
+        end;
+
+        var
+        frmPessoa: TfrmPessoa;
+
+        implementation
+
+        {$R *.dfm}
+
+    end.
+
+. Crie uma unit no projeto com o nome de "ClasseTPessoa":
+
+    // Inicialmente a classe é construida de forma bem básica
+    unit ClasseTPessoa;
+
+    interface
+
+    implementation
+
+    end.
+
+. Abaixo da linha "interface" implemente o código abaixo:
+
+    type TPessoa = class
+
+        private
+
+
+        public
+
+
+
+
+    end;
+
+
+    . A convenção é iniciar o nome do apelido da classe sempre com a letra "T"
+    . Dentro do parágrafo "type" será o local onde definiremos métodos e propriedade
+    . Para facilitar o desenvolvimento da classe podemos digitar a palavra "prop" + Tab
+        e com isso o IDE completará com a definição dos Getter/Setter
+
+. Abaixo da linha "public" insira o código abaixo:
+
+    property codigo: Integer read GetCodigo write SetCodigo;
+    property nome: String read GetNome write SetNome;
+
+    . Posicione o cursor sobre a palavra "GetCodigo" e "SetCodigo"
+    . Pressione Shift + Ctrl + C para criar a implementação dos métodos
+    . IMPORTANTE: A declaração das propriedades deve ser feita sempre abaixo da linha "public"
+
+. A classe ficará com o código final abaixo:
+
+    unit ClasseTPessoa;
+
+    interface
+
+    type TPessoa = class
+
+    private
+        function GetCodigo: Integer;
+        function GetNome: String;
+        procedure SetCodigo(const Value: Integer);
+        procedure SetNome(const Value: String);
+
+
+
+    public
+
+
+        property codigo: Integer read GetCodigo write SetCodigo;
+        property nome: String read GetNome write SetNome;
+
+
+    end;
+
+
+    implementation
+    { TPessoa }
+
+    function TPessoa.GetCodigo: Integer;
+    begin
+
+    end;
+
+    function TPessoa.GetNome: String;
+    begin
+
+    end;
+
+    procedure TPessoa.SetCodigo(const Value: Integer);
+    begin
+
+    end;
+
+    procedure TPessoa.SetNome(const Value: String);
+    begin
+
+    end;
+
+    end.
+
+. Inclua as propriedades que guardarão os valores da classe acima da linha "private"
+
+    ..
+    type TPessoa = class
+
+        private
+            FCodigo : Integer;
+            FNome : String;
+
+            function GetCodigo: Integer;
+            function GetNome: String;
+            procedure SetCodigo(const Value: Integer);
+            procedure SetNome(const Value: String);
+    ...
+
+    . Observe que o padrão de nomenclatura das propriedades iniciam com a letro "F";
+    . Observe que as propriedades que manteram os valores ficaram dentro do escopo "private".
+
+. Acesse os métodos Getter/Setter e implemente o retorno e atualização das propriedades como abaixo:
+
+    ...
+    function TPessoa.GetCodigo: Integer;
+    begin
+        Result := FCodigo;
+    end;
+
+    function TPessoa.GetNome: String;
+    begin
+        Result := FNome;
+    end;
+
+    procedure TPessoa.SetCodigo(const Value: Integer);
+    begin
+        FCodigo := Value;
+    end;
+
+    procedure TPessoa.SetNome(const Value: String);
+    begin
+        FNome := Value;
+    end;
+    ...
+
+    . Observe que nos métodos "Getter" é feito a atualização do valor das "properties";
+        já nos "Setter" é feito o retorno desses valores.
+
+
+. No formulário do projeto inclua um componente "Button" para testar a nossa classe. No método onClick desse
+    componente insira o código abaixo:
+
+
+    ...
+    procedure btnExecutarClick(Sender: TObject);
+    ...
+    uses
+        ClasseTPessoa;
+
+    procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+    begin
+        try
+            Pessoa := TPessoa.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO';
+
+            ShowMessage('Pessoa com o código ' + IntToStr(Pessoa.codigo) + ' e o nome é ' + Pessoa.nome );
+        finally
+            FreeAndNil(Pessoa);
+        end;
+    end;
+
+    . Para utilizar a classe é necessário importar ela no "uses". Uma forma fácil para isso seria posicionar o 
+        cursor sobre a declaração da classe "Pessoa : TPessoa", pressionar Alt + F11 e escolher a classe
+        em questão.
+    . Observe que o padrão para nomear um objeto no método será começar com a letra maiúscula "Pessoa"
+
+
+. Crie a propriedade "FDataNascimento" com o Setter/Getter como abaixo:
+
+    ...
+    uses
+        System.SysUtils;
+
+    type TPessoa = class
+
+    private
+        FCodigo : Integer;
+        FNome : String;
+        FDataNascimento : String;
+
+        function GetCodigo: Integer;
+        function GetNome: String;
+        procedure SetCodigo(const Value: Integer);
+        procedure SetNome(const Value: String);
+        function GetDataNascimento: String;
+        procedure SetDataNascimento(const Value: String);
+
+    ...
+    public
+        property dataNascimento: String read GetDataNascimento write SetDataNascimento;
+
+. Crie os métodos Getter/Setter
+
+    function TPessoa.GetDataNascimento: String;
+    begin
+        Result := FDataNascimento;
+    end;
+
+    procedure TPessoa.SetDataNascimento(const Value: String);
+    begin
+        FDataNascimento := Value;
+    end;
+
+. Crie o método Idade:
+
+    ...
+    public
+        function Idade : Integer;
+    ...
+    function TPessoa.Idade: Integer;
+    begin
+        Result := Trunc( (now - StrToDate(Self.dataNascimento) ) / 365.25 );
+    end;
+    ...
+
+. Faça a chamado do método no botão do formulário
+
+    procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+    begin
+        try
+            Pessoa := TPessoa.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO';
+            Pessoa.dataNascimento := '17/10/1966';
+
+            ShowMessage('Pessoa com o código ' + IntToStr(Pessoa.codigo) + ' e o nome é ' + Pessoa.nome + ' Sua idade é de ' + IntToStr( Pessoa.Idade ) );
+        finally
+            FreeAndNil(Pessoa);
+        end;
+    end;
+
+. Crie a Classe "ClasseTCliente" no projeto:
+
+    unit ClasseTCliente;
+
+    interface
+
+    uses ClasseTPessoa;
+
+
+    type
+
+    TCliente  = class(TPessoa)
+        private
+            FLimiteCredito : Real;
+
+            function GetLimiteCredito: Real;
+            procedure SetLimiteCredito(const Value: Real);
+
+
+        public
+            function EmprestaValor( prValor : Real ) : Boolean;
+
+        property limiteCredito: Real read GetLimiteCredito write SetLimiteCredito;
+
+    end;
+
+    implementation
+
+    { TClient }
+
+    function TCliente.EmprestaValor( prValor : Real ): Boolean;
+    begin
+        if prValor > limiteCredito then
+            Result := False
+        else
+            Result := True;
+
+    end;
+
+    function TCliente.GetLimiteCredito: Real;
+    begin
+        Result := FLimiteCredito;
+    end;
+
+    procedure TCliente.SetLimiteCredito(const Value: Real);
+    begin
+        FLimiteCredito := Value;
+    end;
+
+    end.
+
+
+    . Observe que a classe TCliente herda a classe TPessoa:
+
+        ...
+        TCliente  = class(TPessoa)
+        ...
+
+. Altere o código do botão do formulário como abaixo:
+
+    uses
+        ADODB, ClasseTPessoa, ClasseTCliente;
+
+    procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+        Cliente : TCliente;
+        valorSolicitado: Real;
+    begin
+        try
+            Pessoa := TPessoa.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO';
+            Pessoa.dataNascimento := '17/10/1966';
+
+            ShowMessage('Pessoa com o código ' + IntToStr(Pessoa.codigo) + ' e o nome é ' + Pessoa.nome + ' Sua idade é de ' + IntToStr( Pessoa.Idade ) );
+
+            Cliente := TCliente.Create;
+
+            Cliente.nome := 'JOSE';
+            Cliente.limiteCredito := 500.00;
+            valorSolicitado := 1000.00;
+
+
+            ShowMessage(Cliente.nome + ' Tem limite de R$ ' + FloatToStr( Cliente.limiteCredito ) );
+
+            if Cliente.EmprestaValor( valorSolicitado ) then
+                ShowMessage( 'Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) )
+            else
+                ShowMessage( 'NÃO Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) );
+        finally
+            FreeAndNil(Pessoa);
+            FreeAndNil(Cliente);
+        end;
+    end;
+
+    . Observe que a classe Cliente utiliza propriedades da classe Pessoa:
+
+        ...
+        Cliente.nome := 'JOSE';
+        ...
+
+    . Sempre que quiser declarar uma variável de dentro do bloco em desenvolvimento, basta posicionar o
+        cursor sobre a variável e pressionar Ctrl + Shift  + V. Automaticamente irá aparecer a declaração dela
+        no bloco "var".
+
+    . Sempre que quiser alterar dinamicamente uma palavra, o nome de uma variável por exemplo, basta selecionar
+        o trecho que deseja que ocorra essa alteração. Click no icone com dois lápis na barra de numeração no lado
+        esquerdo do monitor. Proceda a alteração do nome e observe que todas as palavras com o mesmo nome irá se
+        alterar dinamicamente.
+
+Polimorfismo 
+------------
+
+. Implemente o código abaixo na classe "ClasseTCliente"
+
+    ...
+    function EmprestaValor( prValor : Real ) : Boolean; overload;
+    function EmprestaValor( prValor : Real; out prValorDisponivel : Real ) : Boolean ; overload;
+
+    ...
+
+    uses
+        Math;
+
+    function TCliente.EmprestaValor( prValor : Real ): Boolean;
+    begin
+        if prValor > limiteCredito then
+            Result := False
+        else
+            Result := True;
+
+    end;
+
+    function TCliente.EmprestaValor(prValor: Real;
+                                    out prValorDisponivel: Real): Boolean;
+    begin
+        prValorDisponivel := ifThen( limiteCredito - prValor > 0, limiteCredito - prValor, limiteCredito );
+
+        if prValor > limiteCredito then
+            Result := False
+        else
+            Result := True;
+
+    end;
+
+    . Observe que o método EmprestaValor tem dois métodos sobrecarregados, com assinaturas diferentes.
+    . Os dois métodos sobrecarregados são identicados como "overload"
+
+. Acesse o formulário "Pessoa" e deixe o código do método "onClick" do botão executar como abaixo:
+
+    procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+        Cliente : TCliente;
+        valorSolicitado, valorDisponivel: Real;
+    begin
+        try
+            Pessoa := TPessoa.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO';
+            Pessoa.dataNascimento := '17/10/1966';
+
+            ShowMessage('Pessoa com o código ' + IntToStr(Pessoa.codigo) + ' e o nome é ' + Pessoa.nome + ' Sua idade é de ' + IntToStr( Pessoa.Idade ) );
+
+            Cliente := TCliente.Create;
+
+            Cliente.nome := 'JOSE';
+            Cliente.limiteCredito := 500.00;
+            valorSolicitado := 1000.00;
+            valorDisponivel := 0;
+
+
+            ShowMessage(Cliente.nome + ' Tem limite de R$ ' + FloatToStr( Cliente.limiteCredito ) );
+
+            if Cliente.EmprestaValor( valorSolicitado ) then
+              ShowMessage( 'Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) )
+            else
+            begin
+                ShowMessage( 'NÃO Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) );
+
+                Cliente.EmprestaValor( valorSolicitado, valorDisponivel );
+
+                ShowMessage( 'O valor máximo que podemos disponibilizar seria de R$ ' + FormatFloat('###,##0.00', valorDisponivel ) );
+            end;
+        finally
+            FreeAndNil(Pessoa);
+            FreeAndNil(Cliente);
+        end;
+    end;
+
+    . Observe que foi chamado o método Cliente.EmprestaValor para validar o valor solicitado de emprestimo e também
+        para retornar o valor limite do empréstimo.
