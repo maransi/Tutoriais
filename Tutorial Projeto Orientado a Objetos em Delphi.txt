@@ -252,6 +252,10 @@ Projeto
     end;
     ...
 
+. Adicione as "Units" abaixo no Use:
+
+    uses System, System.SysUtils;
+
 . Faça a chamado do método no botão do formulário
 
     procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
@@ -468,4 +472,267 @@ Polimorfismo
         para retornar o valor limite do empréstimo.
 
 
-        
+. Na classe ClasseTPessoa acrescente os métodos abaixo:
+
+    unit ClasseTPessoa;
+
+    interface
+
+    type TPessoa = class
+
+    private
+        ...
+        FSalario: Currency;
+
+        ...
+        procedure SetSalario(const Value: Currency);
+
+    public
+        ...
+        property salario: Currency read FSalario write SetSalario;
+
+        ...
+        function Bonificacao: Currency; virtual;
+        function ImpostoRenda: Currency; virtual; abstract;
+    end;
+
+
+    implementation
+
+    { TPessoa }
+    uses  System.SysUtils;
+
+
+    function TPessoa.Bonificacao: Currency;
+    begin
+        Result := FSalario;
+    end;
+
+    ...
+
+    procedure TPessoa.SetSalario(const Value: Currency);
+    begin
+        FSalario := Value;
+    end;
+
+    end.
+
+    . Observe os métodos "Bonificacao" e "ImpostoRenda":
+
+        function Bonificacao: Currency; virtual;
+        function ImpostoRenda: Currency; virtual; abstract;
+
+        . Ambos estão marcados como "virtual", informando ao Delphi que as classes que heradarem
+            a ClasseTPessoa poderá sobreescrever esse método.
+        . Para o método "Bonificacao" é obrigatório a implementação dele na ClasseTPessoa. 
+        . Já o método "ImpostoRenda" deixa de ser, pois além dele estar com a marcação de "virtual",
+            também tem a marcação de "abstract", desobrigando a implementação dele na classe principal.
+        . Todo método marcado como "virtual; abstract" será obrigatório a implementação do método na classe
+            que extender a classe pai.
+
+. Crie a classe ClasseTFuncionario com o código abaixo:
+
+    unit ClasseTFuncionario;
+
+    interface
+
+    uses ClasseTPessoa;
+
+    type TFuncionario = class(TPessoa)
+
+    private
+        FDesconto: Double;
+        procedure SetDesconto(const Value: Double);
+
+    public
+        property desconto: Double read FDesconto write SetDesconto;
+
+
+        function Bonificacao : Currency; override;
+
+        function ImpostoRenda: Currency; override;
+
+    end;
+
+    implementation
+
+    { TFuncionario }
+
+    function TFuncionario.Bonificacao: Currency;
+    begin
+        Result := Self.salario * (1-(FDesconto/100));
+    end;
+
+    function TFuncionario.ImpostoRenda: Currency;
+    begin
+        Result := Self.Bonificacao * 0.25;
+    end;
+
+    procedure TFuncionario.SetDesconto(const Value: Double);
+    begin
+        FDesconto := Value;
+    end;
+
+    end.
+
+. Crie a classe ClasseTPresidente como abaixo:
+
+    unit ClasseTPresidente;
+
+    interface
+
+    uses ClasseTPessoa;
+
+    type TPresidente = class(TPessoa)
+
+    private
+        FProLabore: Currency;
+        FComissao: Currency;
+        procedure SetProLabore(const Value: Currency);
+        procedure SetComissao(const Value: Currency);
+
+
+
+    public
+        property proLabore: Currency read FProLabore write SetProLabore;
+        property comissao: Currency read FComissao write SetComissao;
+
+        function Bonificacao: Currency; override;
+
+        function ImpostoRenda: Currency; override;
+
+    end;
+
+
+    implementation
+
+
+    { TPresidente }
+
+    function TPresidente.Bonificacao: Currency;
+    begin
+        Result := FProLabore + FComissao;
+    end;
+
+    function TPresidente.ImpostoRenda: Currency;
+    begin
+        Result := Self.Bonificacao * 0.10;
+    end;
+
+    procedure TPresidente.SetComissao(const Value: Currency);
+    begin
+        FComissao := Value;
+    end;
+
+    procedure TPresidente.SetProLabore(const Value: Currency);
+    begin
+        FProLabore := Value;
+    end;
+
+    end.
+
+. Observe que nas classes ClasseTFuncionario e ClasseTPresidente foram implementados os métodos:
+
+    Bonificacao
+    ImpostoRenda
+
+    . Caso o método Bonificacao não fosse implementado, ao chamar esse método seria chamado a implementação
+        padrão da classe principal ClasseTPessoa.Bonificacao.
+
+. Deixe o código do formulário Pessoa como abaixo:
+
+    procedure TfrmPessoa.btnPessoaClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+        Cliente : TCliente;
+        Funcionario : TFuncionario;
+        Presidente : TPresidente;
+        valorSolicitado: Real;
+        valorDisponivel: Real;
+    begin
+
+        try
+            Pessoa := TPessoa.Create;
+            Cliente := TCliente.Create;
+            Funcionario := TFuncionario.Create;
+            Presidente := TPresidente.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO ANTONIO DA SILVA';
+            Pessoa.dataNascimento := '17/10/1966';
+            Pessoa.salario := 5000;
+
+            valorSolicitado := 1000;
+
+
+            ShowMessage('{ ' + #13 +
+                        '  codigo: "' + IntToStr(Pessoa.codigo) + '",' + #13 +
+                        '  nome: "' + Pessoa.nome + '",' + #13 +
+                        '  dataNascimento: "' + Pessoa.dataNascimento + '",' + #13 +
+                        '  idade: ' + IntToStr( Pessoa.idade ) + #13 +
+                        '  salario: ' + FloatToStr( Pessoa.salario ) + #13 +
+                        '}' );
+
+            Cliente.nome := 'JOSE';
+            Cliente.limiteCredito := 500.00;
+            valorSolicitado := 1000.00;
+            valorDisponivel := 0;
+
+
+            ShowMessage(Cliente.nome + ' Tem limite de R$ ' + FloatToStr( Cliente.limiteCredito ) );
+
+            if Cliente.EmprestaValor( valorSolicitado ) then
+            ShowMessage( 'Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) )
+            else
+            begin
+                ShowMessage( 'NÃO Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) );
+
+                Cliente.EmprestaValor( valorSolicitado, valorDisponivel );
+
+                ShowMessage( 'O valor máximo que podemos disponibilizar seria de R$ ' + FormatFloat('###,##0.00', valorDisponivel ) );
+            end;
+
+            Funcionario.codigo := 2;
+            Funcionario.nome := 'JORGE MANUEL';
+            Funcionario.dataNascimento := '01/10/1976';
+            Funcionario.salario := 8000;
+            Funcionario.desconto := 30;
+
+
+            ShowMessage('{ ' + #13 +
+                        '  codigo: "' + IntToStr(Funcionario.codigo) + '",' + #13 +
+                        '  nome: "' + Funcionario.nome + '",' + #13 +
+                        '  dataNascimento: "' + Funcionario.dataNascimento + '",' + #13 +
+                        '  idade: ' + IntToStr( Funcionario.idade ) + #13 +
+                        '  salario: ' + FloatToStr( Funcionario.salario ) + #13 +
+                        '  salarioLiquido: ' + FloatToStr( Funcionario.Bonificacao ) + #13 +
+                        '  ImpostoRenda: ' + FloatToStr(Funcionario.ImpostoRenda ) + '",' + #13 +
+                        '}' );
+
+            Presidente.codigo := 3;
+            Presidente.nome := 'JOAO BATISTA';
+            Presidente.dataNascimento := '01/02/1946';
+            Presidente.salario := 0;
+            Presidente.comissao := 20000;
+            Presidente.proLabore := 50000;
+
+            ShowMessage('{ ' + #13 +
+                        '  codigo: "' + IntToStr(Presidente.codigo) + '",' + #13 +
+                        '  nome: "' + Presidente.nome + '",' + #13 +
+                        '  dataNascimento: "' + Presidente.dataNascimento + '",' + #13 +
+                        '  idade: ' + IntToStr( Presidente.idade ) + '",' + #13 +
+                        '  salario: ' + FloatToStr( Presidente.salario ) + '",' + #13 +
+                        '  comissao: ' + FloatToStr( Presidente.comissao ) + '",' + #13 +
+                        '  salarioLiquido: ' + FloatToStr( Presidente.Bonificacao ) + '",' + #13 +
+                        '  ImpostoRenda: ' + FloatToStr(Presidente.ImpostoRenda ) + '",' + #13 +
+                        '}' );
+        finally
+            FreeAndNil( Pessoa );
+            FreeAndNil( Cliente );
+            FreeAndNil( Funcionario );
+            FreeAndNil( Presidente );
+        end;
+
+    end;
+
+
