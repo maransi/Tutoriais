@@ -864,7 +864,53 @@ Polimorfismo
         ...
 
 
-Trabalhando com estrutura Record:
+    . Outro exemplo:
+
+        unit ClasseTAcordos;
+
+        interface
+
+        uses
+
+        type
+            TTaxaCobrancaExterna = record
+                multa, moraAD, descMulta, descMoraAD, descPrincipal : Integer
+            end;
+
+        ...
+        TAcordos = class(TObject)
+            private
+
+            public
+
+        end;
+
+        implementation
+
+        uses         
+
+        ...
+        function TAcordos.negociacaoDuvidosa(prNumAcordo: Integer; out prDetalheNegociacao : String): Boolean;
+        var
+            txCobExt : TTaxaCobrancaExterna;
+
+        begin
+            saldoDevedor := 0;
+        atraso := 0;
+        try
+            try
+                txCobExt := obtemTipoTaxa( 10 );	// 10. Cobrança Externa
+
+                divida := TTabelaTaxa.Create( 0 );
+                multa := TTabelaTaxa.Create( txCobExt.multa );
+                mora := TTabelaTaxa.Create( txCobExt.moraAD );
+                descontoMulta := TTabelaTaxa.Create(  txCobExt.descMulta );
+                descontoMora := TTabelaTaxa.Create( txCobExt.descMoraAD );
+                descontoPrincipal := TTabelaTaxa.Create( txCobExt.descPrincipal );
+            ....
+
+
+. Trabalhando com estrutura Record:
 
     . Declare a estrutura no Type:
 
