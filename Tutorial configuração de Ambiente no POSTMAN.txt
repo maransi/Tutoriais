@@ -1,0 +1,64 @@
+Tutorial configuração de Ambiente no POSTMAN
+--------------------------------------------
+
+. A necessidade para se configurar ambientes no POSTMAN seria de substituir nas URLs das APIs por contextos de forma
+    dinamica. Dessa forma, podemos trabalhar mais facilmente com vários servidores (DESENVOLVIMENTO, HOMOLOGAÇÃO, PRODUÇÃO, etc)
+
+. Acesse o icone "Environment Quick Look" com o simbolo de um olho, no canto superior direito. 
+    
+    . Detalhe: Ao lado do icone existe uma lista de ambiente, para incluir um novo ambiente é necessário
+                que esteja escolhido o item "No Environment".
+
+    . Ao clicar no icone de olho, abrirá a possibilidade de acionar "Add" para "Environments". Acione o "Add" de Environment e digite as váriaveis abaixo:
+
+        Desenvolvimento                                                                         Produção
+        ---------------                                                                         --------
+        variable: url                                                                           valid: url
+        initial value: [Contexto da chamada das APIs, exemplo: http://localhost:62910/]         initial value: http://jbcred.trafficmanager.net:6122
+        current value: [Contexto da chamada das APIs, exemplo: http://localhost:62910/]         current value: http://jbcred.trafficmanager.net:6122
+
+. Acesse a API de token
+
+    . Altere o contexto da API pelo valor {{url}}/token
+
+    . Na aba "Tests" inclua o código abaixo:
+
+        var jsonData = JSON.parse(responseBody);
+
+        postman.setEnvironmentVariable("access_token", jsonData.access_token);
+
+    . Na aba Body inclua os parâmetros abaixo:
+
+        Desenvolvimento                                                                         Produção
+        ---------------                                                                         --------
+        grant_type: password
+        username: 40
+        password: JBLIBERO19                                                                    password: JB21LBRO!
+        sequencial: 1
+
+. Acesse a API de retorno:
+
+    . Altere o contexto da API pelo valor {{url}}/[rota], exemplo:
+
+        {{url}}/api/propostas/ValidarDadosBancario
+
+    . Acesse o item "Headers"
+
+        . Inclua o item "Authorization"
+
+        . No "Value" do "Authorization" coloque o conteúdo abaixo:
+
+            Bearer {{access_token}}
+
+
+    . Acesse o item "Body":
+
+        . Altere para "raw" e insira os parâmetros de pesquisa, exemplo:
+
+            { "Agencia": "0407", "Conta": "0008337165780", "Banco": "104", "TipoConta": "1288" }
+
+        . Escolha o formato "JSON" na lista do último campo
+
+    . Acione o Send
+
+
