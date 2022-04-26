@@ -736,3 +736,246 @@ Polimorfismo
     end;
 
 
+. Exemplo de uma classe que implementa uma Interface:
+
+    unit ClasseTBridgeClientePrejuizo;
+
+    interface
+
+    uses Dialogs, SysUtils, Classes, DBClient, ClasseTHelperClientePrejuizo,  TClientePrejuizoData, dados;
+
+    type
+        IBridgeClientePrejuizo = interface
+            ['{FB1F4FB1-8AD8-48FD-AEA5-1E33B4628879}']
+            function execute : IBridgeClientePrejuizo;
+            function delete : IBridgeClientePrejuizo;
+            function table : string;
+    end;
+
+    TTabProxnumero = class(TinterfacedObject, IBridgeClientePrejuizo)
+
+    FHelper : THelperClientePrejuizo;
+    FDataModule : TDataModule;
+    FTable : string;
+    FPK : TStringList;
+
+    public
+        function execute : IBridgeClientePrejuizo;
+        function table : string;
+        function delete : IBridgeClientePrejuizo;
+        constructor Create( prHelper : THelperClientePrejuizo; prDataModule : TDataModule );
+
+    end;
+
+    implementation
+
+        { TTabProxnumero }
+
+        constructor TTabProxnumero.Create(prHelper: THelperClientePrejuizo; prDataModule : TDataModule);
+        begin
+            FHelper := prHelper;
+            FDataModule := prDataModule;
+            FTable := 'tab_proxnumero';
+
+            FPK := TStringList.Create;
+            FPK.Add('nmcampo');
+
+        end;
+
+        function TTabProxnumero.execute: IBridgeClientePrejuizo;
+
+        var
+            sqlFonte, sqlDestino : string;
+        begin
+            //   FHelper.FTable := FTable;
+            //   FHelper.FPK := FPK;
+            //
+            FHelper.FTable := FTable;
+            FHelper.FPK := FPK;
+            FHelper.getField();
+            FHelper.montaSQLUpdate();
+            FHelper.montaSQLInsert();
+
+            sqlFonte := FHelper.montaSQLSelect(ptFonte, False);
+            sqlDestino := FHelper.montaSQLSelect(ptDestino, true);
+
+            FHelper.export(sqlFonte, sqlDestino, FHelper.getAtualizacaoTotalClientePrejuizo);
+
+            Result := TReduzida.Create(FHelper, FDataModule );
+        end;
+
+        function TTabProxnumero.table: string;
+        begin
+            Result := FTable;
+        end;
+
+        function TTabProxnumero.delete: IBridgeClientePrejuizo;
+        begin
+            Result := nil;
+        end;
+    end.
+
+
+
+. Trabalhando com estrutura Type:
+
+    . Declare a estrutura dentro do Type:
+
+        ...
+        Type
+
+        TTipoAcordo = (
+            taNenhum = 0,
+            taPagtoAVista = 2,
+            taAcordoSemJuros = 8,
+            taAcPadrao033ADInativo = 14,
+            taAVencerBB = 16,
+            taDescoBoletoBB = 17,
+            taAltBoletoDebito = 18,
+            taBoletoSantanderProtesto = 19,
+            taReapresentacaoCheque = 22,
+            taDescComisFraude = 25,
+            taParcialFinanceiro = 26,
+            taPorConta = 27,
+            taAcPadrao0033AD = 29);            // Desc Comis Corresp (Fraude)
+
+        ...
+        procedure TAcordos.AbrirFormasPagto;
+        begin
+            with FormasPagto do
+            begin
+                Close;
+                CommandText := ' SELECT * FROM tab_forma_pagto_cob WHERE ativo = ''S'' ';
+                // O tipo de acordo "A vista Banco do Brasil" permite apenas realizar acordos com forma de pagamento que não seja débito automático
+                if (Self.TipAcordo = Integer(TTipoAcordo.taAVencerBB)) then
+                    CommandText := CommandText + ' AND cd_forma_pagto NOT IN(2,3) '
+                else if (Self.TipAcordo = Integer(TTipoAcordo.taDescoBoletoBB)) then
+                    CommandText := CommandText + ' AND cd_forma_pagto = 2 '
+                else if (Self.TipAcordo = Integer(TTipoAcordo.taBoletoSantanderProtesto)) then
+                    CommandText := CommandText + ' AND cd_forma_pagto = 6 '
+                // Fabio Costa 30/05/2016 - Permite apenas a forma de pagamento 8 - Cheque
+                else if (Self.TipAcordo = Integer(TTipoAcordo.taReapresentacaoCheque)) then
+                    CommandText := CommandText + ' AND cd_forma_pagto = 8 '
+                else   // Fabio Costa 30/05/2016 - A forma de pagamento 8 - Cheque não é permitida ainda para um acordo normal
+                    CommandText := CommandText + ' AND cd_forma_pagto NOT IN(6, 8) ';
+                Open;
+            end;
+        end;
+        ...
+
+
+    . Outro exemplo:
+
+        unit ClasseTAcordos;
+
+        interface
+
+        uses
+
+        type
+            TTaxaCobrancaExterna = record
+                multa, moraAD, descMulta, descMoraAD, descPrincipal : Integer
+            end;
+
+        ...
+        TAcordos = class(TObject)
+            private
+
+            public
+
+        end;
+
+        implementation
+
+        uses         
+
+        ...
+        function TAcordos.negociacaoDuvidosa(prNumAcordo: Integer; out prDetalheNegociacao : String): Boolean;
+        var
+            txCobExt : TTaxaCobrancaExterna;
+
+        begin
+            saldoDevedor := 0;
+        atraso := 0;
+        try
+            try
+                txCobExt := obtemTipoTaxa( 10 );	// 10. Cobrança Externa
+
+                divida := TTabelaTaxa.Create( 0 );
+                multa := TTabelaTaxa.Create( txCobExt.multa );
+                mora := TTabelaTaxa.Create( txCobExt.moraAD );
+                descontoMulta := TTabelaTaxa.Create(  txCobExt.descMulta );
+                descontoMora := TTabelaTaxa.Create( txCobExt.descMoraAD );
+                descontoPrincipal := TTabelaTaxa.Create( txCobExt.descPrincipal );
+            ....
+
+
+. Trabalhando com estrutura Record:
+
+    . Declare a estrutura no Type:
+
+        TAcordo = record
+                numAcordo, cdMotEstorno, cdTipoErro : Integer;
+                cpfCnpj : string;
+                operacaoParcial : Integer;
+                chequeParcial : string;
+                datLan : TDate;
+                hora : string;
+                dtPagamento : TDate;
+                valorPagoAcordo : Real;
+                banco : string
+        end;
+
+    . Declare o objeto do tipo da estrutura record:
+
+        private
+            regAcordo : TAcordo;
+
+    . Formas de trabalhar com a estrutura:
+
+        . Tipificando um objeto:
+
+            procedure baixaCheque( regAcordo : TAcordo );    
+
+        . Utilizando como um objeto:
+
+            . Faça a declaração na seção do type:
+
+                TPagamentoManual  =  record
+                    cpfCnpj     : string;
+                    operacao    : Integer;
+                    cheque      : string;
+                    datPag      :  TDate;
+                    juros, multa, desconto, valPag, rateio : Real;
+                    banco : string;
+                    cdFormaPagto : Integer;
+                    contrato : Integer;
+                    cobradora : Integer;
+                    observacao : string;
+                end;
+
+            . Declarando com valor vazio:
+
+                ...
+                procedure TContaCorrente.baixaCheque(regAcordo: TAcordo);
+
+                const pm : TPagamentoManual = ();
+                ...
+                var
+                       regPagamentoManual : TPagamentoManual;
+                ...
+                begin
+                ...
+                    while not Eof do
+                    begin
+                        chequeControle := FieldByName('chequeOriginal').AsString;
+
+                        regPagamentoManual := pm;
+
+                        regPagamentoManual.cpfCnpj := FieldByName('cpfCnpj').AsString;
+                        regPagamentoManual.operacao := FieldByName('operacaoOriginal').AsInteger;
+                        regPagamentoManual.cheque := FieldByName('chequeOriginal').asString;
+                        regPagamentoManual.cdFormaPagto := 8;
+                        regPagamentoManual.contrato := FieldByName('contrato').AsInteger;
+                    ...
+
