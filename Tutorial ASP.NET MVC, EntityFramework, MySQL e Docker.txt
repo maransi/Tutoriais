@@ -1,0 +1,392 @@
+Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
+-----------------------------------------------------
+
+1. Instalando o Docker
+
+    . No caso do windows, acesse a URL abaixo e baixe o instalador:
+
+        https://store.docker.com/editions/community/docker-ce-desktop-windows
+
+    . Utilizar a versão Community Edition (CE)
+
+    . No caso do Linux execute os comandos abaixo no prompt no terminal:
+
+        . A URL abaixo tem os passos atualizado para instalação do Docker:
+
+            https://docs.docker.com/engine/install/ubuntu/
+
+        . Instalação Atualizada
+
+            sudo apt-get update
+            sudo apt-get install \
+                ca-certificates \
+                curl \
+                gnupg \
+                lsb-release
+
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+            echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+                $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+            sudo apt-get update
+            sudo apt-get install docker-ce docker-ce-cli containerd.io
+            sudo docker --version
+
+            sudo groupadd docker
+            sudo gpasswd -a <usuario> docker
+            sudo chown "$USER":"$USER" /var/run/docker.sock -R
+            sudo service docker restart
+
+            docker --version
+
+
+2. Crie o container do mysql:
+
+    docker container run -d --name mysql -e MYSQL_ROOT_PASSWORD=root mysql:5.7
+
+    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
+    #
+    #   mysql -u root -p
+    #
+    # Informe a senha "root"
+    #
+    #       create database desenv;
+    #
+    docker container exec -it mysql /bin/bash
+
+
+3. Instalando o .NET Core SDK
+
+    . Instalçao Atualizada:
+
+        . URL com informações para realizar a instalação.
+
+            https://docs.microsoft.com/pt-br/dotnet/core/install/linux-ubuntu
+
+            . IMPORTANTE: Acesse a instalação da distribuição e versão especifica do linux que estamos utilizando para 
+                            proceder os comandos adequadamente.
+
+                            A instalação abaixo está para o Ubuntu 20.04
+
+        # Instalação do SDK
+        wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+        sudo dpkg -i packages-microsoft-prod.deb
+
+        sudo dpkg --purge packages-microsoft-prod && sudo dpkg -i packages-microsoft-prod.deb
+        sudo apt-get update
+
+        sudo apt-get install -y gpg
+        wget -O - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o microsoft.asc.gpg
+        sudo mv microsoft.asc.gpg /etc/apt/trusted.gpg.d/
+        wget https://packages.microsoft.com/config/ubuntu/{os-version}/prod.list
+        sudo mv prod.list /etc/apt/sources.list.d/microsoft-prod.list
+        sudo chown root:root /etc/apt/trusted.gpg.d/microsoft.asc.gpg
+        sudo chown root:root /etc/apt/sources.list.d/microsoft-prod.list
+
+        sudo apt-get update; \
+        sudo apt-get install -y apt-transport-https && \
+        sudo apt-get update && \
+        sudo apt-get install -y dotnet-sdk-6.0
+
+        sudo apt-get install -y apt-transport-https && \
+        sudo apt-get update && \
+        sudo apt-get install -y aspnetcore-runtime-6.0
+
+        sudo apt-get install -y dotnet-runtime-6.0
+
+
+4. Instalando o VS Code
+
+    . Instalação das extensões do VSCode
+
+            C# 
+            C# Extensions
+            C# XML Documentation Comments
+            vscode-icons (Opcional)
+            Docker
+
+        . Atalhos:
+
+            Ctrl + K + D ou Shit + Alt + F:             Identa todo o seu código automaticamente;
+            Ctrl + K + C:                               comenta um bloco de linhas;
+            Ctrl + /                                    Comenta a linha
+            Ctrl + K + U:                               descomenta um bloco de linhas;
+            Alt + Left Arrow:                           durante a programação, volta um método que você estava navegando;
+            Alt + Right Arrow:                          durante a programação, avança um método que você estava navegando;
+            Ctrl + .:                                   implementa o método/classe inexistente que você acabou de escrever;
+            Ctrl + M + O:                               esconde todas as regions da classe atual;
+            Ctrl + Shift + B:                           compila todos os projetos;
+            F5:                                         manda depurar um projeto;
+            Ctrl + F5:                                  manda executar um projeto;
+            F10:                                        durante a depuração, avança uma linha;
+            F11:                                        durante a depuração, avança uma linha entrando nos detalhes da mesma;
+
+
+    . Configurar Visual Studio Code para .NETCore
+
+        . Acesse File / Preferences / Settings
+
+        . Digite C#
+
+        . Acesse "C# Configuration / CSharp Format Enabled" e habilite a configuração
+
+        . Digite "Format on save" e habilite a configuração
+
+        . Digite "Final" e habilite a configuração "Files: Insert final newline" e habilite a configuração
+
+
+5. Crie uma pasta para o projeto MVC
+
+    mkdir ~/workspace-dotnet/mvc1
+
+6. Dentro da pasta criada acima crie um projeto dotnet MVC:
+
+    cd ~/workspace-dotnet/mvc1
+
+    dotnet new mvc
+
+    dotnet add package Microsoft.EntityFrameworkCore --version 5.0.1
+    dotnet add package Microsoft.EntityFrameworkCore.Design --version 5.0.1
+    dotnet add package Pomelo.EntityFrameworkCore.MySql --version 5.0.0-alpha.2
+    dotnet add package Microsoft.EntityFrameworkCore.Tools --version 5.0.1
+
+    dotnet restore
+
+    # Responda "Yes" para criar os arquivos de debug
+    code .
+
+7. Dentro da pasta "Models" cria a classe abaixo:
+
+    namespace mvc1.Models
+    {
+        public class Produto
+        {
+            public Produto (string nome=null, string categoria=null,
+            decimal preco=0)
+            {
+                this.Nome = nome;
+                this.Categoria = categoria;
+                this.Preco= preco;
+            }
+
+            public int ProdutoId {get; set;}
+            public string Nome {get; set;}
+            public string Categoria {get; set;}
+            public decimal Preco {get; set;}
+        }
+    }
+
+8. Crie a interface IRepository dentro da pasta "Models":
+
+    using System.Collections.Generic;
+
+    namespace mvc1.Models
+    {
+        public interface IRepository
+        {
+            IEnumerable<Produto> Produtos { get; }
+        }
+    }
+
+
+9. Classe de repositório:
+
+    using System.Collections.Generic;
+
+    namespace mvc1.Models
+    {
+        public class ProdutoRepository : IRepository
+        {
+            private AppDbContext context;
+            public ProdutoRepository(AppDbContext ctx) {
+                context = ctx;
+            }
+            public IEnumerable<Produto> Produtos => context.Produtos;
+
+        }
+    }
+
+10. Dentro da pasta Models crie o arquivo "AppDbContext"
+
+    using Microsoft.EntityFrameworkCore;
+
+    namespace mvc1.Models
+    {
+        public class AppDbContext : DbContext
+        {
+            public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+            {
+            }
+            public DbSet<Produto> Produtos { get; set; }
+        }
+    }
+
+
+
+11. Altere o "HomeController" como abaixo, Atente para a injeçao de dependência no construtor da classe:
+
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Configuration;
+    using mvc1.Models;                          // LINHA INCLUIDA
+
+    namespace mvc1.Controllers
+    {
+        public class HomeController : Controller
+        {
+            private IRepository repository;         // LINHA INCLUIDA
+            private string message;                 // LINHA INCLUIDA
+            public HomeController(IRepository repo, IConfiguration config, ILogger<HomeController> logger)  // LINHA ALTERADA
+            {
+                repository = repo;                              // LINHA ALTERADA
+                message = $"Docker - ({config["HOSTNAME"]})";    // LINHA ALTERADA
+            }
+            public IActionResult Index()
+            {
+                ViewBag.Message = message;              // ADICIONADO MSG e o REPOSITORIO na VIEW
+                return View(repository.Produtos);       // LINHA ALTERADA
+            }
+        }
+    }
+
+12. Altere o código da classe /Views/Home/Index.cshtml pelo abaixo:
+
+    @model IEnumerable<mvc1.Models.Produto>
+    @{
+        Layout = null;
+    }
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>App</title>
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    </head>
+    <body>
+        <div class="m-1 p-1">
+            <h4 class="bg-primary text-xs-center p-1 text-white">@ViewBag.Message</h4>
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Preco</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model) {
+                        <tr>
+                            <td>@p.ProdutoId</td>
+                            <td>@p.Nome</td>
+                            <td>@p.Categoria</td>
+                            <td>$@p.Preco.ToString("F2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </body>
+    </html>
+
+13. Dentro da pasta Models insira a classe "Populadb" com o código abaixo:
+
+    using System.Linq;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.DependencyInjection;
+
+    namespace mvc1.Models
+    {
+        public static class Populadb
+        {
+            public static void IncluiDadosDB(IApplicationBuilder app) 
+            {
+//                        IncluiDadosDB( app.ApplicationServices.GetRequiredService<AppDbContext>() );
+
+                // https://riptutorial.com/asp-net-core/example/17400/using-scoped-services-during-application-startup---database-seeding
+                using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+                {
+                    var db = serviceScope.ServiceProvider.GetService<AppDbContext>();
+
+                    IncluiDadosDB( db );
+                }
+
+            }
+            public static void IncluiDadosDB(AppDbContext context)
+            {
+                    System.Console.WriteLine("Aplicando Migrations...");
+                    context.Database.Migrate();
+
+                    if (!context.Produtos.Any()) 
+                    {
+                        System.Console.WriteLine("Criando dados...");
+                        context.Produtos.AddRange(
+                            new Produto("Luvas de goleiro", "Futebol", 25),
+                            new Produto("Bola de basquete", "Basquete", 48.95m),
+                            new Produto("Bola de Futebol", "Futebol", 19.50m),
+                            new Produto("Óculos para natação", "Aquaticos", 34.95m),
+                            new Produto("Meias Grandes", "Futebol", 50),
+                            new Produto("Calção de banho", "Aquáticos", 16),
+                            new Produto("Cesta para quadra", "Basquete", 29.95m)
+                        );
+                        context.SaveChanges();
+                        } else {
+                        System.Console.WriteLine("Dados já existem...");
+                    }
+            }
+        }
+    }
+
+14. Acesse o arquivo "appsettings.json" e insira a linha abaixo:
+
+    {
+        ...,
+        "ConnectionStrings": {
+                    "DotNetCoreMySQLAppConnection": "server=172.17.0.2; port=3306; database=desenv; user=root; password=root; Persist Security Info=false; Connect Timeout=300"
+        }
+    }
+
+
+15. Acrescente essas linhas dentrao do método "ConfigureServices" da classe "Startup":
+
+    ...
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.Configure<CookiePolicyOptions>(options =>
+        {
+            // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+            options.CheckConsentNeeded = context => true;
+            options.MinimumSameSitePolicy = SameSiteMode.None;
+        });
+
+
+        string dbConnectionString = Configuration.GetConnectionString("DotNetCoreMySQLAppConnection");                                      // ADICIONADO
+        services.AddDbContext<AppDbContext>(options => options.UseMySql(dbConnectionString, ServerVersion.AutoDetect(dbConnectionString))); // ADICIONADO
+
+        services.AddSingleton<IConfiguration>(Configuration);
+        services.AddTransient<IRepository, ProdutoRepository>();    // LINHA ALTERADA
+
+        services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+    }
+    ...
+
+    public void Configure( IApplicationBuilder app, ... ){
+        ...
+        Populadb.IncluiDadosDB(app);    // ADICIONADO   
+    }
+
+16. Acesse a linha de comandos na pasta raiz do projeto e digito o comando abaixo:
+
+    # Caso não encontre o "dotnet ef" instale com o comando "dotnet tool install --global dotnet-ef"
+    dotnet ef migrations add Inicial
+
+    # dotnet ef database update --context AppDbContext
+
+17. Executando o projeto:
+
+    dotnet clean
+    dotnet restore
+    dotnet build
+    dotnet run
