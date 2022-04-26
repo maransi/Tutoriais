@@ -382,7 +382,8 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
     # Caso não encontre o "dotnet ef" instale com o comando "dotnet tool install --global dotnet-ef"
     dotnet ef migrations add Inicial
 
-    # dotnet ef database update --context AppDbContext
+    # Verifique no MySQL se o "database" e as "Table" foi contruído com sucesso.
+    dotnet ef database update --context AppDbContext
 
 17. Executando o projeto:
 
