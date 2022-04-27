@@ -391,3 +391,152 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
     dotnet restore
     dotnet build
     dotnet run
+
+18. Execute a URL abaixo no navegador
+
+    localhost:5001
+
+
+
+
+Trabalhando com Dockerfile com imagens
+------------------------------------
+
+1. Limpando o ambiente
+
+    docker container rm -f $(docker ps -aq)
+
+    docker volume prune
+
+    docker image rm $(docker images -a -q)
+
+2. Publicação da aplicação - Acesse a pasta raiz do projeto ASP.NET e execute o comando abaixo:
+
+    dotnet publish --configuration Realease --output dist
+
+3. Criar um arquivo Dockerfile na pasta raiz do projeto
+
+    FROM mcr.microsoft.com/dotnet/sdk:5.0
+    LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
+    COPY dist app/
+    WORKDIR /app
+    EXPOSE 5000
+    ENV ASPNETCORE_URLS=http://*:5000
+    ENTRYPOINT ["dotnet","mvc1.dll"]
+
+4. Execute o comando abaixo na pasta raiz do projeto
+
+    docker build -t aspnetcoremvc/app:1.0 .
+
+5. Confira se a imagem foi criada com sucesso:
+
+    docker images
+
+6. Crie o container do mysql:
+
+    docker container run -d --name mysql -e MYSQL_ROOT_PASSWORD=root mysql:5.7
+
+    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
+    #
+    #   mysql -u root -p
+    #
+    # Informe a senha "root"
+    #
+    #       create database desenv;
+    #
+    docker container exec -it mysql bash
+
+    # Verifique no MySQL se o "database" e as "Table" foi contruído com sucesso.
+    #
+    # PROCEDIMENTO PODE SER OPCIONAL, TENTE NÃO EXECUTÁ-LO PARA VER SE REALMENTE É NECESSÁRIO
+    #
+    #dotnet ef database update --context AppDbContext
+
+7. Crie o container com o comando abaixo:
+
+    docker container create -p 500:5000 --name mvcprodutos aspnetcoremvc/app1:1.0 
+
+    docker container ps -a
+
+    docker container start mvcprodutos
+
+8. Acesse o navegador e execute a URL abaixo:
+
+    localhost:500
+
+
+
+
+
+
+
+Trabalhando com volumes
+-----------------------
+
+1. Limpando o ambiente
+
+    docker container rm -f $(docker ps -aq)
+
+    docker volume prune
+
+    docker image rm $(docker images -a -q)
+
+2. Recriando o ambiente:
+
+    docker volume create --name produtosdata
+
+    docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 mysql:5.7
+
+3. Criar um arquivo Dockerfile na pasta raiz do projeto
+
+    FROM mcr.microsoft.com/dotnet/sdk:5.0
+    LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
+    COPY dist app/
+    WORKDIR /app
+    EXPOSE 5000
+    ENV ASPNETCORE_URLS=http://*:5000
+    ENTRYPOINT ["dotnet","mvc1.dll"]
+
+4. Vamos publicar novamente nossa aplicação .NET
+
+    dotnet publish --configuration Release --output dist
+
+5. Recriação da imagem com a aplicação atualizada:
+
+    docker build -t aspnetcoremvc/app:2.0 .
+
+6. Para o passo abaixo é necessário que o docker do MySQL esteja rodando
+
+    docker container ps 
+
+7. Crie o container com o comando abaixo:
+
+    docker container create -p 500:5000 --name mvcprodutos aspnetcoremvc/app:2.0 
+
+    docker container ps -a
+
+    docker container start mvcprodutos
+
+8. Acesse o navegador e execute a URL abaixo:
+
+    localhost:500
+
+9. Apagar o container do mysql e criar outro container mysql apontando para o volume criado no passo 2. Ao final
+    se tudo der certo os dados criados inicialmente sobrevirá a eliminação do container, pois eles foram guardados
+    no volume.
+
+    docker container rm -f mysql
+
+    docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 mysql:5.7
+
+    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
+    #
+    #   mysql -u root -p
+    #
+    # Informe a senha "root"
+    #
+    #   use desenv;
+    #   select * from Produtos;
+    #
+    docker container exec -it mysql bash
+
