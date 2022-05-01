@@ -406,11 +406,15 @@ Trabalhando com Dockerfile com imagens
 
     docker container rm -f $(docker ps -aq)
 
+    docker image rm $(docker images -a -q)
+    
     docker volume prune
 
-    docker image rm $(docker images -a -q)
+
 
 2. Publicação da aplicação - Acesse a pasta raiz do projeto ASP.NET e execute o comando abaixo:
+
+    rm dist/ -R
 
     dotnet publish --configuration Realease --output dist
 
@@ -454,7 +458,7 @@ Trabalhando com Dockerfile com imagens
 
 7. Crie o container com o comando abaixo:
 
-    docker container create -p 500:5000 --name mvcprodutos aspnetcoremvc/app1:1.0 
+    docker container create -p 500:5000 --name mvcprodutos aspnetcoremvc/app:1.0 
 
     docker container ps -a
 
@@ -540,3 +544,34 @@ Trabalhando com volumes
     #
     docker container exec -it mysql bash
 
+
+
+
+
+
+
+
+
+docker container rm -f $(docker ps -aq)
+docker image rm $(docker images -a -q)
+docker volume prune
+docker images
+docker volumes ps
+docker volumes ls
+docker volume ls
+rm dist -R
+dotnet publish --configuration Realease --output dist
+docker build -t aspnetcoremvc/app:1.0 .
+docker ps
+docker volume create --name produtosdata
+# docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 mysql:5.7
+
+docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 -p 127.0.0.1:3307:3306 mysql:5.7
+
+docker container run -d --name mysql -v produtosdata:/var/lib/mysql --net=backend  -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
+docker container inspect mysql
+docker images
+# docker container run -d --name appmvc -p 3000:5000 -e DBHOST=172.17.0.2 aspnetcoremvc/app:1.0
+docker container run -d --name appmvc -p 3000:5000 -e DBHOST=172.17.0.2 --link mysql aspnetcoremvc/app:1.0
+
+docker container create --name appmvc -p 3000:5000 -e DBHOST=mysql --net=backend aspnetcoremvc/app:1.0
