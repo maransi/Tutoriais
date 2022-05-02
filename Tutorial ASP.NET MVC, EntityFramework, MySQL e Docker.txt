@@ -145,7 +145,7 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
 
     cd ~/workspace-dotnet/mvc1
 
-    dotnet new mvc
+    dotnet new mvc -f net5.0
 
     dotnet add package Microsoft.EntityFrameworkCore --version 5.0.1
     dotnet add package Microsoft.EntityFrameworkCore.Design --version 5.0.1
@@ -556,17 +556,17 @@ docker container rm -f $(docker ps -aq)
 docker image rm $(docker images -a -q)
 docker volume prune
 docker images
-docker volumes ps
-docker volumes ls
 docker volume ls
 rm dist -R
 dotnet publish --configuration Realease --output dist
 docker build -t aspnetcoremvc/app:1.0 .
 docker ps
 docker volume create --name produtosdata
-# docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 mysql:5.7
+# docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 -p 3360:3306 mysql:5.7
 
-docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 -p 127.0.0.1:3307:3306 mysql:5.7
+# docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 -p 3360:3306 mysql:5.7 --default-authentication-plugin=mysql_native_password
+docker container run -d --name mysql -v $(pwd)/mysqldir:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 -p 3360:3306 mysql
+docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 -p 127.0.0.1:3360:3306 mysql:5.7
 
 docker container run -d --name mysql -v produtosdata:/var/lib/mysql --net=backend  -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
 docker container inspect mysql
@@ -575,3 +575,67 @@ docker images
 docker container run -d --name appmvc -p 3000:5000 -e DBHOST=172.17.0.2 --link mysql aspnetcoremvc/app:1.0
 
 docker container create --name appmvc -p 3000:5000 -e DBHOST=mysql --net=backend aspnetcoremvc/app:1.0
+
+
+
+
+
+docker network create my-net
+
+# Dentro do container instale o ping:
+#
+# apt-get update
+#
+# apt-get install iputils-ping
+#
+docker run -it --rm --name no1 --network my-net ubuntu:20.04
+
+
+# Abra outro terminal e crie um novo container
+docker run -it --rm --name no2 --network my-net ubuntu:20.04
+
+# Retorne ao container do "no1" e faça o ping no "no2"
+ping no2
+
+# Crie um novo container do Mysql
+docker run -d --rm --name=mysql \
+    -v $(pwd)/datadir:/var/lib/mysql \
+    -e MYSQL_ROOT_PASSWORD=root \
+    -e MYSQL_ROOT_HOST=% \
+    --network my-net    \
+    -p 3360:3306  \
+    mysql \
+    --default-authentication-plugin=mysql_native_password
+
+docker container run -d --name mysql -v $(pwd)/mysqldir:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root  -p 3360:3306  mysql
+
+docker run -d --rm --name=mysql \
+    -v $(pwd)/datadir:/var/lib/mysql \
+    -e MYSQL_ROOT_PASSWORD=root \
+    -e MYSQL_ROOT_HOST=% \
+    --network my-net    \
+    -p 3360:3306  \
+    mysql   \
+    --default-authentication-plugin=mysql_native_password
+
+# Esta forma ( fornecendo -proot ) só funciona se o parâmetro "--default-authentication-plugin=mysql_native_password" for fornecido
+# Caso contrário o comando deverá ser digitando a senha e o parâmetro deverá ficar somente ( -p )
+# O parâmetro (protocol=TCP) possibilita o uso da palavra chave "localhost", caso contrário devemos informar o IP 127.0.0.1 no lugar
+mysql -uroot -proot -h localhost -P 3360 --protocol=TCP
+mysql --port=3360 --host=localhost --protocol=TCP -u root -p
+
+
+
+
+docker container rm -f $(docker ps -aq)
+docker image rm $(docker images -a -q)
+docker volume prune
+
+cd ~/workspace-dotnet/mvc4
+rm dist -R
+dotnet publish --configuration Realease --output dist
+docker build -t aspnetcoremvc/app:1.0 .
+docker volume create --name produtosdata
+docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 -p 3360:3306 mysql:5.7
+# docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 -p 3360:3306 mysql:5.7 --default-authentication-plugin=mysql_native_password
+docker container run -d --name appmvc -p 3000:5000 -e DBHOST=172.17.0.2 aspnetcoremvc/app:1.0
