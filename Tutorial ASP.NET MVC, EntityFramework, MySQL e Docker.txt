@@ -456,6 +456,8 @@ Trabalhando com Dockerfile com imagens
     #
     #dotnet ef database update --context AppDbContext
 
+7. Certifique-se que o IP do container "mysql" é o mesmo configurado dentro da string de conexão localizada no arquivo "appsettings.json"
+
 7. Crie o container com o comando abaixo:
 
     docker container create -p 500:5000 --name mvcprodutos aspnetcoremvc/app:1.0 
@@ -544,8 +546,9 @@ Trabalhando com volumes
     #
     docker container exec -it mysql bash
 
+10. Podemos substituir um volume por uma pasta fisica ao criar o container
 
-
+    docker container run -d --name mysql -v /home/marco/mysql-docker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 mysql:5.7
 
 
 
