@@ -597,14 +597,14 @@ Trabalhando com redes
                 docker network create net-mysql
 
                 docker volume create --name produtosdata
-                docker container run -d --name mysql -v produtosdata:/var/lib/mysql --network net-mysql -e MYSQL_ROOT_PASSWORD=root  -p 33600:3306 mysql:5.7 
+                docker container run -d --name mysql -v produtosdata:/var/lib/mysql --network net-mysql -e MYSQL_ROOT_PASSWORD=root  mysql:5.7 
 
                 cd ~/workspace-dotnet/mvc4
                 rm dist -R
                 dotnet publish --configuration Realease --output dist
                 docker build -t aspnetcoremvc/app:1.0 .
 
-                docker container run -d --name appmvc -p 3000:5000 --network net-mysql -e DBHOST=172.18.0.2  aspnetcoremvc/app:1.0
+                docker container run -d --name appmvc -p 3000:5000 --network net-mysql -e DBHOST=172.18.0.2  -e DBPORT=3306 aspnetcoremvc/app:1.0
                 docker ps
 */
 
