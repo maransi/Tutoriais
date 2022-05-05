@@ -493,41 +493,30 @@ Trabalhando com volumes
 
     docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 mysql:5.7
 
-3. Criar um arquivo Dockerfile na pasta raiz do projeto
+    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
+    #
+    #   mysql -u root -p
+    #
+    # Informe a senha "root"
+    #
+    #
+    #   create database desenv;
+    #   use desenv;
+    #   create table Produtos( id int, name varchar(30));
+    #   select * from Produtos;
+    #
+    docker exec mysql bash     
 
-    FROM mcr.microsoft.com/dotnet/sdk:5.0
-    LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
-    COPY dist app/
-    WORKDIR /app
-    EXPOSE 5000
-    ENV ASPNETCORE_URLS=http://*:5000
-    ENTRYPOINT ["dotnet","mvc1.dll"]
+    ou 
 
-4. Vamos publicar novamente nossa aplicação .NET
+    docker exec -it mysql mysql -u root -p
 
-    dotnet publish --configuration Release --output dist
+    ou 
 
-5. Recriação da imagem com a aplicação atualizada:
+    mysql -u root -p -h 172.17.0.2
 
-    docker build -t aspnetcoremvc/app:2.0 .
 
-6. Para o passo abaixo é necessário que o docker do MySQL esteja rodando
-
-    docker container ps 
-
-7. Crie o container com o comando abaixo:
-
-    docker container create -p 500:5000 --name mvcprodutos aspnetcoremvc/app:2.0 
-
-    docker container ps -a
-
-    docker container start mvcprodutos
-
-8. Acesse o navegador e execute a URL abaixo:
-
-    localhost:500
-
-9. Apagar o container do mysql e criar outro container mysql apontando para o volume criado no passo 2. Ao final
+3. Apagar o container do mysql e criar outro container mysql apontando para o volume criado no passo 2. Ao final
     se tudo der certo os dados criados inicialmente sobrevirá a eliminação do container, pois eles foram guardados
     no volume.
 
@@ -546,9 +535,83 @@ Trabalhando com volumes
     #
     docker container exec -it mysql bash
 
-10. Podemos substituir um volume por uma pasta fisica ao criar o container
+4. Podemos substituir um volume por uma pasta fisica ao criar o container
 
     docker container run -d --name mysql -v /home/marco/mysql-docker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 mysql:5.7
+
+
+
+Trabalhando com redes
+---------------------
+
+1. Para fazer dois containeres conversarem, ou enxergarem, um ao outro é necessário trabalhar com redes no docker.
+
+2. Acesse a classe Startup.cs 
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            var host = Configuration["DBHOST"] ?? "localhost";
+            var port = Configuration["DBPORT"] ?? "3306";
+            var password = Configuration["DBPASSWORD"] ?? "root";
+
+
+            // string dbConnectionString = Configuration.GetConnectionString("DotNetCoreMySQLAppConnection") ;                                      // ADICIONADO
+            // services.AddDbContext<AppDbContext>(options => options.UseMySql(dbConnectionString, ServerVersion.AutoDetect(dbConnectionString))); // ADICIONADO
+/*
+            // Qdo for executar no container
+            services.AddDbContext<AppDbContext>(options =>
+                options.UseMySql("server=192.168.0.82; port=33600; database=desenv; user=root; password=root; Persist Security Info=false; Connect Timeout=300",
+                    ServerVersion.AutoDetect("server=192.168.0.82;userid=root;pwd=root;"
+                    + "port=33600;database=desenv")));   
+
+            // publish.sh
+
+                docker container rm -f $(docker ps -aq)
+                docker image rm $(docker images -a -q)
+                docker volume prune -f
+
+                docker volume create --name produtosdata
+                docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root  -p 33600:3306 mysql:5.7 
+
+                cd ~/workspace-dotnet/mvc4
+                rm dist -R
+                dotnet publish --configuration Realease --output dist
+                docker build -t aspnetcoremvc/app:1.0 .
+
+                docker container run -d --name appmvc -p 3000:5000  -e DBHOST=192.168.0.82  aspnetcoremvc/app:1.0
+                docker ps
+*/
+            services.AddDbContext<AppDbContext>(options => 
+                options.UseMySql($"server={host};userid=root;pwd={password};"
+                    + $"port={port};database=desenv",
+                    ServerVersion.AutoDetect($"server={host};userid=root;pwd={password};"
+                    + $"port={port};database=desenv")));   
+
+            // publish.sh
+/*            
+                docker container rm -f $(docker ps -aq)
+                docker image rm $(docker images -a -q)
+                docker volume prune -f
+                docker network rm net-mysql
+
+                docker network create net-mysql
+
+                docker volume create --name produtosdata
+                docker container run -d --name mysql -v produtosdata:/var/lib/mysql --network net-mysql -e MYSQL_ROOT_PASSWORD=root  -p 33600:3306 mysql:5.7 
+
+                cd ~/workspace-dotnet/mvc4
+                rm dist -R
+                dotnet publish --configuration Realease --output dist
+                docker build -t aspnetcoremvc/app:1.0 .
+
+                docker container run -d --name appmvc -p 3000:5000 --network net-mysql -e DBHOST=172.18.0.2  aspnetcoremvc/app:1.0
+                docker ps
+*/
+
+            services.AddSingleton<IConfiguration>(Configuration);
+            services.AddTransient<IRepository, ProdutoRepository>();    // LINHA ALTERADA
+            services.AddControllersWithViews();
+        }
 
 
 
