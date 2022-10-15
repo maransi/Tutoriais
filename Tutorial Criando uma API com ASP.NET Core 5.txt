@@ -418,7 +418,6 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 
 
 
-// Parei ao 9.30 
 https://docs.microsoft.com/pt-br/aspnet/web-api/overview/web-api-routing-and-actions/attribute-routing-in-web-api-2#route-constraints
 https://www.macoratti.net/19/08/aspnc_restrota1.htm
 https://ochzhen.com/blog/created-createdataction-createdatroute-methods-explained-aspnet-core

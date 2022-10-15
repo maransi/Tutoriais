@@ -1,0 +1,155 @@
+ASP.NET 5 e 6 - Autenticação e Autorização com Bearer e Token JWT
+-----------------------------------------------------------------
+
+https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=11
+
+. Acesse a pasta central de projetos e execute o comando abaixo:
+
+    dotnet new webapi -o superAuthApp -n superAuthApp -f net5.0
+
+    . Aqui foi orientado para fazer um projeto "mvc => dotnet new mvc...", porém vamos testar 
+        como "webapi => dotnet new webapi...".
+
+. Acesse a pasta do projeto criado e execute os comandos abaixo:
+
+    dotnet add package Microsoft.AspNetCore.Authentication
+
+    dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+
+    . Verifique se é necessário colocar o parâmetro --version 5.0.9
+
+. Acesse o VSCode e abra a pasta do projeto criado.
+
+. Crie a pasta "Models" na raiz do projeto e dentro dela crie a classe abaixo:
+
+    namespace superAuthApp.Models;
+    {
+
+        public class User
+        {
+            public int Id { get; set; }
+
+            public string Username { get; set; }
+
+            public string Password { get; set; }
+
+            public string Role { get; set; }
+
+        }
+    }
+
+. Crie a pasta "Repositories" na raiz do projeto e dentro dela crie a classe abaixo:
+
+    namespace superAuthApp.Repositories
+    {
+        public class UserRepository
+        {
+            public static User Get( string username, string password)
+            {
+                var users = new List<User>
+                {
+
+                    new() { Id = 1, Username = "batman", Password = "batman", Role = "manager" } ,
+                    new() { Id = 2, Username = "robin", Password = "robin", Role = "employee" } 
+                }
+
+                return users.FirstOrDefault( x => x.Username == username && x.Password = password );
+            }
+        }
+    }
+
+. Na raiz do projeto crie a classe abaixo:
+
+    namespace superAuthApp
+    {
+        public static class Settings
+        {
+            public static string Secret = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
+        }
+    }
+
+. Crie a pasta "Services" e dentro dela a classe abaixo:
+
+    namespace superAuthApp.Services
+    {
+        public static class TokenService
+        {
+            public static string GenerateToken( User user )
+            {
+                // Classe responsável por gerar o token
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                // Nossa chave de validação do token
+                var key = Encoding.ASCII.GetBytes(Configuration.JwtKey);
+
+                // Informações contidas no nosso token
+                var tokenDescriptor = new SecurityTokenDescriptor()
+                {
+                    // Perfis dos usuários
+                    Subject = new ClaimsIdentity( new Claim[]        
+                    {
+                        new Claim( ClaimTypes.Name, user.Username ),    // Aponta para User.Identity.Name
+                        new Claim( ClaimTypes.Role, user.Role )         // Aponta para User.InRole
+                    }),
+                    // Tempo de expiração do nosso token
+                    Expires = DateTime.UtcNow.AddHours(8),
+                    // Credenciais para incriptar e desincriptar nosso token
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                                                                    SecurityAlgorithms.HmacSha256Signature)
+                };
+
+                // Faz a criação do token
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                return tokenHandler.WriteToken(token);
+
+            }
+
+        }
+    }
+
+    . Aqui a classe está sendo criada como "static", retorne ao curso "Fundamentos ASP.NET 6" e tente
+        replicar neste tutorial o que foi feito lá.
+
+. Configurando Autenticação e Autorização
+
+    . Acessa a classe "Startup.cs" e insira as linhas abaixo:
+
+        ...
+        app.UseAuthentication();    // Linha inserida   "A chamada do método "UseAuthentication()" deve vir antes da linha abaixo
+        
+        app.UseAuthorization();     
+        ...
+
+    . Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
+        no nosso projeto, obrigatório ser nessa ordem:
+
+        ...
+        var builder - WebApplication.CreateBuilder( args );
+
+        var key = Encoding.ASCII.GetBytes( Configuration.JwtKey );   // Linha inserida
+
+    . 
+19.00
+
+        // Linha abaixo inserida, não é para alterar
+
+        builder.Services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(x =>
+        {
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        });
+
+
+        ...
+        var app = builder.Build();
+
