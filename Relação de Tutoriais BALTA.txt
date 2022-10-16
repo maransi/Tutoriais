@@ -1,0 +1,34 @@
+Minimal APIs - Especificar a porta
+https://balta.io/blog/minimal-apis-especificar-porta
+
+
+ASP.NET - Autenticação com ApiKey
+https://balta.io/blog/aspnet-autenticacao-apikey
+
+
+ASP.NET 5 – Autenticação e Autorização com Bearer e JWT
+https://balta.io/blog/aspnet-5-autenticacao-autorizacao-bearer-jwt
+
+
+ASP.NET Minimal APIs
+https://balta.io/blog/aspnet-minimal-apis
+
+
+ASP.NET HealhCheck
+https://balta.io/blog/aspnet-health-check
+
+
+Criando uma API do zero com .NET Core 3.1 e EF Core
+https://balta.io/blog/criando-api-zero-dotnet-core-3-1-ef-core
+
+
+ASP.NET Minimal SignalR
+https://balta.io/blog/aspnet-minimal-signalr
+
+
+ASP.NET Configuration Manager
+https://balta.io/blog/aspnet-configuration-manager
+
+
+Minimal APIs - Especificar a porta
+https://balta.io/blog/minimal-apis-especificar-porta

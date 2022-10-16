@@ -91,7 +91,7 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
                 var tokenHandler = new JwtSecurityTokenHandler();
 
                 // Nossa chave de validação do token
-                var key = Encoding.ASCII.GetBytes(Configuration.JwtKey);
+                var key = Encoding.ASCII.GetBytes(Settings.JwtKey);
 
                 // Informações contidas no nosso token
                 var tokenDescriptor = new SecurityTokenDescriptor()
@@ -204,6 +204,8 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
         app.UseAuthorization();     // Linha inserida   "Nessa ordem"
         ...
 
+    . Maiores detalhes, acesse a "Aula 47. Configurando Autenticação e Autorização" do curso "Fundamentos ASP.NET 6 - Balta"
+    
 . Crie a classe abaixo dentro da pasta "Controllers":
 
     using System.Threading.Tasks;
