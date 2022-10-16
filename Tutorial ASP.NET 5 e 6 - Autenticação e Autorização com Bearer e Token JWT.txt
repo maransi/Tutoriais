@@ -72,9 +72,9 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
 
     namespace superAuthApp.Services
     {
-        public static class TokenService
+        public class TokenService
         {
-            public static string GenerateToken( User user )
+            public string GenerateToken( User user )
             {
                 // Classe responsável por gerar o token
                 var tokenHandler = new JwtSecurityTokenHandler();
@@ -108,15 +108,14 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
         }
     }
 
-    . Aqui a classe está sendo criada como "static", retorne ao curso "Fundamentos ASP.NET 6" e tente
-        replicar neste tutorial o que foi feito lá.
-
-. Configurando Autenticação e Autorização
+. Configurando Autenticação e Autorização para .NET 5
 
     . Acessa a classe "Startup.cs" e insira as linhas abaixo:
 
         public void ConfigureServices( IServiceCollenction services )
         {
+
+            services.AddTransient<TokenService>();  // Linha inserida
 
             services.AddControllerWithViews();
 
@@ -148,6 +147,41 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
         app.UseAuthorization();     
         ...
 
+. Configurando Autenticação e Autorização para .NET 6
+-----------------------------------------------------
+
+    . Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
+        no nosso projeto, obrigatório ser nessa ordem:
+
+        ...
+        var builder - WebApplication.CreateBuilder( args );
+
+        var key = Encoding.ASCII.GetBytes( Configuration.JwtKey );   // Linha inserida
+
+        // Linha abaixo inserida, não é para alterar
+        builder.Services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(x =>
+        {
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        });
+
+
+        ...
+        var app = builder.Build();
+
+        app.UseAuthentication();    // Linha inserida   "Nessa ordem"
+        app.UseAuthorization();     // Linha inserida   "Nessa ordem"
+        ...
+
 . Crie a classe abaixo dentro da pasta "Controllers":
 
     namespace superAuthApp.Controllers
@@ -158,7 +192,8 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
         {
 
             [HttpPost("v1/getToken")]
-            public async Task<ActionResult<dinamic>> AuthenticateAsync( [FromBody] User model )
+            public async Task<ActionResult<dinamic>> AuthenticateAsync( [FromServices] TokenService tokenService,
+                                                                        [FromBody] User model )
             {
                 var user = UserRepository.Get( model.Username, model.Password );
 
@@ -167,7 +202,7 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
                     return NotFound( new { message = "Usuário, ou senha, inválido" } );
                 }
 
-                var token TokenService.GenerateToken( user );
+                var token tokenService.GenerateToken( user );
 
                 user.Password = "";
 
