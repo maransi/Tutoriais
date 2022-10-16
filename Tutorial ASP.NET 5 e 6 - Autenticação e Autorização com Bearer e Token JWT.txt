@@ -7,22 +7,22 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
 
     dotnet new webapi -o superAuthApp -n superAuthApp -f net5.0
 
-    . Aqui foi orientado para fazer um projeto "mvc => dotnet new mvc...", porém vamos testar 
-        como "webapi => dotnet new webapi...".
+. Apague as classes abaixo:
+
+    WeatherForecast.cs
+    Controllers/WeatherForecastController.cs
 
 . Acesse a pasta do projeto criado e execute os comandos abaixo:
 
-    dotnet add package Microsoft.AspNetCore.Authentication
+    dotnet add package Microsoft.AspNetCore.Authentication --version 2.2.0
 
-    dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
-
-    . Verifique se é necessário colocar o parâmetro --version 5.0.9
+    dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 5.0.9
 
 . Acesse o VSCode e abra a pasta do projeto criado.
 
 . Crie a pasta "Models" na raiz do projeto e dentro dela crie a classe abaixo:
 
-    namespace superAuthApp.Models;
+    namespace superAuthApp.Models
     {
 
         public class User
@@ -40,6 +40,10 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
 
 . Crie a pasta "Repositories" na raiz do projeto e dentro dela crie a classe abaixo:
 
+    using System.Collections.Generic;
+    using System.Linq;
+    using superAuthApp.Models;
+
     namespace superAuthApp.Repositories
     {
         public class UserRepository
@@ -53,7 +57,7 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
                     new() { Id = 2, Username = "robin", Password = "robin", Role = "employee" } 
                 }
 
-                return users.FirstOrDefault( x => x.Username == username && x.Password = password );
+                return users.FirstOrDefault( x => x.Username == username && x.Password == password );
             }
         }
     }
@@ -64,11 +68,18 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
     {
         public static class Settings
         {
-            public static string Secret = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
+            public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
         }
     }
 
 . Crie a pasta "Services" e dentro dela a classe abaixo:
+
+    using System;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Security.Claims;
+    using System.Text;
+    using Microsoft.IdentityModel.Tokens;
+    using superAuthApp.Models;
 
     namespace superAuthApp.Services
     {
@@ -112,6 +123,17 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
 
     . Acessa a classe "Startup.cs" e insira as linhas abaixo:
 
+        using System.Text;
+        using Microsoft.AspNetCore.Authentication.JwtBearer;
+        using Microsoft.AspNetCore.Builder;
+        using Microsoft.AspNetCore.Hosting;
+        using Microsoft.Extensions.Configuration;
+        using Microsoft.Extensions.DependencyInjection;
+        using Microsoft.Extensions.Hosting;
+        using Microsoft.IdentityModel.Tokens;
+        using Microsoft.OpenApi.Models;
+        using superAuthApp.Services;
+        ...
         public void ConfigureServices( IServiceCollenction services )
         {
 
@@ -184,29 +206,35 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
 
 . Crie a classe abaixo dentro da pasta "Controllers":
 
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Mvc;
+    using superAuthApp.Models;
+    using superAuthApp.Repositories;
+    using superAuthApp.Services;
+
     namespace superAuthApp.Controllers
     {
         [ApiController]
         [Route("[controller]")]
-        public class LoginController: ControllerBase
+        public class LoginController : ControllerBase
         {
 
             [HttpPost("v1/getToken")]
-            public async Task<ActionResult<dinamic>> AuthenticateAsync( [FromServices] TokenService tokenService,
-                                                                        [FromBody] User model )
+            public ActionResult<dynamic> Authenticate([FromServices] TokenService tokenService,
+                                                                        [FromBody] User model)
             {
-                var user = UserRepository.Get( model.Username, model.Password );
+                var user = UserRepository.Get(model.Username, model.Password);
 
-                if ( user == null )
+                if (user == null)
                 {
-                    return NotFound( new { message = "Usuário, ou senha, inválido" } );
+                    return NotFound(new { message = "Usuário, ou senha, inválido" });
                 }
 
-                var token tokenService.GenerateToken( user );
+                var token = tokenService.GenerateToken(user);
 
                 user.Password = "";
 
-                return new 
+                return new
                 {
                     user = user,
                     token = token
@@ -215,6 +243,8 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
 
         }
     }
+
+    . Não funcionou o "async" devido não conseguir encontrar o lugar para colocar o "await"
 
 . Execute o projeto em modo debug
 
@@ -235,6 +265,9 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
     o resultado.
 
 . Acesse o controller "HomeController" e altere todo código dele como abaixo:
+
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
 
     namespace superAuthApp.Controllers
     {
