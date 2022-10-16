@@ -115,41 +115,206 @@ https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoP
 
     . Acessa a classe "Startup.cs" e insira as linhas abaixo:
 
+        public void ConfigureServices( IServiceCollenction services )
+        {
+
+            services.AddControllerWithViews();
+
+            // Linha inserida
+            var key = Encoding.ASCII.GetBytes( Settings.JwtKey );   // Linha inserida
+
+            // Linhas inseridas
+            services.AddAuthentication(x =>
+                        {
+                            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                        }).AddJwtBearer(x =>
+                        {
+                            x.RequireHttpsMetadata = false;
+                            x.SaveToken = true;
+                            x.TokenValidationParameters = new TokenValidationParameters
+                            {
+                                ValidateIssuerSigningKey = true,
+                                IssuerSigningKey = new SymmetricSecurityKey(key),
+                                ValidateIssuer = false,
+                                ValidateAudience = false
+                            };
+                        });
+
+        }
         ...
         app.UseAuthentication();    // Linha inserida   "A chamada do método "UseAuthentication()" deve vir antes da linha abaixo
         
         app.UseAuthorization();     
         ...
 
-    . Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
-        no nosso projeto, obrigatório ser nessa ordem:
+. Crie a classe abaixo dentro da pasta "Controllers":
 
-        ...
-        var builder - WebApplication.CreateBuilder( args );
-
-        var key = Encoding.ASCII.GetBytes( Configuration.JwtKey );   // Linha inserida
-
-    . 
-19.00
-
-        // Linha abaixo inserida, não é para alterar
-
-        builder.Services.AddAuthentication(x =>
+    namespace superAuthApp.Controllers
+    {
+        [ApiController]
+        [Route("[controller]")]
+        public class LoginController: ControllerBase
         {
-            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(x =>
-        {
-            x.TokenValidationParameters = new TokenValidationParameters
+
+            [HttpPost("v1/getToken")]
+            public async Task<ActionResult<dinamic>> AuthenticateAsync( [FromBody] User model )
             {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = false,
-                ValidateAudience = false
-            };
-        });
+                var user = UserRepository.Get( model.Username, model.Password );
+
+                if ( user == null )
+                {
+                    return NotFound( new { message = "Usuário, ou senha, inválido" } );
+                }
+
+                var token TokenService.GenerateToken( user );
+
+                user.Password = "";
+
+                return new 
+                {
+                    user = user,
+                    token = token
+                };
+            }
+
+        }
+    }
+
+. Execute o projeto em modo debug
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/login/v1/getToken
+    method: POST
+    body.raw: true
+    body.raw.json: True
+    body:   {
+                "username": "robin",
+                "password": "robin"
+            }
+
+    . Guarde o Token gerado para ser utilizado logo mais.
+
+. Selecione o token gerado no item anterior, acesse o site "jwt.io", cole na caixa "Encoded" e verifique 
+    o resultado.
+
+. Acesse o controller "HomeController" e altere todo código dele como abaixo:
+
+    namespace superAuthApp.Controllers
+    {
+        [ApiController]
+        [Route("[controller]")]
+        public class HomeController: ControllerBase
+        {
+            [HttpGet("v1/anonymous")]
+            [AllowAnonymous]
+            public string Anonymous() => "Anônimo";
+
+            [HttpGet("v1/authenticated")]
+            [Authorize]
+            public string Authenticate() => $"Authenticated - {User.Identity.Name}";
+
+            [HttpGet("v1/employee")]
+            [Authorize( Roles = "employee,manager")]
+            public string Employee() => "Funcionário";
+
+            [HttpGet("v1/manager")]
+            [Authorize( Roles = "manager")]
+            public string Manager() => "Gerente";
+        }
+    }
+
+. Pare o projeto e execute novamente em modo debug
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/anonymous
+    method: GET 
+    body.none: true
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/authenticated
+    method: GET 
+    body.none: true
+
+    . Dará erro "401. Unauthenticated"
+
+    . No Postman reconfigure a requisição como abaixo:
+
+        url: https://localhost:5001/home/v1/authenticated
+        method: GET
+        Authorization.Type: Bearer Token
+        Authorization.Token: [token obtido no item anterior]
+
+        ou
+
+        url: https://localhost:5001/home/v1/authenticated
+        method: GET
+        Headers.Authorization: Bearer [Token obtido no item anterior]
+
+        . Este NÃO DARÁ erro, retornando o "User.Identity.Name"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/employee
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/employee
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este NÃO DARÁ erro, retornando o "Funcionário"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este DARÁ erro, retornando status Code "403. Forbidden"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/login/v1/getToken
+    method: POST
+    body.raw: true
+    body.raw.json: True
+    body:   {
+                "username": "batman",
+                "password": "batman"
+            }
+
+    . Guarde o Token gerado para ser utilizado logo mais.
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este NÃO DARÁ erro, retornando o valor "Gerente"
 
 
-        ...
-        var app = builder.Build();
+
+
 
