@@ -32,3 +32,36 @@ https://balta.io/blog/aspnet-configuration-manager
 
 Minimal APIs - Especificar a porta
 https://balta.io/blog/minimal-apis-especificar-porta
+
+
+
+Como fazer um App com ASP.NET (Completo com login, EF e SQLite)
+https://www.youtube.com/watch?v=NFQAj5bCgd8&t=809s
+
+
+ASP.NET WebApi JWT Refresh Token
+https://www.youtube.com/watch?v=HsypCNm56zs
+
+
+Como fazer uma API (Fácil e moderna) com ASP.NET, EF Core e SQLite
+https://www.youtube.com/watch?v=QzCSN9wN4JA&t=388s
+
+
+ASP.NET Validações Customizadas
+https://www.youtube.com/watch?v=kgzc_gw2pi8
+
+
+ASP.NET e EF Core Web API - Paginação de dados para múltiplos bancos de dados 
+https://www.youtube.com/watch?v=vVmYd8Jh1Qw
+
+
+Orientação a objetos: Classe Abstrata VS Interface
+https://www.youtube.com/watch?v=mWgeJdhrtDI
+
+
+Criando uma API com ASP.NET Core 3 e EF Core 3 em menos de 15 minutos 
+https://www.youtube.com/watch?v=but7jqjopKM
+
+
+Começando com Angular 7
+https://www.youtube.com/watch?v=cxBnmqqcmws&list=PLHlHvK2lnJneQPfbOvUait1MtAoXeYhtL
