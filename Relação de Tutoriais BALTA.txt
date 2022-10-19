@@ -6,7 +6,7 @@ ASP.NET - Autenticação com ApiKey
 https://balta.io/blog/aspnet-autenticacao-apikey
 
 
-ASP.NET 5 – Autenticação e Autorização com Bearer e JWT
+ASP.NET 5 – Autenticação e Autorização com Bearer e JWT (OK)
 https://balta.io/blog/aspnet-5-autenticacao-autorizacao-bearer-jwt
 
 
@@ -35,11 +35,11 @@ https://balta.io/blog/minimal-apis-especificar-porta
 
 
 
-Como fazer um App com ASP.NET (Completo com login, EF e SQLite)
+* Como fazer um App com ASP.NET (Completo com login, EF e SQLite)
 https://www.youtube.com/watch?v=NFQAj5bCgd8&t=809s
 
 
-ASP.NET WebApi JWT Refresh Token
+ASP.NET WebApi JWT Refresh Token    (ok)
 https://www.youtube.com/watch?v=HsypCNm56zs
 
 
@@ -59,9 +59,13 @@ Orientação a objetos: Classe Abstrata VS Interface
 https://www.youtube.com/watch?v=mWgeJdhrtDI
 
 
-Criando uma API com ASP.NET Core 3 e EF Core 3 em menos de 15 minutos 
+* Criando uma API com ASP.NET Core 3 e EF Core 3 em menos de 15 minutos 
 https://www.youtube.com/watch?v=but7jqjopKM
 
 
 Começando com Angular 7
 https://www.youtube.com/watch?v=cxBnmqqcmws&list=PLHlHvK2lnJneQPfbOvUait1MtAoXeYhtL
+
+
+* ASP.NET 6 Minimal APIs - Autenticação, autorização, roles, claims, JWT Bearer
+https://www.youtube.com/watch?v=eNeZHCEG5hE&t=22s
