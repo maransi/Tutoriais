@@ -1,3 +1,6 @@
+https://hevodata.com/learn/spring-boot-rest-api/#5
+https://www.treinaweb.com.br/blog/criando-uma-api-rest-com-o-spring-boot
+
 1. Crie um projeto Spring Start Boot:
 
     . Ctrl + N
