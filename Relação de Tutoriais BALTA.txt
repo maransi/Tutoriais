@@ -52,16 +52,22 @@ ASP.NET WebApi JWT Refresh Token    (ok)
 https://www.youtube.com/watch?v=HsypCNm56zs
 
 
+
+
 Como fazer uma API (Fácil e moderna) com ASP.NET, EF Core e SQLite
 https://www.youtube.com/watch?v=QzCSN9wN4JA&t=388s
+
+ASP.NET e EF Core Web API - Paginação de dados para múltiplos bancos de dados
+https://www.youtube.com/watch?v=vVmYd8Jh1Qw&list=RDCMUCgnACLvM9O5lfm9ZBh_d3cg&index=20
+
+ASP.NET e EF Core Web API - Paginação de dados para múltiplos bancos de dados 
+https://www.youtube.com/watch?v=vVmYd8Jh1Qw
+
 
 
 ASP.NET Validações Customizadas
 https://www.youtube.com/watch?v=kgzc_gw2pi8
 
-
-ASP.NET e EF Core Web API - Paginação de dados para múltiplos bancos de dados 
-https://www.youtube.com/watch?v=vVmYd8Jh1Qw
 
 
 Orientação a objetos: Classe Abstrata VS Interface
@@ -78,3 +84,15 @@ https://www.youtube.com/watch?v=cxBnmqqcmws&list=PLHlHvK2lnJneQPfbOvUait1MtAoXeY
 
 * ASP.NET 6 Minimal APIs - Autenticação, autorização, roles, claims, JWT Bearer
 https://www.youtube.com/watch?v=eNeZHCEG5hE&t=22s
+
+
+ASP.NET Configuration Manager 
+https://www.youtube.com/watch?v=mS1T3sd4pBE&list=RDCMUCgnACLvM9O5lfm9ZBh_d3cg&index=35
+
+
+ASP.NET Configuration Manager 
+https://www.asp.mvc-tutorial.com
+https://www.tutorialsteacher.com/core
+https://www.tutorialsteacher.com/mvc
+https://www.tutorialsteacher.com/webapi
+
