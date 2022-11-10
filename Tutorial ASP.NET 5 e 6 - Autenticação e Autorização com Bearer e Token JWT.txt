@@ -1,0 +1,390 @@
+ASP.NET 5 e 6 - Autenticação e Autorização com Bearer e Token JWT
+-----------------------------------------------------------------
+
+https://www.youtube.com/watch?v=vAUXU0YIWlU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=11
+
+. Acesse a pasta central de projetos e execute o comando abaixo:
+
+    dotnet new webapi -o superTokenApp -n superTokenApp -f net5.0
+
+. Apague as classes abaixo:
+
+    WeatherForecast.cs
+    Controllers/WeatherForecastController.cs
+
+. Acesse a pasta do projeto criado e execute os comandos abaixo:
+
+    dotnet add package Microsoft.AspNetCore.Authentication --version 2.2.0
+
+    dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 5.0.9
+
+. Acesse o VSCode e abra a pasta do projeto criado.
+
+. Crie a pasta "Models" na raiz do projeto e dentro dela crie a classe abaixo:
+
+    namespace superTokenApp.Models
+    {
+
+        public class User
+        {
+            public int Id { get; set; }
+
+            public string Username { get; set; }
+
+            public string Password { get; set; }
+
+            public string Role { get; set; }
+
+        }
+    }
+
+. Crie a pasta "Repositories" na raiz do projeto e dentro dela crie a classe abaixo:
+
+    using System.Collections.Generic;
+    using System.Linq;
+    using superTokenApp.Models;
+
+    namespace superTokenApp.Repositories
+    {
+        public class UserRepository
+        {
+            public static User Get( string username, string password)
+            {
+                var users = new List<User>
+                {
+
+                    new() { Id = 1, Username = "batman", Password = "batman", Role = "manager" } ,
+                    new() { Id = 2, Username = "robin", Password = "robin", Role = "employee" } 
+                }
+
+                return users.FirstOrDefault( x => x.Username == username && x.Password == password );
+            }
+        }
+    }
+
+. Na raiz do projeto crie a classe abaixo:
+
+    namespace superTokenApp
+    {
+        public static class Settings
+        {
+            public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
+        }
+    }
+
+. Crie a pasta "Services" e dentro dela a classe abaixo:
+
+    using System;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Security.Claims;
+    using System.Text;
+    using Microsoft.IdentityModel.Tokens;
+    using superTokenApp.Models;
+
+    namespace superTokenApp.Services
+    {
+        public class TokenService
+        {
+            public string GenerateToken( User user )
+            {
+                // Classe responsável por gerar o token
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                // Nossa chave de validação do token
+                var key = Encoding.ASCII.GetBytes(Settings.JwtKey);
+
+                // Informações contidas no nosso token
+                var tokenDescriptor = new SecurityTokenDescriptor()
+                {
+                    // Perfis dos usuários
+                    Subject = new ClaimsIdentity( new Claim[]        
+                    {
+                        new Claim( ClaimTypes.Name, user.Username ),    // Aponta para User.Identity.Name
+                        new Claim( ClaimTypes.Role, user.Role )         // Aponta para User.InRole
+                    }),
+                    // Tempo de expiração do nosso token
+                    Expires = DateTime.UtcNow.AddHours(8),
+                    // Credenciais para incriptar e desincriptar nosso token
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                                                                    SecurityAlgorithms.HmacSha256Signature)
+                };
+
+                // Faz a criação do token
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                return tokenHandler.WriteToken(token);
+
+            }
+
+        }
+    }
+
+. Configurando Autenticação e Autorização para .NET 5
+
+    . Acessa a classe "Startup.cs" e insira as linhas abaixo:
+
+        using System.Text;
+        using Microsoft.AspNetCore.Authentication.JwtBearer;
+        using Microsoft.AspNetCore.Builder;
+        using Microsoft.AspNetCore.Hosting;
+        using Microsoft.Extensions.Configuration;
+        using Microsoft.Extensions.DependencyInjection;
+        using Microsoft.Extensions.Hosting;
+        using Microsoft.IdentityModel.Tokens;
+        using Microsoft.OpenApi.Models;
+        using superTokenApp.Services;
+        ...
+        public void ConfigureServices( IServiceCollenction services )
+        {
+
+            services.AddTransient<TokenService>();  // Linha inserida
+
+            services.AddControllerWithViews();
+
+            // Linha inserida
+            var key = Encoding.ASCII.GetBytes( Settings.JwtKey );   // Linha inserida
+
+            // Linhas inseridas
+            services.AddAuthentication(x =>
+                        {
+                            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                        }).AddJwtBearer(x =>
+                        {
+                            x.RequireHttpsMetadata = false;
+                            x.SaveToken = true;
+                            x.TokenValidationParameters = new TokenValidationParameters
+                            {
+                                ValidateIssuerSigningKey = true,
+                                IssuerSigningKey = new SymmetricSecurityKey(key),
+                                ValidateIssuer = false,
+                                ValidateAudience = false
+                            };
+                        });
+
+        }
+        ...
+        app.UseAuthentication();    // Linha inserida   "A chamada do método "UseAuthentication()" deve vir antes da linha abaixo
+        
+        app.UseAuthorization();     
+        ...
+
+. Configurando Autenticação e Autorização para .NET 6
+-----------------------------------------------------
+
+    . Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
+        no nosso projeto, obrigatório ser nessa ordem:
+
+        ...
+        var builder - WebApplication.CreateBuilder( args );
+
+        var key = Encoding.ASCII.GetBytes( Configuration.JwtKey );   // Linha inserida
+
+        // Linha abaixo inserida, não é para alterar
+        builder.Services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(x =>
+        {
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        });
+
+
+        ...
+        var app = builder.Build();
+
+        app.UseAuthentication();    // Linha inserida   "Nessa ordem"
+        app.UseAuthorization();     // Linha inserida   "Nessa ordem"
+        ...
+
+    . Maiores detalhes, acesse a "Aula 47. Configurando Autenticação e Autorização" do curso "Fundamentos ASP.NET 6 - Balta"
+    
+. Crie a classe abaixo dentro da pasta "Controllers":
+
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Mvc;
+    using superTokenApp.Models;
+    using superTokenApp.Repositories;
+    using superTokenApp.Services;
+
+    namespace superTokenApp.Controllers
+    {
+        [ApiController]
+        [Route("[controller]")]
+        public class LoginController : ControllerBase
+        {
+
+            [HttpPost("v1/getToken")]
+            public ActionResult<dynamic> Authenticate([FromServices] TokenService tokenService,
+                                                                        [FromBody] User model)
+            {
+                var user = UserRepository.Get(model.Username, model.Password);
+
+                if (user == null)
+                {
+                    return NotFound(new { message = "Usuário, ou senha, inválido" });
+                }
+
+                var token = tokenService.GenerateToken(user);
+
+                user.Password = "";
+
+                return new
+                {
+                    user = user,
+                    token = token
+                };
+            }
+
+        }
+    }
+
+    . Não funcionou o "async" devido não conseguir encontrar o lugar para colocar o "await"
+
+. Execute o projeto em modo debug
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/login/v1/getToken
+    method: POST
+    body.raw: true
+    body.raw.json: True
+    body:   {
+                "username": "robin",
+                "password": "robin"
+            }
+
+    . Guarde o Token gerado para ser utilizado logo mais.
+
+. Selecione o token gerado no item anterior, acesse o site "jwt.io", cole na caixa "Encoded" e verifique 
+    o resultado.
+
+. Acesse o controller "HomeController" e altere todo código dele como abaixo:
+
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+
+    namespace superTokenApp.Controllers
+    {
+        [ApiController]
+        [Route("[controller]")]
+        public class HomeController: ControllerBase
+        {
+            [HttpGet("v1/anonymous")]
+            [AllowAnonymous]
+            public string Anonymous() => "Anônimo";
+
+            [HttpGet("v1/authenticated")]
+            [Authorize]
+            public string Authenticate() => $"Authenticated - {User.Identity.Name}";
+
+            [HttpGet("v1/employee")]
+            [Authorize( Roles = "employee,manager")]
+            public string Employee() => "Funcionário";
+
+            [HttpGet("v1/manager")]
+            [Authorize( Roles = "manager")]
+            public string Manager() => "Gerente";
+        }
+    }
+
+. Pare o projeto e execute novamente em modo debug
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/anonymous
+    method: GET 
+    body.none: true
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/authenticated
+    method: GET 
+    body.none: true
+
+    . Dará erro "401. Unauthenticated"
+
+    . No Postman reconfigure a requisição como abaixo:
+
+        url: https://localhost:5001/home/v1/authenticated
+        method: GET
+        Authorization.Type: Bearer Token
+        Authorization.Token: [token obtido no item anterior]
+
+        ou
+
+        url: https://localhost:5001/home/v1/authenticated
+        method: GET
+        Headers.Authorization: Bearer [Token obtido no item anterior]
+
+        . Este NÃO DARÁ erro, retornando o "User.Identity.Name"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/employee
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/employee
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este NÃO DARÁ erro, retornando o "Funcionário"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este DARÁ erro, retornando status Code "403. Forbidden"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/login/v1/getToken
+    method: POST
+    body.raw: true
+    body.raw.json: True
+    body:   {
+                "username": "batman",
+                "password": "batman"
+            }
+
+    . Guarde o Token gerado para ser utilizado logo mais.
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este NÃO DARÁ erro, retornando o valor "Gerente"
+
+
+
+
+

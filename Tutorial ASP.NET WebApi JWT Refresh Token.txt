@@ -1,0 +1,521 @@
+ASP.NET WebApi JWT Refresh Token
+--------------------------------
+
+https://www.youtube.com/watch?v=HsypCNm56zs
+https://github.com/brunobritodev/refresh-token-sample
+
+
+. Acesse a pasta central de projetos e execute o comando abaixo:
+
+    dotnet new webapi -o superRefreshTokenApp -n superRefreshTokenApp -f net5.0
+
+. Apague as classes abaixo:
+
+    WeatherForecast.cs
+    Controllers/WeatherForecastController.cs
+
+. Acesse a pasta do projeto criado e execute os comandos abaixo:
+
+    dotnet add package Microsoft.AspNetCore.Authentication --version 2.2.0
+
+    dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 5.0.9
+
+. Acesse o VSCode e abra a pasta do projeto criado.
+
+. Crie a pasta "Models" na raiz do projeto e dentro dela crie a classe abaixo:
+
+    namespace superRefreshTokenApp.Models
+    {
+
+        public class User
+        {
+            public int Id { get; set; }
+
+            public string Username { get; set; }
+
+            public string Password { get; set; }
+
+            public string Role { get; set; }
+
+        }
+    }
+
+. Crie a pasta "Repositories" na raiz do projeto e dentro dela crie a classe abaixo:
+
+    using System.Collections.Generic;
+    using System.Linq;
+    using superRefreshTokenApp.Models;
+
+    namespace superRefreshTokenApp.Repositories
+    {
+        public class UserRepository
+        {
+            public static User Get( string username, string password)
+            {
+                var users = new List<User>
+                {
+
+                    new() { Id = 1, Username = "batman", Password = "batman", Role = "manager" } ,
+                    new() { Id = 2, Username = "robin", Password = "robin", Role = "employee" } 
+                };
+
+                return users.FirstOrDefault( x => x.Username == username && x.Password == password );
+            }
+        }
+    }
+
+. Na raiz do projeto crie a classe abaixo:
+
+    namespace superRefreshTokenApp
+    {
+        public static class Settings
+        {
+            public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
+        }
+    }
+
+. Crie a pasta "Services" e dentro dela a classe abaixo:
+
+    using System;
+    using System.Collections.Generic;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Linq;
+    using System.Security.Claims;
+    using System.Security.Cryptography;
+    using System.Text;
+    using Microsoft.IdentityModel.Tokens;
+    using superRefreshTokenApp.Models;
+
+    namespace superRefreshTokenApp.Services
+    {
+        public class TokenService
+        {
+            public string GenerateToken( User user )
+            {
+                // Classe responsável por gerar o token
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                // Nossa chave de validação do token
+                var key = Encoding.ASCII.GetBytes(Settings.JwtKey);
+
+                // Informações contidas no nosso token
+                var tokenDescriptor = new SecurityTokenDescriptor()
+                {
+                    // Perfis dos usuários
+                    Subject = new ClaimsIdentity( new Claim[]        
+                    {
+                        new Claim( ClaimTypes.Name, user.Username ),    // Aponta para User.Identity.Name
+                        new Claim( ClaimTypes.Role, user.Role )         // Aponta para User.InRole
+                    }),
+                    // Tempo de expiração do nosso token
+                    Expires = DateTime.UtcNow.AddHours(8),
+                    // Credenciais para incriptar e desincriptar nosso token
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                                                                    SecurityAlgorithms.HmacSha256Signature)
+                };
+
+                // Faz a criação do token
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                return tokenHandler.WriteToken(token);
+
+            }
+
+            // 7.52
+            public string GenerateToken( IEnumerable<Claim> claims )
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                var key = Encoding.ASCII.GetBytes( Settings.JwtKey );
+
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(claims),
+                    Expires = DateTime.UtcNow.AddHours(2),
+                    SigningCredentials = new SigningCredentials( new SymmetricSecurityKey(key),
+                                            SecurityAlgorithms.HmacSha256Signature)                    
+                };
+
+                var token = tokenHandler.CreateToken( tokenDescriptor );
+
+                return tokenHandler.WriteToken( token );
+            }
+
+            // 8.24
+            public string GenerateRefreshToken()
+            {
+                var randomNumber = new byte[32];
+
+                using var rng = RandomNumberGenerator.Create();
+
+                rng.GetBytes( randomNumber );
+
+                return Convert.ToBase64String( randomNumber );
+            }
+
+            // 9.20
+            public ClaimsPrincipal GetPrincipalFromExpiredToken( string token )
+            {
+                var tokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey( Encoding.UTF8.GetBytes( Settings.JwtKey )),
+                    ValidateLifetime = false
+                };
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                var principal = tokenHandler.ValidateToken( token, tokenValidationParameters, out var securityToken );
+
+                if ( securityToken is not JwtSecurityToken jwtSecurityToken || 
+                        ! jwtSecurityToken.Header.Alg.Equals( SecurityAlgorithms.HmacSha256, 
+                                                                StringComparison.InvariantCultureIgnoreCase ))
+                    throw new SecurityTokenException( "Invalid Token" );
+
+                return principal;
+            }
+
+            // 11.26
+            private List<(string, string)> _refreshTokens = new();
+
+            public  void SaveRefreshToken( string username, string refreshToken )
+            {
+                _refreshTokens.Add( new( username, refreshToken) );
+            }
+
+            public  string GetRefreshToken( string username )
+            {
+                return _refreshTokens.FirstOrDefault( x => x.Item1 == username).Item2;
+            }
+
+            public  void DeleteRefreshToken( string username, string refreshToken )
+            {
+                
+                // ATENÇÃO: Verificar se "x.items2 == refreshToken ).item2;" está correto
+
+                var item = _refreshTokens.FirstOrDefault( x => x.Item1 == username &&
+                                                             x.Item2 == refreshToken );
+
+                _refreshTokens.Remove( item );
+            }
+        }
+    }
+
+. Configurando Autenticação e Autorização para .NET 5
+
+    . Acessa a classe "Startup.cs" e insira as linhas abaixo:
+
+        using System.Text;
+        using Microsoft.AspNetCore.Authentication.JwtBearer;
+        using Microsoft.AspNetCore.Builder;
+        using Microsoft.AspNetCore.Hosting;
+        using Microsoft.Extensions.Configuration;
+        using Microsoft.Extensions.DependencyInjection;
+        using Microsoft.Extensions.Hosting;
+        using Microsoft.IdentityModel.Tokens;
+        using Microsoft.OpenApi.Models;
+        using superRefreshTokenApp.Services;
+        ...
+        public void ConfigureServices( IServiceCollenction services )
+        {
+
+            services.AddTransient<TokenService>();  // Linha inserida
+
+            services.AddControllersWithViews();
+
+            // Linha inserida
+            var key = Encoding.ASCII.GetBytes( Settings.JwtKey );   // Linha inserida
+
+            // Linhas inseridas
+            services.AddAuthentication(x =>
+                        {
+                            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                        }).AddJwtBearer(x =>
+                        {
+                            x.RequireHttpsMetadata = false;
+                            x.SaveToken = true;
+                            x.TokenValidationParameters = new TokenValidationParameters
+                            {
+                                ValidateIssuerSigningKey = true,
+                                IssuerSigningKey = new SymmetricSecurityKey(key),
+                                ValidateIssuer = false,
+                                ValidateAudience = false
+                            };
+                        });
+
+        }
+        ...
+        app.UseAuthentication();    // Linha inserida   "A chamada do método "UseAuthentication()" deve vir antes da linha abaixo
+        
+        app.UseAuthorization();     
+        ...
+
+. Configurando Autenticação e Autorização para .NET 6
+-----------------------------------------------------
+
+    . Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
+        no nosso projeto, obrigatório ser nessa ordem:
+
+        ...
+        var builder - WebApplication.CreateBuilder( args );
+
+        var key = Encoding.ASCII.GetBytes( Configuration.JwtKey );   // Linha inserida
+
+        // Linha abaixo inserida, não é para alterar
+        builder.Services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(x =>
+        {
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        });
+
+
+        ...
+        var app = builder.Build();
+
+        app.UseAuthentication();    // Linha inserida   "Nessa ordem"
+        app.UseAuthorization();     // Linha inserida   "Nessa ordem"
+        ...
+
+    . Maiores detalhes, acesse a "Aula 47. Configurando Autenticação e Autorização" do curso "Fundamentos ASP.NET 6 - Balta"
+    
+. Inclua a classe "LoginController" na pasta "Controllers":
+
+    using System.Web;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.IdentityModel.Tokens;
+    using superRefreshTokenApp.Models;
+    using superRefreshTokenApp.Repositories;
+    using superRefreshTokenApp.Services;
+
+    namespace superAuthApp.Controllers
+    {
+        [ApiController]
+        [Route("[controller]")]
+        public class LoginController : ControllerBase
+        {
+
+            [HttpPost("v1/getToken")]
+            public ActionResult<dynamic> Authenticate([FromServices] TokenService tokenService,
+                                                                        [FromBody] User model)
+            {
+                var user = UserRepository.Get(model.Username, model.Password);
+
+                if (user == null)
+                {
+                    return NotFound(new { message = "Usuário, ou senha, inválido" });
+                }
+
+                var token = tokenService.GenerateToken(user);
+
+                var refreshToken = tokenService.GenerateRefreshToken();
+
+                tokenService.SaveRefreshToken(user.Username, HttpUtility.UrlDecode(refreshToken));
+
+                user.Password = "";
+
+                return new
+                {
+                    user = user,
+                    token = token,
+                    refreshToken = refreshToken
+                };
+            }
+
+            // 14.50
+            [HttpPost("v1/getRefreshToken")]
+            public IActionResult Refresh([FromServices] TokenService tokenService,
+                                        [FromQuery] string token,
+                                            [FromQuery] string refreshToken)
+            {
+
+                var principal = tokenService.GetPrincipalFromExpiredToken(token);
+
+                var username = principal.Identity.Name;
+
+                var savedRefreshToken = tokenService.GetRefreshToken( username );
+
+                if (savedRefreshToken != refreshToken)
+                    // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
+                    return Unauthorized( new { Error =  "RefreshToken Inválido"} );
+                    //  throw new SecurityTokenException("Invalid Token");  // Ao invés de levantar um exception, devolver um StatusCode
+
+                var newJwtToken = tokenService.GenerateToken(principal.Claims);
+                var newRefreshToken = tokenService.GenerateRefreshToken();
+
+                tokenService.DeleteRefreshToken(username, refreshToken);
+                tokenService.SaveRefreshToken(username, newRefreshToken);   // Salvar a data de criação/expiração para invalida-lo
+
+                return new ObjectResult(new
+                {
+                    token = newJwtToken,
+                    refreshToken = newRefreshToken
+
+                    // Retornar a data de expiração do refreshToken
+                });
+            }
+
+    // TODO  1. No método "tokenService.GenerateRefreshToken" deve guardar a data de expiração do refreshToken
+    //       2. Criar método que gera novo token somente com o refreshToken
+    //       3. Esse método deve validar a expiração do refreshToken
+
+
+        }
+    }
+
+. Levante a aplicação
+
+. Acesse o Postman e execute a rota abaixo:
+
+    url: https://localhost:[porta]/login/v1/getToken
+    method: POST
+    Body.raw.JSON: True
+    Body.raw:   {
+        "username": "batman",
+        "password": "batman"
+    }
+
+    . Copie o token e o refreshToken gerado
+
+// 18.13
+. Execute a rota abaixo:
+
+    url: https://localhost:[porta]/login/v1/getRefreshToken
+    method: POST
+    Params.token: [token gerado no item anterior]
+    Params.refreshToken: [Refresh Token gerado no passo anterior]
+    Body.raw.JSON: True
+    Body.raw:   {
+        "username": "batman",
+        "password": "batman"
+    }
+
+. Acesse o controller "HomeController" e altere todo código dele como abaixo:
+
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+
+    namespace superTokenApp.Controllers
+    {
+        [ApiController]
+        [Route("[controller]")]
+        public class HomeController: ControllerBase
+        {
+            [HttpGet("v1/anonymous")]
+            [AllowAnonymous]
+            public string Anonymous() => "Anônimo";
+
+            [HttpGet("v1/authenticated")]
+            [Authorize]
+            public string Authenticate() => $"Authenticated - {User.Identity.Name}";
+
+            [HttpGet("v1/employee")]
+            [Authorize( Roles = "employee,manager")]
+            public string Employee() => "Funcionário";
+
+            [HttpGet("v1/manager")]
+            [Authorize( Roles = "manager")]
+            public string Manager() => "Gerente";
+        }
+    }
+
+. Pare o projeto e execute novamente em modo debug
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/anonymous
+    method: GET 
+    body.none: true
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/authenticated
+    method: GET 
+    body.none: true
+
+    . Dará erro "401. Unauthenticated"
+
+    . No Postman reconfigure a requisição como abaixo:
+
+        url: https://localhost:5001/home/v1/authenticated
+        method: GET
+        Authorization.Type: Bearer Token
+        Authorization.Token: [token obtido no item anterior]
+
+        ou
+
+        url: https://localhost:5001/home/v1/authenticated
+        method: GET
+        Headers.Authorization: Bearer [Token obtido no item anterior]
+
+        . Este NÃO DARÁ erro, retornando o "User.Identity.Name"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/employee
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/employee
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este NÃO DARÁ erro, retornando o "Funcionário"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este DARÁ erro, retornando status Code "403. Forbidden"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/login/v1/getToken
+    method: POST
+    body.raw: true
+    body.raw.json: True
+    body:   {
+                "username": "batman",
+                "password": "batman"
+            }
+
+    . Guarde o Token gerado para ser utilizado logo mais.
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:5001/home/v1/manager
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este NÃO DARÁ erro, retornando o valor "Gerente"
+

@@ -12,7 +12,12 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 . Acesse a pasta do projeto criado com o VSCode e execute os comandos abaixo:
 
     dotnet add package Microsoft.EntityFrameworkCore --version 5.0.9        
-    
+
+
+    # Se for usar o banco de dados em memória execute a linha abaixo
+    #
+    # dotnet add package Microsoft.EntityFrameworkCore.InMemory -- version 5.0.9
+
     dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 5.0.9
 
     dotnet add package Microsoft.EntityFrameworkCore.Design --version 5.0.9
@@ -130,8 +135,18 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
         public void ConfigureServices(IServiceCollection services)
         {
 
+            // Se for trabalhar com banco em memória
             // services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("Database"));
-            services.AddScoped<DataContext, DataContext>();     // Linha inserida
+
+
+            // Pode ser usado como abaixo, porém existe um método especial do tipo Scoped "services.AddDbContext<T>". Utilizado exclusivamente com o EF
+            // 
+            // services.AddScoped<DataContext, DataContext>();     
+
+
+            // Garante que a conexão só dura até o fim da requisição
+            //
+            services.AddDbContext<DataContext>();   // Linha inserida
 
             services.AddControllers();
 
@@ -155,7 +170,7 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
     namespace contrato.Controllers
     {
         [ApiController]
-        [Route("v1/clientes")]
+        [Route("[controller]")]                                   
         public class ClienteController: ControllerBase
         {
 /*          // Devido ao [FromServices] deixou de ser necessário este trecho de código
@@ -167,8 +182,8 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
             }
 */
 
-            [HttpGet]
-            [Route("")]
+            // A rota "v1" será o controle de versão
+            [HttpGet("v1")]                                 
             public async Task<ActionResult<List<Cliente>>> Get([FromServices] DataContext context)
             {
                 var clientes = await context.Clientes.ToListAsync();
@@ -176,8 +191,7 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
                 return clientes;
             }
 
-            [HttpPost]
-            [Route("")]
+            [HttpPost("v1")]
             public async Task<ActionResult<Cliente>> Post(  [FromServices] DataContext context,
                                                             [FromBody] Cliente model )
             {
@@ -185,7 +199,15 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
                 {
                     context.Clientes.Add(model);
                     await context.SaveChangesAsync();
-                    return model;
+
+                    var createdResource = new { Id = 1, Version = "1.0" };
+                    Uri uri = new Uri($"https://localhost:5001/cliente/v1/{model.cpf}");
+            
+                    // https://ochzhen.com/blog/created-createdataction-createdatroute-methods-explained-aspnet-core
+                    // https://www.macoratti.net/19/06/aspnc_3dwebapi1.htm
+                    // https://code-maze.com/net-core-web-development-part6/
+                    return Created(uri, model);
+
                 }
                 else
                 {
@@ -196,7 +218,16 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
         }
     }
 
+    . Acesse a aula "Aula 36.  Padronizando erros" do curso "Fundamentos ASP.NET 6" e faça as 
+        configurações para deixar a validação manual dentro dos controllers os models através 
+        do método "ModelState.IsValid":
 
+            ...
+            if (!ModelState.IsValid)                        
+                return BadRequest(new ResultViewModel<Category>(ModelState.GetErrors()));
+            ...
+
+9.00
 
 . Execute a aplicacao com o comando abaixo:
 
@@ -207,7 +238,7 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 . Acesse o Postman e execute as URLs com os parâmetros abaixo:
 
     Method: POST
-    URL: https://localhost:5001/v1/clientes
+    URL: https://localhost:5001/cliente/v1
     Body.raw: 
                 {
                     "cpf": "018.020.098-41",
@@ -229,14 +260,13 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 
 
     Method: GET
-    URL: https://localhost:5001/v1/clientes
+    URL: https://localhost:5001/cliente/v1
     Body.none
 
 . Adicione o método abaixo na classe "ClienteController.cs"
 
-    [HttpGet]
-    // [Route("{cpf:regex(^\\d{{3}}.\\d{{3}}.\\d{{3}}-\\d{{2}}$)}")]
-    [Route("{cpf}")]
+    [HttpGet("v1/{cpf:string}")]
+    // [HttpGet("{cpf:regex(^\\d{{3}}.\\d{{3}}.\\d{{3}}-\\d{{2}}$)}")]
     public async Task<ActionResult<Cliente>> GetByCpf([FromServices] DataContext context,  string cpf){ 
 
         var cliente = await context.Clientes
@@ -253,13 +283,28 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 . Acesse o Postman e execute as URLs com os parâmetros abaixo:
 
     Method: GET
-    URL: https://localhost:5001/v1/clientes/049.045.238-81
+    URL: https://localhost:5001/v1/cliente/049.045.238-81
     Body.None: True
+
+. Insira a classe abaixo na pasta "Models":
+
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    namespace contrato.Models
+    {
+        public class ClienteViewModel
+        {
+            public string cpf { get; set; }
+            public string nome { get; set; }
+        }
+    }
 
 . Substitua o método "GetByCpf" pelo abaixo na classe "ClienteController.cs"
 
-    [HttpGet]
-    [Route("cpf")]
+    [HttpGet("v1/cpf")]
     public async Task<ActionResult<Cliente>> GetByCpf([FromServices] DataContext context,  ClienteViewModel viewModel){
 
         var cliente = await context.Clientes
@@ -277,14 +322,13 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 . Acesse o Postman e execute as URLs com os parâmetros abaixo:
 
     Method: GET
-    URL: https://localhost:5001/v1/clientes/cpf
+    URL: https://localhost:5001/v1/cliente/cpf
     Body.raw: { "cpf": "049.045.238-81"}
 
 
 . Adicione o método abaixo na classe "ClienteController.cs"
 
-    [HttpGet]
-    [Route("nome")]
+    [HttpGet("v1/nome")]
     public async Task<ActionResult<List<Cliente>>> GetByName([FromServices] DataContext context, ClienteViewModel viewModel, string nome)
     {
         var clientes = await context.Clientes
@@ -303,30 +347,28 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 . Acesse o Postman e execute as URLs com os parâmetros abaixo:
 
     Method: GET
-    URL: https://localhost:5001/v1/clientes/nome
+    URL: https://localhost:5001/cliente/v1/nome
     Body.raw: { "nome": "MARCO" }
 
 
 . Adicione o método abaixo na classe "ClienteController.cs"
 
-    [HttpPut]
-    [Route("")]
+    [HttpPut("v1")]
     public async Task<ActionResult<Cliente>> Put([FromServices] DataContext context,
                                                     [FromBody] Cliente model )
     {
         context.Clientes.Update(model);
         await context.SaveChangesAsync();
 
-        Uri uri = new Uri($"https://localhost:5001/v1/clientes/{model.cpf}");
+        Uri uri = new Uri($"https://localhost:5001/cliente/v1/{model.cpf}");
 
-        return Ok(model);
-
+        return Created(uri, model);
     }
 
 . Acesse o Postman e execute as URLs com os parâmetros abaixo:
 
     Method: PUT
-    URL: https://localhost:5001/v1/clientes/
+    URL: https://localhost:5001/cliente/v1
     Body.raw:     {
                     "codigo": "317282",
                     "cpf": "106.523.608-60",
@@ -346,8 +388,7 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 
 . Adicione o método abaixo na classe "ClienteController.cs"
 
-    [HttpDelete]
-    [Route("{cpf}")]
+    [HttpDelete("v1/{cpf:string})]
     public async Task<ActionResult> Delete([FromServices] DataContext context,
                                 string cpf)
     {
@@ -372,7 +413,9 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 
 
 
-// Parei ao 9.30 
+
+
+
 https://docs.microsoft.com/pt-br/aspnet/web-api/overview/web-api-routing-and-actions/attribute-routing-in-web-api-2#route-constraints
 https://www.macoratti.net/19/08/aspnc_restrota1.htm
 https://ochzhen.com/blog/created-createdataction-createdatroute-methods-explained-aspnet-core
