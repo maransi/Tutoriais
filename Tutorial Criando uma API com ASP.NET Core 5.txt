@@ -11,8 +11,6 @@ https://www.youtube.com/watch?v=J-mC0i_R72M
 
 . Acesse a pasta do projeto criado com o VSCode e execute os comandos abaixo:
 
-    dotnet add package Microsoft.EntityFrameworkCore --version 5.0.5
-
     dotnet add package Microsoft.EntityFrameworkCore --version 5.0.9        
     
     dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 5.0.9
