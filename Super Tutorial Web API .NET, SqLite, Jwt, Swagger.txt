@@ -24,7 +24,7 @@
 
 . Crie a pasta "Models" na raiz do projeto.
 
-. Crie a classe abaixo:
+. Crie as classes abaixo:
 
     using System;
     using System.Collections.Generic;
@@ -100,10 +100,10 @@
 
     namespace contrato.Data
     {
-        public class DataContext: DbContext
+        public class AppDbContext: DbContext
         {
     /*      // Se for trbalhar com banco em memoria
-            public DataContext( DbContextOptions<DataContext> options): base(options)
+            public AppDataContext( DbContextOptions<AppDataContext> options): base(options)
             {
 
             }
@@ -133,14 +133,14 @@
     instale alguma extensão do SqLite no VSCode para executar instruções DMLs e faça a consulta da 
     estrutura do banco nele.
 
-. Insira a classe abaixo na pasta "Models":
+. Crie a pasta "ViewModels" e insira as classes abaixo :
 
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
-    namespace contrato.Models
+    namespace contrato.ViewModels
     {
         public class ClienteViewModel
         {
@@ -149,6 +149,66 @@
         }
     }
 
+
+
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    namespace contrato.ViewModels
+    {
+        public class CreateClienteViewModel
+        {
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            public string cpf { get; set; }
+            
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            [MaxLength(150, ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
+            [MinLength(5, ErrorMessage="Este campo dever ter entre 5 a 150 caracateres")]
+            public string nome { get; set; }
+
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            public DateTime? dataNascimento  { get; set; }
+
+            public string rg { get; set; }
+
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            public string sexo { get; set; }
+
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            public string estadoCivil { get; set; }
+
+            public string pai { get; set; }
+
+            public string mae { get; set; }
+
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            [MaxLength(250, ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
+            [MinLength(5,ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
+            public string endereco { get; set; }
+
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            [MaxLength(100, ErrorMessage="Este campo deve ter entre 5 a 100 caracateres")]
+            [MinLength(5,ErrorMessage="Este campo deve ter entre 5 a 100 caracateres")]
+            public string cidade { get; set; }
+
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            [MaxLength(2, ErrorMessage="Este campo deve ter 2 caracateres")]
+            [MinLength(2,ErrorMessage="Este campo deve ter 2caracateres")]
+            public string estado { get; set; }
+
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            public string cep { get; set; }
+
+            [Required(ErrorMessage="Este campo é obrigatorio")]
+            public string telefone  { get; set; }
+
+            public DateTime dataInclusao{ get; set; } = new Date();
+        }
+    }
 
 . Acesse a pasta "Controllers"  crie a classe abaixo:
 
@@ -168,9 +228,9 @@
         public class ClienteController: ControllerBase
         {
 /*          // Devido ao [FromServices] deixou de ser necessário este trecho de código
-            private DataContext _context;
+            private AppDataContext _context;
 
-            public ClienteController( DataContext context )
+            public ClienteController( AppDataContext context )
             {
                 _context = context;
             }
@@ -178,100 +238,155 @@
 
             // A rota "v1" será o controle de versão
             [HttpGet("v1")]                                 
-            public async Task<ActionResult<List<Cliente>>> GetAsync([FromServices] DataContext context)
+            public async Task<ActionResult<List<Cliente>>> GetAsync([FromServices] AppDataContext context)
             {
-                var clientes = await context.Clientes.ToListAsync();
+                var clientes = await context.Clientes
+                                            .AsNoTracking()
+                                            .ToListAsync();
 
-                return clientes;
+                return Ok(clientes);
             }
 
             [HttpPost("v1")]
-            public async Task<ActionResult<Cliente>> PostAsync(  [FromServices] DataContext context,
-                                                            [FromBody] Cliente model )
+            public async Task<ActionResult<Cliente>> PostAsync(  [FromServices] AppDataContext context,
+                                                                    [FromBody] CreateClienteViewModel model )
             {
-                if (ModelState.IsValid)
+                if (!ModelState.IsValid)
+                    return BadRequest( ModelState );
+
+                var cliente = new Cliente{
+                                            cpf                 = model.cpf,
+                                            nome                = model.nome,
+                                            dataNascimento      = model.dataNascimento,
+                                            rg                  = model.rg,
+                                            sexo                = model.sexo,
+                                            estadoCivil         = model.estadoCivil,
+                                            pai                 = model.pai,
+                                            mae                 = model.mae,
+                                            endereco            = model.endereco,
+                                            cidade              = model.cidade,
+                                            estado              = model.estado,
+                                            cep                 = model.cep,
+                                            telefone            = model.telefone,
+                                            dataInclusao        = DateTime.Now
+                                        };
+
+                try
                 {
-                    context.Clientes.Add(model);
+                    context.Clientes.AddAsync(model);
                     await context.SaveChangesAsync();
 
                     var createdResource = new { Id = 1, Version = "1.0" };
-                    Uri uri = new Uri($"https://localhost:5001/cliente/v1/{model.cpf}");
-            
-                    // https://ochzhen.com/blog/created-createdataction-createdatroute-methods-explained-aspnet-core
-                    // https://www.macoratti.net/19/06/aspnc_3dwebapi1.htm
-                    // https://code-maze.com/net-core-web-development-part6/
-                    return Created(uri, model);
 
-                }
-                else
+                    // Uri uri = new Uri($"https://localhost:5001/cliente/v1/cpf/{model.cpf}");
+                    
+                    // return Created(uri, model);
+                    return Created( $"cliente/v1/cpf/{model.cpf}", model);
+                } catch ( Exception ex)
                 {
-                    return BadRequest( ModelState );
+                    return BadRequest( ex.message );
                 }
+
+                // https://ochzhen.com/blog/created-createdataction-createdatroute-methods-explained-aspnet-core
+                // https://www.macoratti.net/19/06/aspnc_3dwebapi1.htm
+                // https://code-maze.com/net-core-web-development-part6/
             }  
 
-            [HttpGet("v1/{cpf:string}")]
+            [HttpGet("v1/cpf/{cpf:string}")]
             // [HttpGet("{cpf:regex(^\\d{{3}}.\\d{{3}}.\\d{{3}}-\\d{{2}}$)}")]
-            public async Task<ActionResult<Cliente>> GetByCpf([FromServices] DataContext context,  string cpf){ 
+            public async Task<ActionResult<Cliente>> GetByCpf([FromServices] AppDataContext context,  
+                                                                [FromRoute] string cpf){ 
 
                 var cliente = await context.Clientes
                                         .AsNoTracking()
                                         .FirstOrDefaultAsync(x => x.cpf ==  cpf );
 
-                if (cliente == null){
-                    return NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {cpf}" });
+                return cliente == null ? 
+                                NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {cpf}" }) : 
+                                Ok(cliente);
+
+            }
+
+            [HttpGet("v1/nome/{nome:string}")]
+            public async Task<ActionResult<List<Cliente>>> GetByName([FromServices] AppDataContext context, 
+                                                                        [FromBody] ClienteViewModel viewModel, 
+                                                                        [FromRoute] string nome)
+            {
+                var clientes = await context.Clientes
+                                    .AsNoTracking()
+                                    .Where( x => x.nome.ToUpper().Contains( viewModel.nome.ToUpper() ))
+                                    .ToListAsync();
+                                    // .FirstOrDefaultAsync( x => x.nome.Contains( viewModel.nome ) );
+
+                return cliente == null ? 
+                                NotFound(new { Id = 1, error =$"Não foi encontrado cliente com o nome {nome}" }) : 
+                                Ok(cliente);
+            }
+
+            [HttpPut("v1/{cpf:string}")]
+            public async Task<ActionResult<Cliente>> Put([FromServices] AppDataContext context,
+                                                            [FromBody] CreateClienteViewModel model,
+                                                            [FromRoute] string cpf )
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest( ModelState );
+
+                var cliente = await context.Clientes
+                                        .AsNoTracking()
+                                        .FirstOrDefaultAsync(x => x.cpf ==  cpf );
+
+                if ( cliente == null )
+                    return NotFound();
+
+                cliente.cpf                 = model.cpf,
+                cliente.nome                = model.nome,
+                cliente.dataNascimento      = model.dataNascimento,
+                cliente.rg                  = model.rg,
+                cliente.sexo                = model.sexo,
+                cliente.estadoCivil         = model.estadoCivil,
+                cliente.pai                 = model.pai,
+                cliente.mae                 = model.mae,
+                cliente.endereco            = model.endereco,
+                cliente.cidade              = model.cidade,
+                cliente.estado              = model.estado,
+                cliente.cep                 = model.cep,
+                cliente.telefone            = model.telefone,
+                cliente.dataInclusao        = DateTime.Now
+
+                try
+                {
+                    context.Clientes.Update(cliente);
+                    await context.SaveChangesAsync();
+
+                    return StatusCode( 201, cliente );
+                } catch ( Exception ex)
+                {
+                    return BadRequest( ex.message );
                 }
-
-                    return Ok(cliente);
             }
 
+            [HttpDelete("v1/{cpf:string})]
+            public async Task<ActionResult> Delete([FromServices] AppDataContext context,
+                                        string cpf)
+            {
+                try
+                {
+                    var clientes = context.Clientes
+                                    .AsNoTracking()
+                                    .Where( x => x.cpf == cpf )
+                                    .ToList();
 
+                    context.Clientes.Remove( clientes );
 
-        }
+                    await context.SaveChangesAsync();
 
-        [HttpGet("v1/nome")]
-        public async Task<ActionResult<List<Cliente>>> GetByName([FromServices] DataContext context, ClienteViewModel viewModel, string nome)
-        {
-            var clientes = await context.Clientes
-                                .AsNoTracking()
-                                .Where( x => x.nome.ToUpper().Contains( viewModel.nome.ToUpper() ))
-                                .ToListAsync();
-                                // .FirstOrDefaultAsync( x => x.nome.Contains( viewModel.nome ) );
-
-            if (clientes.Count == 0){
-                return NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {viewModel.cpf}" });
+                    return StatusCode( 204, "Cliente eliminado com sucesso");
+                } catch ( Exception ex)
+                {
+                    return BadRequest( ex.message );
+                }
             }
-
-            return Ok(clientes);
         }
-
-        [HttpPut("v1")]
-        public async Task<ActionResult<Cliente>> Put([FromServices] DataContext context,
-                                                        [FromBody] Cliente model )
-        {
-            context.Clientes.Update(model);
-            await context.SaveChangesAsync();
-
-            Uri uri = new Uri($"https://localhost:5001/cliente/v1/{model.cpf}");
-
-            return Created(uri, model);
-        }
-
-        [HttpDelete("v1/{cpf:string})]
-        public async Task<ActionResult> Delete([FromServices] DataContext context,
-                                    string cpf)
-        {
-            var clientes = context.Clientes
-                            .AsNoTracking()
-                            .Where( x => x.cpf == cpf )
-                            .ToList();
-
-            context.Clientes.RemoveRange( clientes );
-
-            await context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
     }
 
     . Acesse a aula "Aula 36.  Padronizando erros" do curso "Fundamentos ASP.NET 6" e faça as 
@@ -291,17 +406,17 @@
         {
 
             // Se for trabalhar com banco em memória
-            // services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("Database"));
+            // services.AddDbContext<AppDataContext>(opt => opt.UseInMemoryDatabase("Database"));
 
 
             // Pode ser usado como abaixo, porém existe um método especial do tipo Scoped "services.AddDbContext<T>". Utilizado exclusivamente com o EF
             // 
-            // services.AddScoped<DataContext, DataContext>();     
+            // services.AddScoped<AppDataContext, AppDataContext>();     
 
 
             // Garante que a conexão só dura até o fim da requisição
             //
-            services.AddDbContext<DataContext>();   // Linha inserida
+            services.AddDbContext<AppDbContext>();   // Linha inserida
 
             services.AddControllers();
 
@@ -364,11 +479,11 @@
     Body.none
 
     Method: GET
-    URL: https://localhost:5001/v1/cliente/049.045.238-81
+    URL: https://localhost:5001/cliente/v1/cpf/049.045.238-81
     Body.None: True
 
     Method: GET
-    URL: https://localhost:5001/v1/cliente/cpf
+    URL: https://localhost:5001/cliente/v1/cpf
     Body.raw: { "cpf": "049.045.238-81"}
 
     Method: GET
