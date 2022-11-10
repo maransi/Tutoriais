@@ -10,26 +10,8 @@ Criando um TodoApp com ASP.NET Core, Firebase, Angular e Flutter
 Minimal APIs - Especificar a porta
 https://balta.io/blog/minimal-apis-especificar-porta
 
-
-ASP.NET - Autenticação com ApiKey
-https://balta.io/blog/aspnet-autenticacao-apikey
-
-
-ASP.NET 5 – Autenticação e Autorização com Bearer e JWT (OK)
-https://balta.io/blog/aspnet-5-autenticacao-autorizacao-bearer-jwt
-
-
 ASP.NET Minimal APIs
 https://balta.io/blog/aspnet-minimal-apis
-
-
-ASP.NET HealhCheck
-https://balta.io/blog/aspnet-health-check
-
-
-Criando uma API do zero com .NET Core 3.1 e EF Core
-https://balta.io/blog/criando-api-zero-dotnet-core-3-1-ef-core
-
 
 ASP.NET Minimal SignalR
 https://balta.io/blog/aspnet-minimal-signalr
@@ -48,17 +30,16 @@ https://balta.io/blog/minimal-apis-especificar-porta
 https://www.youtube.com/watch?v=NFQAj5bCgd8&t=809s
 
 
-ASP.NET WebApi JWT Refresh Token    (ok)
-https://www.youtube.com/watch?v=HsypCNm56zs
 
 
-
+Criando uma API do zero com .NET Core 3.1 e EF Core
+https://balta.io/blog/criando-api-zero-dotnet-core-3-1-ef-core
 
 Como fazer uma API (Fácil e moderna) com ASP.NET, EF Core e SQLite
 https://www.youtube.com/watch?v=QzCSN9wN4JA&t=388s
 
 ASP.NET e EF Core Web API - Paginação de dados para múltiplos bancos de dados
-https://www.youtube.com/watch?v=vVmYd8Jh1Qw&list=RDCMUCgnACLvM9O5lfm9ZBh_d3cg&index=20
+https://www.youtube.com/watch?v=vVmYd8Jh1Qw&list=RD CMUCgnACLvM9O5lfm9ZBh_d3cg&index=20
 
 ASP.NET e EF Core Web API - Paginação de dados para múltiplos bancos de dados 
 https://www.youtube.com/watch?v=vVmYd8Jh1Qw
@@ -66,9 +47,22 @@ https://www.youtube.com/watch?v=vVmYd8Jh1Qw
 Como fazer um App com ASP.NET (Completo com login, EF e SQLite)
 https://www.youtube.com/watch?v=NFQAj5bCgd8
 
-
 ASP.NET Validações Customizadas
 https://www.youtube.com/watch?v=kgzc_gw2pi8
+
+ASP.NET WebApi JWT Refresh Token    (ok)
+https://www.youtube.com/watch?v=HsypCNm56zs
+
+ASP.NET - Autenticação com ApiKey
+https://balta.io/blog/aspnet-autenticacao-apikey
+
+ASP.NET 5 – Autenticação e Autorização com Bearer e JWT (OK)
+https://balta.io/blog/aspnet-5-autenticacao-autorizacao-bearer-jwt
+
+ASP.NET HealhCheck
+https://balta.io/blog/aspnet-health-check
+
+
 
 
 
@@ -92,9 +86,18 @@ ASP.NET Configuration Manager
 https://www.youtube.com/watch?v=mS1T3sd4pBE&list=RDCMUCgnACLvM9O5lfm9ZBh_d3cg&index=35
 
 
+ASP.NET WebApi - Globalização e localização
+https://www.youtube.com/watch?v=ZzSsk_rPEUk
+
+
 ASP.NET Configuration Manager 
 https://www.asp.mvc-tutorial.com
 https://www.tutorialsteacher.com/core
 https://www.tutorialsteacher.com/mvc
 https://www.tutorialsteacher.com/webapi
+
+
+Fluent APIs e Builder Design Pattern
+https://www.youtube.com/watch?v=9LioPE7eXSk
+https://balta.io/blog/csharp-fluent-apis?utm_source=YouTube&utm_campaign=social-to-blog&utm_content=video-fluent-apis&utm_medium=video-description
 
