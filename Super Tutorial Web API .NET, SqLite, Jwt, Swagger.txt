@@ -1,3 +1,6 @@
+Desenvolvimento de API com ASP.NET, EF Core e SQLite
+----------------------------------------------------
+
 . Acesse a pasta de projetos e digite o comando abaixo:
 
     dotnet new web -o Contrato -n contrato -f net5.0
@@ -135,80 +138,193 @@
 
 . Crie a pasta "ViewModels" e insira as classes abaixo :
 
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+    . Classe "ClienteViewModel", responsável por receber os parâmetros vindos do corpo da chamada para 
+        dentro da assinatura do método da rota:
 
-    namespace contrato.ViewModels
-    {
-        public class ClienteViewModel
+        using System;
+        using System.Collections.Generic;
+        using System.Linq;
+        using System.Threading.Tasks;
+
+        namespace contrato.ViewModels
         {
-            public string cpf { get; set; }
-            public string nome { get; set; }
+            public class ClienteViewModel
+            {
+                public string cpf { get; set; }
+                public string nome { get; set; }
+            }
+        }
+
+    . Classe "CreateClienteViewModel"responsável por receber os parâmetros vindos do corpo da chamada para 
+        dentro da assinatura do método da rota; preparada para ser utilizada na validação do model:
+
+        using System;
+        using System.Collections.Generic;
+        using System.ComponentModel.DataAnnotations;
+        using System.ComponentModel.DataAnnotations.Schema;
+        using System.Linq;
+        using System.Threading.Tasks;
+
+        namespace contrato.ViewModels
+        {
+            public class CreateClienteViewModel
+            {
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                public string cpf { get; set; }
+                
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                [MaxLength(150, ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
+                [MinLength(5, ErrorMessage="Este campo dever ter entre 5 a 150 caracateres")]
+                public string nome { get; set; }
+
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                public DateTime? dataNascimento  { get; set; }
+
+                public string rg { get; set; }
+
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                public string sexo { get; set; }
+
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                public string estadoCivil { get; set; }
+
+                public string pai { get; set; }
+
+                public string mae { get; set; }
+
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                [MaxLength(250, ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
+                [MinLength(5,ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
+                public string endereco { get; set; }
+
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                [MaxLength(100, ErrorMessage="Este campo deve ter entre 5 a 100 caracateres")]
+                [MinLength(5,ErrorMessage="Este campo deve ter entre 5 a 100 caracateres")]
+                public string cidade { get; set; }
+
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                [MaxLength(2, ErrorMessage="Este campo deve ter 2 caracateres")]
+                [MinLength(2,ErrorMessage="Este campo deve ter 2caracateres")]
+                public string estado { get; set; }
+
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                public string cep { get; set; }
+
+                [Required(ErrorMessage="Este campo é obrigatorio")]
+                public string telefone  { get; set; }
+
+                public DateTime dataInclusao{ get; set; } = new Date();
+            }
+        }
+
+    . Classe "ResultViewModel", responsável por padronizar e deixar mais amigável as mensagens de erro:
+
+        namespace Blog.ViewModels
+        {
+            public class ResultViewModel<T>
+            {
+                public ResultViewModel(T data, List<string> errors)
+                {
+                    Data = data;
+                    Errors = errors;
+                }
+
+                public ResultViewModel(T data)
+                {
+                    Data = data;
+                }
+
+                public ResultViewModel(List<string> errors)
+                {
+                    Errors = errors;
+                }
+
+                public ResultViewModel(string error)
+                {
+                    Errors.Add(error);
+                }
+
+                public T Data { get; private set; }
+                public List<string> Errors { get; private set; } = new();
+            }
+        }
+
+. Crie a pasta "Extensions" e inclua a classe abaixo:
+
+    using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+    namespace Blog.Extensions
+    {
+        public static class ModelStateExtension
+        {
+            public static List<string> GetErrors(this ModelStateDictionary modelState)
+            {
+                var result = new List<string>();
+                foreach (var item in modelState.Values)
+                    result.AddRange(item.Errors.Select(error => error.ErrorMessage));
+
+                return result;
+            }
         }
     }
 
+. Acesse a classe "Startup.cs" e faça as alterações abaixo:
 
-
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Linq;
-    using System.Threading.Tasks;
-
-    namespace contrato.ViewModels
+    ...
+    public void ConfigureServices(IServiceCollection services)
     {
-        public class CreateClienteViewModel
+
+        // Se for trabalhar com banco em memória
+        // services.AddDbContext<AppDataContext>(opt => opt.UseInMemoryDatabase("Database"));
+
+
+        // Pode ser usado como abaixo, porém existe um método especial do tipo Scoped "services.AddDbContext<T>". Utilizado exclusivamente com o EF
+        // 
+        // services.AddScoped<AppDataContext, AppDataContext>();     
+
+
+        // Garante que a conexão só dura até o fim da requisição
+        //
+        services.AddDbContext<AppDbContext>();   
+
+
+        // Ao fazer a configuração ".ConfigureApiBehaviorOptions", somos obrigados validar manualmente dentro dos controllers os models através 
+        // do método "ModelState.IsValid".
+        // Esta configuração trabalhará em conjunto classes "ResultViewModel" e "ModelStateExtension".
+        //
+        // Exemplo:     return BadRequest(new ResultViewModel<Category>(ModelState.GetErrors())); 
+        //
+        services.AddControllers()
+                .ConfigureApiBehaviorOptions(options =>        
+                                            {                                                       
+                                                options.SuppressModelStateInvalidFilter = true;     
+                                            });            
+
+        services.AddSwaggerGen(c =>
         {
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            public string cpf { get; set; }
-            
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            [MaxLength(150, ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
-            [MinLength(5, ErrorMessage="Este campo dever ter entre 5 a 150 caracateres")]
-            public string nome { get; set; }
-
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            public DateTime? dataNascimento  { get; set; }
-
-            public string rg { get; set; }
-
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            public string sexo { get; set; }
-
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            public string estadoCivil { get; set; }
-
-            public string pai { get; set; }
-
-            public string mae { get; set; }
-
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            [MaxLength(250, ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
-            [MinLength(5,ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
-            public string endereco { get; set; }
-
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            [MaxLength(100, ErrorMessage="Este campo deve ter entre 5 a 100 caracateres")]
-            [MinLength(5,ErrorMessage="Este campo deve ter entre 5 a 100 caracateres")]
-            public string cidade { get; set; }
-
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            [MaxLength(2, ErrorMessage="Este campo deve ter 2 caracateres")]
-            [MinLength(2,ErrorMessage="Este campo deve ter 2caracateres")]
-            public string estado { get; set; }
-
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            public string cep { get; set; }
-
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            public string telefone  { get; set; }
-
-            public DateTime dataInclusao{ get; set; } = new Date();
-        }
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Contrato", Version = "v1" });
+        });
     }
+
+    public void Configure( IApplicationBuilder app, IWebHostEnviroment env)
+    {
+        if (env.IsDevelopment() )
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        app.UseRouting();
+
+        app.UseEndpoints( endpoints =:
+        {
+            endpoints.MapControllerRoute(
+                "default",
+                "{controller=Home}/{action=Index}/{Id?}"
+            );
+        });
+
+    }
+    ...
 
 . Acesse a pasta "Controllers"  crie a classe abaixo:
 
@@ -240,11 +356,18 @@
             [HttpGet("v1")]                                 
             public async Task<ActionResult<List<Cliente>>> GetAsync([FromServices] AppDataContext context)
             {
-                var clientes = await context.Clientes
-                                            .AsNoTracking()
-                                            .ToListAsync();
+                try
+                {
+                    var clientes = await context.Clientes
+                                                .AsNoTracking()
+                                                .ToListAsync();
 
-                return Ok(clientes);
+                    return Ok(new ResultViewModel<List<Cliente>>(clientes));
+                } catch( Exception ex )
+                {
+                    return StatusCode( 500, new ResultViewModel<List<Cliente>>($"Ocorreu o seguinte erro [ {ex.message} ]" ) );
+                }
+
             }
 
             [HttpPost("v1")]
@@ -252,7 +375,7 @@
                                                                     [FromBody] CreateClienteViewModel model )
             {
                 if (!ModelState.IsValid)
-                    return BadRequest( ModelState );
+                    return BadRequest(new ResultViewModel<Category>(ModelState.GetErrors()));
 
                 var cliente = new Cliente{
                                             cpf                 = model.cpf,
@@ -281,10 +404,11 @@
                     // Uri uri = new Uri($"https://localhost:5001/cliente/v1/cpf/{model.cpf}");
                     
                     // return Created(uri, model);
-                    return Created( $"cliente/v1/cpf/{model.cpf}", model);
-                } catch ( Exception ex)
+                    return Created( $"cliente/v1/cpf/{model.cpf}", new ResultViewModel<Cliente>(model));
+                }
+                catch (Exception ex)
                 {
-                    return BadRequest( ex.message );
+                    return StatusCode(500, new ResultViewModel<Cliente>($"Ocorreu o seguinte erro [ {ex.message} ]"));  // Linha alterada
                 }
 
                 // https://ochzhen.com/blog/created-createdataction-createdatroute-methods-explained-aspnet-core
@@ -297,13 +421,20 @@
             public async Task<ActionResult<Cliente>> GetByCpf([FromServices] AppDataContext context,  
                                                                 [FromRoute] string cpf){ 
 
-                var cliente = await context.Clientes
-                                        .AsNoTracking()
-                                        .FirstOrDefaultAsync(x => x.cpf ==  cpf );
+                try
+                {
+                    var cliente = await context.Clientes
+                                            .AsNoTracking()
+                                            .FirstOrDefaultAsync(x => x.cpf ==  cpf );
 
-                return cliente == null ? 
-                                NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {cpf}" }) : 
-                                Ok(cliente);
+                    return cliente == null ? 
+                                    NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {cpf}" }) : 
+                                    Ok(new ResultViewModel<List<Cliente>>(clientes));
+                    return Ok(new ResultViewModel<List<Cliente>>(clientes));
+                } catch( Exception ex )
+                {
+                    return StatusCode( 500, new ResultViewModel<List<Cliente>>($"Ocorreu o seguinte erro [ {ex.message} ]" ) );
+                }
 
             }
 
@@ -319,49 +450,50 @@
                                     // .FirstOrDefaultAsync( x => x.nome.Contains( viewModel.nome ) );
 
                 return cliente == null ? 
+                                NotFound(new ResultViewModel<Cliente>("Cliente não encontrado"));  
                                 NotFound(new { Id = 1, error =$"Não foi encontrado cliente com o nome {nome}" }) : 
-                                Ok(cliente);
+                                Ok(new ResultViewModel<List<Cliente>>(clientes));
             }
-
             [HttpPut("v1/{cpf:string}")]
             public async Task<ActionResult<Cliente>> Put([FromServices] AppDataContext context,
                                                             [FromBody] CreateClienteViewModel model,
                                                             [FromRoute] string cpf )
             {
                 if (!ModelState.IsValid)
-                    return BadRequest( ModelState );
-
-                var cliente = await context.Clientes
-                                        .AsNoTracking()
-                                        .FirstOrDefaultAsync(x => x.cpf ==  cpf );
-
-                if ( cliente == null )
-                    return NotFound();
-
-                cliente.cpf                 = model.cpf,
-                cliente.nome                = model.nome,
-                cliente.dataNascimento      = model.dataNascimento,
-                cliente.rg                  = model.rg,
-                cliente.sexo                = model.sexo,
-                cliente.estadoCivil         = model.estadoCivil,
-                cliente.pai                 = model.pai,
-                cliente.mae                 = model.mae,
-                cliente.endereco            = model.endereco,
-                cliente.cidade              = model.cidade,
-                cliente.estado              = model.estado,
-                cliente.cep                 = model.cep,
-                cliente.telefone            = model.telefone,
-                cliente.dataInclusao        = DateTime.Now
+                    return BadRequest(new ResultViewModel<Category>(ModelState.GetErrors()));
 
                 try
                 {
+                    var cliente = await context.Clientes
+                                            .AsNoTracking()
+                                            .FirstOrDefaultAsync(x => x.cpf ==  cpf );
+
+                    if ( cliente == null )
+                        return NotFound( new ResultViewModel<Cliente>("Cliente não encontrado"));
+
+
+                    cliente.cpf                 = model.cpf,
+                    cliente.nome                = model.nome,
+                    cliente.dataNascimento      = model.dataNascimento,
+                    cliente.rg                  = model.rg,
+                    cliente.sexo                = model.sexo,
+                    cliente.estadoCivil         = model.estadoCivil,
+                    cliente.pai                 = model.pai,
+                    cliente.mae                 = model.mae,
+                    cliente.endereco            = model.endereco,
+                    cliente.cidade              = model.cidade,
+                    cliente.estado              = model.estado,
+                    cliente.cep                 = model.cep,
+                    cliente.telefone            = model.telefone,
+                    cliente.dataInclusao        = DateTime.Now
+
                     context.Clientes.Update(cliente);
                     await context.SaveChangesAsync();
 
                     return StatusCode( 201, cliente );
                 } catch ( Exception ex)
                 {
-                    return BadRequest( ex.message );
+                    return BadRequest(new ResultViewModel<Cliente>( ex.message ));
                 }
             }
 
@@ -380,10 +512,10 @@
 
                     await context.SaveChangesAsync();
 
-                    return StatusCode( 204, "Cliente eliminado com sucesso");
+                    return StatusCode( 204, new ResultViewModel<Cliente>("Cliente eliminado com sucesso"));
                 } catch ( Exception ex)
                 {
-                    return BadRequest( ex.message );
+                    return BadRequest(new ResultViewModel<Cliente>( ex.message ));
                 }
             }
         }
@@ -398,53 +530,6 @@
                 return BadRequest(new ResultViewModel<Category>(ModelState.GetErrors()));
             ...
 
-
-. Acesse a classe "Startup.cs" e faça as alterações abaixo:
-
-    ...
-        public void ConfigureServices(IServiceCollection services)
-        {
-
-            // Se for trabalhar com banco em memória
-            // services.AddDbContext<AppDataContext>(opt => opt.UseInMemoryDatabase("Database"));
-
-
-            // Pode ser usado como abaixo, porém existe um método especial do tipo Scoped "services.AddDbContext<T>". Utilizado exclusivamente com o EF
-            // 
-            // services.AddScoped<AppDataContext, AppDataContext>();     
-
-
-            // Garante que a conexão só dura até o fim da requisição
-            //
-            services.AddDbContext<AppDbContext>();   // Linha inserida
-
-            services.AddControllers();
-
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Contrato", Version = "v1" });
-            });
-        }
-
-        public void Configure( IApplicationBuilder app, IWebHostEnviroment env)
-        {
-            if (env.IsDevelopment() )
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseRouting();
-
-            app.UseEndpoints( endpoints =:
-            {
-                endpoints.MapControllerRoute(
-                    "default",
-                    "{controller=Home}/{action=Index}/{Id?}"
-                );
-            });
-
-        }
-    ...
 
 . Execute a aplicacao com o comando abaixo:
 
@@ -514,3 +599,20 @@
     Body.None: true
 
 
+
+Paginação
+---------
+
+. Altere o método "GetAsync" como abaixo:
+
+    [HttpGet("v1")]                                 
+    public async Task<ActionResult<List<Cliente>>> GetAsync([FromServices] AppDataContext context,
+                                                            [FromQuery] int page = 0,               // Linha inserida
+                                                            [FromQuery] int pageSize = 25)          // Linha inserida
+    {
+        var clientes = await context.Clientes
+                                    .AsNoTracking()
+                                    .ToListAsync();
+
+        return Ok(clientes);
+    }

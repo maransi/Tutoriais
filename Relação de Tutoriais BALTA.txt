@@ -32,10 +32,10 @@ https://www.youtube.com/watch?v=NFQAj5bCgd8&t=809s
 
 
 
-Criando uma API do zero com .NET Core 3.1 e EF Core
+Criando uma API do zero com .NET Core 3.1 e EF Core 
 https://balta.io/blog/criando-api-zero-dotnet-core-3-1-ef-core
 
-Como fazer uma API (Fácil e moderna) com ASP.NET, EF Core e SQLite
+Como fazer uma API (Fácil e moderna) com ASP.NET, EF Core e SQLite (ok)
 https://www.youtube.com/watch?v=QzCSN9wN4JA&t=388s
 
 ASP.NET e EF Core Web API - Paginação de dados para múltiplos bancos de dados
