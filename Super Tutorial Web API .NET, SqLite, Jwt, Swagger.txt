@@ -600,8 +600,8 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
 
 
 
-Paginação
----------
+Adicionando Paginação
+---------------------
 
 . Altere o método "GetAsync" como abaixo:
 
@@ -610,9 +610,43 @@ Paginação
                                                             [FromQuery] int page = 0,               // Linha inserida
                                                             [FromQuery] int pageSize = 25)          // Linha inserida
     {
-        var clientes = await context.Clientes
-                                    .AsNoTracking()
-                                    .ToListAsync();
+        try
+        {
+            var count = await context.Clientes.AsNoTracking().CountAsync();    // Linha inserida
 
-        return Ok(clientes);
+            var clientes = await context.Clientes                                                       // Linha alterada
+                                        .AsNoTracking()
+                                        .Skip( page * pageSize )
+                                        .Take( pageSize )
+                                        .OrderByDescending( x => x. cpf )
+                                        .ToListAsync();
+
+            return Ok( new ResultViewModel<dynamic>( new 
+                                                    {
+                                                        totalItem = count,
+                                                        toalPage = Floor( count / pageSize ),
+                                                        page,
+                                                        pageSize,
+                                                        clientes
+                                                    });
+        } catch
+            {
+                return StatusCode(500, new ResultViewModel<List<Category>>($"Ocorreu o seguinte erro [ {ex.message} ]"));
+            }
+
     }
+
+. Acesse o Postman e execute a rota abaixo:
+
+    url: http://localhost:[porta]/cliente/v1
+    method: GET
+
+    . Vira 25 registros por página, que é o default do "pageSize"
+
+. Acesse o Postman e execute a rota abaixo e vá executando modificando o número da página ( page = 1,2,3,4,5,...):
+
+    url: http://localhost:[porta]/cliente/v1/?page=1&pageSize=2
+    method: GET
+
+    . Vira somente os registros da primeira página com 2 registros
+
