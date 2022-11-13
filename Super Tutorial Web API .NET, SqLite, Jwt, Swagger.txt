@@ -660,5 +660,22 @@ Adicionando Paginação
     url: http://localhost:[porta]/cliente/v1/?page=1&pageSize=2
     method: GET
 
-    . Vira somente os registros da primeira página com 2 registros
+    . Virá somente os registros da primeira página com 2 registros
 
+
+
+Adicionando CACHE
+-----------------
+
+Adicionando Autorização e Autenticação com Token
+------------------------------------------------
+
+Adicionando Autorização e Autenticação com RefreshToken
+-------------------------------------------------------
+
+Adicionando Swagger
+-------------------
+
+
+Adicionando Compressão
+----------------------
