@@ -95,6 +95,16 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
         }
     }
 
+. Acesse o arquivo "appsettings.json" e insira a linha abaixo:
+
+    {
+        "ConnectionStrings": {              
+            "DefaultConnection": "DataSource=app.db;Cache=Shared"
+        },
+        ...
+    }
+
+
 . Crie a pasta "Data" dentro da raiz do projeto e dentro dela crie a classe abaixo:
 
     using System;
@@ -113,7 +123,9 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
     */
 
             protected override void OnConfiguring( DbContextOptionsBuilder options ){
-                options.UseSqLite("DataSource=app.db;Cache=Shared");            
+                var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");      // Linha inserida
+
+                options.UseSqLite(connectionString);            
                 options.LogTo( Console.WriteLine );
             }
 
