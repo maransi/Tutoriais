@@ -325,6 +325,10 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
 
 . Acesse a pasta "Controllers"  crie a classe abaixo:
 
+
+https://www.macoratti.net/19/08/aspnc_restrota1.htm
+
+
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -417,7 +421,7 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
                 // https://code-maze.com/net-core-web-development-part6/
             }
 
-            [HttpGet("v1/cpf/{cpf:string}")]
+            [HttpGet("v1/cpf/{cpf}")]
             // [HttpGet("{cpf:regex(^\\d{{3}}.\\d{{3}}.\\d{{3}}-\\d{{2}}$)}")]
             public async Task<ActionResult<Cliente>> GetByCpf([FromServices] AppDbContext context,
                                                                 [FromRoute] string cpf)
@@ -440,7 +444,7 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
 
             }
 
-            [HttpGet("v1/nome/{nome:string}")]
+            [HttpGet("v1/nome/{nome}")]
             public async Task<ActionResult<List<Cliente>>> GetByName([FromServices] AppDbContext context,
                                                                         [FromBody] ClienteViewModel viewModel,
                                                                         [FromRoute] string nome)
@@ -455,7 +459,8 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
                                 NotFound(new ResultViewModel<Cliente>("Cliente não encontrado")) :
                                 Ok(new ResultViewModel<List<Cliente>>(clientes));
             }
-            [HttpPut("v1/{cpf:string}")]
+
+            [HttpPut("v1/{cpf}")]
             public async Task<ActionResult<Cliente>> Put([FromServices] AppDbContext context,
                                                             [FromBody] CreateClienteViewModel model,
                                                             [FromRoute] string cpf)
@@ -499,7 +504,7 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
                 }
             }
 
-            [HttpDelete("v1/{cpf:string}")]
+            [HttpDelete("v1/{cpf}")]
             public async Task<ActionResult> Delete([FromServices] AppDbContext context,
                                         string cpf)
             {
@@ -540,6 +545,7 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
 
     dotnet watch run
 
+// PAREI AQUI
 . Acesse o Postman e execute as URLs com os parâmetros abaixo:
 
     Method: POST
