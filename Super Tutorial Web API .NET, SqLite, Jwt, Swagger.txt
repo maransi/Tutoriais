@@ -5,7 +5,7 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
 
 . Acesse a pasta de projetos e digite o comando abaixo:
 
-    dotnet new web -o Contrato -n contrato -f net5.0
+    dotnet new webapi -o Contrato -n contrato -f net5.0
 
 . Acesse a pasta do projeto criado com o VSCode e execute os comandos abaixo:
 
@@ -47,53 +47,67 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
             [Key]
             [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
             [Column("codigo")]
-            public int codigo { get; set; }      
+            public int codigo { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Column("cpf", TypeName ="VARCHAR(15)")]
             public string cpf { get; set; }
-            
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            [MaxLength(150, ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
-            [MinLength(5, ErrorMessage="Este campo dever ter entre 5 a 150 caracateres")]
+
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [MaxLength(150, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
+            [MinLength(5, ErrorMessage = "Este campo dever ter entre 5 a 150 caracateres")]
+            [Column("nome", TypeName ="VARCHAR(100)")]
             public string nome { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            public DateTime? dataNascimento  { get; set; }
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Column("dataNascimento", TypeName ="DATE")]
+            public DateTime? dataNascimento { get; set; }
 
+            [Column("rg", TypeName ="VARCHAR(11)")]
             public string rg { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Column("sexo", TypeName ="CHAR(1)")]
             public string sexo { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Column("estadoCivil", TypeName ="VARCHAR(10)")]
             public string estadoCivil { get; set; }
 
+            [Column("pai", TypeName ="VARCHAR(100)")]
             public string pai { get; set; }
 
+            [Column("mae", TypeName ="VARCHAR(100)")]
             public string mae { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            [MaxLength(250, ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
-            [MinLength(5,ErrorMessage="Este campo deve ter entre 5 a 150 caracateres")]
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [MaxLength(250, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
+            [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
+            [Column("endereco", TypeName ="VARCHAR(100)")]
             public string endereco { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            [MaxLength(100, ErrorMessage="Este campo deve ter entre 5 a 100 caracateres")]
-            [MinLength(5,ErrorMessage="Este campo deve ter entre 5 a 100 caracateres")]
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+            [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+            [Column("cidade", TypeName ="VARCHAR(50)")]
             public string cidade { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            [MaxLength(2, ErrorMessage="Este campo deve ter 2 caracateres")]
-            [MinLength(2,ErrorMessage="Este campo deve ter 2caracateres")]
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [MaxLength(2, ErrorMessage = "Este campo deve ter 2 caracateres")]
+            [MinLength(2, ErrorMessage = "Este campo deve ter 2caracateres")]
+            [Column("estado", TypeName ="CHAR(2)")]
             public string estado { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Column("cep", TypeName ="CHAR(8)")]
             public string cep { get; set; }
 
-            [Required(ErrorMessage="Este campo é obrigatorio")]
-            public string telefone  { get; set; }
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Column("telefone", TypeName ="VARCHAR(20)")]
+            public string telefone { get; set; }
 
-            public DateTime dataInclusao{ get; set; } = new DateTime();
+            [Column("dataInclusao", TypeName ="DATE")]
+            public DateTime dataInclusao { get; set; } = new DateTime();
         }
     }
 
@@ -121,9 +135,6 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
 
             services.AddDbContext<AppDbContext>(options =>                                      // Linha inserida
                 options.UseSqlite(connectionStrings));
-
-            services.AddControllers();                  // Linha inserida
-
         }
         ...
     }
@@ -309,25 +320,6 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
                                                 options.SuppressModelStateInvalidFilter = true;     
                                             });            
         ...
-    }
-
-    public void Configure( IApplicationBuilder app, IWebHostEnviroment env)
-    {
-        if (env.IsDevelopment() )
-        {
-            app.UseDeveloperExceptionPage();
-        }
-
-        app.UseRouting();
-
-        app.UseEndpoints( endpoints =:
-        {
-            endpoints.MapControllerRoute(                   
-                "default",
-                "{controller=Home}/{action=Index}/{Id?}"            // Linha alterada
-            );
-        });
-
     }
     ...
 
