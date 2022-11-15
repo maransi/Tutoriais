@@ -333,29 +333,20 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using contrato.Data;
-    using contrato.Extensions;
-    using contrato.Models;
-    using contrato.ViewModels;
+    using contrato5.Data;
+    using contrato5.Extensions;
+    using contrato5.Models;
+    using contrato5.ViewModels;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
-    namespace contrato.Controllers
+    namespace contrato5.Controllers
     {
         [ApiController]
         [Route("[controller]")]
         public class ClienteController : ControllerBase
         {
-            /*          // Devido ao [FromServices] deixou de ser necessário este trecho de código
-                        private AppDataContext _context;
 
-                        public ClienteController( AppDataContext context )
-                        {
-                            _context = context;
-                        }
-            */
-
-            // A rota "v1" será o controle de versão
             [HttpGet("v1")]
             public async Task<ActionResult<List<Cliente>>> GetAsync([FromServices] AppDbContext context)
             {
@@ -444,16 +435,50 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
 
             }
 
-            [HttpGet("v1/nome/{nome}")]
+            [HttpGet("v1/cpf")]
+            public async Task<ActionResult<Cliente>> GetByCpfForBody([FromServices] AppDbContext context,
+                                                                        [FromBody] ClienteViewModel viewModel)
+            {
+
+                try
+                {
+                    var cliente = await context.Clientes
+                                            .AsNoTracking()
+                                            .FirstOrDefaultAsync(x => x.cpf == viewModel.cpf);
+
+                    return cliente == null ?
+                                    NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {viewModel.cpf}" }) :
+                                    Ok(new ResultViewModel<Cliente>(cliente));
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new ResultViewModel<List<Cliente>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
+                }
+
+            }
+
+            [HttpGet("v1/nome")]
             public async Task<ActionResult<List<Cliente>>> GetByName([FromServices] AppDbContext context,
-                                                                        [FromBody] ClienteViewModel viewModel,
-                                                                        [FromRoute] string nome)
+                                                                        [FromBody] ClienteViewModel viewModel)
             {
                 var clientes = await context.Clientes
                                     .AsNoTracking()
                                     .Where(x => x.nome.ToUpper().Contains(viewModel.nome.ToUpper()))
                                     .ToListAsync();
-                // .FirstOrDefaultAsync( x => x.nome.Contains( viewModel.nome ) );
+
+                return clientes == null ?
+                                NotFound(new ResultViewModel<Cliente>("Cliente não encontrado")) :
+                                Ok(new ResultViewModel<List<Cliente>>(clientes));
+            }
+
+            [HttpGet("v1/nome/{nome}")]
+            public async Task<ActionResult<List<Cliente>>> GetByName([FromServices] AppDbContext context,
+                                                                        [FromRoute] string nome)
+            {
+                var clientes = await context.Clientes
+                                    .AsNoTracking()
+                                    .Where(x => x.nome.ToUpper().Contains(nome.ToUpper()))
+                                    .ToListAsync();
 
                 return clientes == null ?
                                 NotFound(new ResultViewModel<Cliente>("Cliente não encontrado")) :
@@ -519,7 +544,7 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
 
                     await context.SaveChangesAsync();
 
-                    return StatusCode(204, new ResultViewModel<Cliente>("Cliente eliminado com sucesso"));
+                    return NoContent();
                 }
                 catch (Exception ex)
                 {
@@ -545,7 +570,6 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
 
     dotnet watch run
 
-// PAREI AQUI
 . Acesse o Postman e execute as URLs com os parâmetros abaixo:
 
     Method: POST
@@ -608,7 +632,7 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
     Body.None: true
 
 
-
+// PAREI AQUI
 Adicionando Paginação
 ---------------------
 
