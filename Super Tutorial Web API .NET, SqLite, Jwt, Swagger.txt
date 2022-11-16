@@ -632,64 +632,97 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
     Body.None: true
 
 
-// PAREI AQUI
 Adicionando Paginação
 ---------------------
 
 . Altere o método "GetAsync" como abaixo:
 
-    [HttpGet("v1")]                                 
-    public async Task<ActionResult<List<Cliente>>> GetAsync([FromServices] AppDataContext context,
-                                                            [FromQuery] int page = 0,               // Linha inserida
-                                                            [FromQuery] int pageSize = 25)          // Linha inserida
+    [HttpGet("v1/pageable")]
+    public async Task<ActionResult<List<Cliente>>> GetAsync([FromServices] AppDbContext context,
+                                                            [FromQuery] int page = 0,               
+                                                            [FromQuery] int pageSize = 25)          
     {
         try
         {
-            var count = await context.Clientes.AsNoTracking().CountAsync();    // Linha inserida
+            var count = await context.Clientes.AsNoTracking().CountAsync();    
 
-            var clientes = await context.Clientes                                                       // Linha alterada
+            var clientes = await context.Clientes                              
                                         .AsNoTracking()
-                                        .Skip( page * pageSize )
-                                        .Take( pageSize )
-                                        .OrderByDescending( x => x. cpf )
+                                        .Skip(page * pageSize)
+                                        .Take(pageSize)
+                                        .OrderByDescending(x => x.cpf)
                                         .ToListAsync();
 
-            return Ok( new ResultViewModel<dynamic>( new 
-                                                    {
-                                                        totalItem = count,
-                                                        toalPage = Floor( count / pageSize ),
-                                                        page,
-                                                        pageSize,
-                                                        clientes
-                                                    });
-        } catch
+            return Ok(new ResultViewModel<dynamic>(new
             {
-                return StatusCode(500, new ResultViewModel<List<Category>>($"Ocorreu o seguinte erro [ {ex.message} ]"));
-            }
+                totalItem = count,
+                toalPage = Math.Floor( (float) (count / pageSize)),
+                page,
+                pageSize,
+                clientes
+            }));
+        }
+        catch ( Exception ex)
+        {
+            return StatusCode(500, new ResultViewModel<List<Cliente>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
+        }
 
     }
 
+. Execute os comandos abaixo no banco de dados:
+
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (53,'570.097.758-34','SELMA MARIA SPINOLA GOMES','1952-04-19','5.563.343-2','F','DIVORCIADO','RENATO PEREIRA GOMES','AIDA SPINOLA GOMES','RUA BRIGADEIRO GAMA BARCELOS','SÃO PAULO','SP','04355070','11 50347366', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (181,'090.568.028-60','ALBA DE OLIVEIRA GASPAR','1938-07-23','12253495-5','F','VIUVO','AGUINALDO COSTA','FRANCELINA SANTOS COSTA','RUA GOIAS','PERUIBE','SP','11750000','13 34552725', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (311,'619.909.498-00','MARCIA SUELY CAPUTO LIMA','1950-04-06','52380786','F','SOLTEIRO','EOLO  LIMA','MARIA ZELIA CAPUTO LIMA','Avenida Braz Leme','São Paulo','SP','02022020','11 29590294', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (737,'127.074.818-15','ADEMAR BRASILIO PANARIELO','1941-03-19','19411108','M','CASADO','BRASILIO PANARIELO','MARIA  ALICE PANARIELO','Avenida dos Bancários','Santos','SP','11030301','13 32381745', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (874,'049.045.238-81','VILSON BORGES LUZ','1963-12-15','15535397-4','M','COMPANHEIRO','VALDELINO SILVA LUZ','MARIA DAS DORES BORGES LUZ','Praça Tenente Mauro Batista de Miranda','Santos','SP','11013360','13 34680638', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (1110,'050.391.628-55','VALDEMIR MENEZES DA SILVA','1964-05-25','20.876.169-X','M','CASADO','VALTER FERREIRA DA SILVA','MARIA DE LOURDES MENEZES DA SILVA','RUA JOSE VIGLETTI','SAO PAULO','SP','02218090','11 22125997', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (1331,'084.613.208-75','AGILMAR DO NASCIMENTO GUIMARAES','1965-01-29','16.431.524-X','M','SEPAR.JUDIC','ARNALDO MACHADO GUIMARÃES','MARIA DE LOURDES DO NASCIMENTO GUIMARÃES','RUA TAVANNES','São Paulo','SP','02443090','11 23590147', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (1351,'018.020.098-41','MARCIO VENEZIANO','1960-08-11','298655913','M','OUTROS','ARTHUR VENEZIANO','BENEDITA DE OLIVEIRA','R TAMBAU ','GUARUJA','SP','11451170','13 30174206', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (1461,'097.825.188-16','HILDA MEDEIROS DA SILVA','1951-08-27','30.771.896-7','F','VIUVO','HELIO DA SILVA','BENEDITA MEDEIROS DA SILVA','CAM MONSENHOR MOREIRA ','SANTOS','SP','11013760','13 32216040', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (1637,'221.250.781-04','NADIA FURTADO DE ANDRADE','1960-10-31','554.062','F','SOLTEIRO','ADYR VIEIRA DE ANDRADE','DILMA FURTADO DE ANDRADE','Rua Doutor Antônio Cansanção','Maceió','AL','57035190','82 33163433', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (1693,'802.634.108-20','HAVILA MEIRE DA SILVA','1954-11-14','7.255.413-7','F','SOLTEIRO','ALTINO JOSÉ DA SILVA','IRIA VIEIRA DA COSTA SILVA','AV CARAMURU','RIBEIRÃO PRETO','SP','14025710','16 36216563', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (1852,'025.557.718-40','LANA CRISTINA FERRETE','1961-10-06','14.122.254-2','F','DIVORCIADO','NILTON LUIZ FERRETE','MARLENE ALVES FERRETE','Rua Liberdade','Santos','SP','11025030','13 32274676', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (1888,'057.484.021-49','JOAO XAVIER DE ARRUDA','1951-06-06','243.752','M','CASADO','NÃO DECLARADO','NEUZA XAVIER DE ARRUDA','Quadra QR 414 Conjunto 12','Brasília','DF','72320216','61 33576295', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2048,'252.437.198-03','ALEXANDRE BATEL','1976-12-06','27.484.937-9','M','SOLTEIRO','ANTONIO BATEL NETO','MARIA JOSE BATEL','Rua Frei Orlando','São Paulo','SP','03432010','11 27838252', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2128,'039.546.638-56','MARLUCE FRANCA SILVA DE OLIVEIRA','1962-07-03','15.288.986-3','F','CASADO','FRANCISCO VIANA DA SILVA','MARIA MARLENE DE FRANÇA SILVA','Caminho Monsenhor Moreira','Santos','SP','11013760','13 32345486', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2135,'033.749.711-72','FRANCISCO FELIX DE ARAUJO','1947-12-14','194499','M','CASADO','INÁCIO  FELIX DE ARAUJO','INÁCIA  DA COSTA  ARAUJO','Quadra QMS 48','Brasília','DF','73080260','61 32974811', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2171,'059.379.988-71','ALEXANDRE ABDALA JUNIOR','1963-01-12','116211192','M','SOLTEIRO','ALEXANDRE ABDALA','MIRIAM MELLO ABDALA','Rua Sérgio Porto','Guarulhos','SP','07114020','11 24080926', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2196,'024.998.433-49','JOSE CLAIRTON SILVA ALMEIDA','1951-10-07','2006009027670','M','CASADO','RAIMUNDO GUEDES DE ALMEIDA','MARIA MARGARIDA DA SILVA  ALMEIDA','Avenida José do Patrocínio','Fortaleza','CE','60410150','85 34911124', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2226,'238.663.301-20','MARIA DE LOURDES SILVA XAVIER','1944-05-18','153443','F','CASADO','GUSTAVO DORNELAS DA SILVA','MARIA JOSÉ DO NASCIMENTO','QR 414 CONJUNTO 12','Brasília','DF','72320216','61 33576295', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2486,'018.188.038-52','NEIDE APARECIDA DA CRUZ SILVA','1951-06-21','13.621.163-X','F','COMPANHEIRO','PEDRO MAXIMIANO DA CRUZ','ADELINA FIRMINA DA CRUZ','Rua Barão do Rio Branco','Guarujá','SP','11451042','13 33414521', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2561,'728.329.408-20','DIRSON DE SOUZA BENTO','1944-11-26','3.849.880-7','M','COMPANHEIRO','ZACARIAS JOAQUIM BENTO','EVA RIBEIRO DE SOUZA','Rua dos Carvalhos','Praia Grande','SP','11712510','13 34774305', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2796,'007.252.358-10','MARIA APARECIDA ALVES PINTO','1946-09-10','3.613.817-4','F','CASADO','ACACIO TOMAZ ALVES','MARCOLINA JULIA DE FEO FLORA  ALVES','Rua Domiciano Ribeiro','São Paulo','SP','02565090','11 22398682', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (2920,'433.263.828-04','PEDRO LUIZ DA COSTA FILHO','1950-02-16','48624548','M','CASADO','PEDRO LUIZ DA COSTA','TERESA GONÇALVES DA COSTA','R ARISTOTELES FERREIRA ','SANTOS','SP','11020140','13 33854557', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (3089,'158.932.348-39','SONIA REGINA FARIA VIEIRA','1956-08-03','13621324-8','F','VIUVO','ANTONIO FARIA GOMES','CAROLINA VARGAS FARIA','R ANTONIO FERNANDES ','GUARUJA','SP','11430340','13 33044759', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (3180,'127.893.567-34','ADELCYR CORREA MACHADO','1935-12-30','01.789.771-1','F','SOLTEIRO','ANTONIO NATALICIO MACHADO','ZULEIKA IGNACIO CORREA MACHADO','Rua Pernambuco','Rio de Janeiro','RJ','20730030','21 38992687', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (3299,'512.545.301-34','CELINA FERREIRA LONGO','1938-01-23','122678272-8','F','VIUVO','TOME FRANKLIN FERREIRA','ROSA CARDOSO FERREIRA','QD 103 ','BRASILIA','DF','71909000','61 34357562', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (3304,'788.826.648-72','ROSEMARY EDLINGER PEREIRA LOPES','1948-05-13','5629560-1','F','SOLTEIRO','JOSÉ BENEDICTO PEREIRA LOPES','MIRARIR EDLINGER LOPES','Rua Guaratinguetá','Taubaté','SP','12060210','12 36332449', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (3349,'094.747.813-20','ALCENILDES CORREA REIS','1954-01-05','0529305520147','F','COMPANHEIRO','VENANCIO VALERIO DOS REIS','ZILDA CORREA REIS','Rua Manoel Jansen Ferreira','São Luís','MA','65074170','98 32224071', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (3431,'077.813.518-78','IONE MACIEL','1958-04-02','189024586','F','SOLTEIRO','BENEDITO MACIEL','MARIA JOSÉ DOS SANTOS','RUA CINQUENTA E OITO ','SÃO VICENTE','SP','11301000','13 35641440', DATE());
+    INSERT INTO cliente (codigo,cpf,nome,dataNascimento,rg,sexo,estadoCivil,pai,mae,endereco,cidade,estado,cep,telefone, dataInclusao) VALUES (3436,'102.095.468-08','ERIDULCE FERREIRA NEIVA','1943-12-24','5534463X','F','OUTROS','CICERO FERREIRA DE MELO','FELICIDADE FERREIRA MELO','RUA SILVIO RIZZARDO ','CAMPINAS','SP','13060077','19 32290837', DATE());
+
 . Acesse o Postman e execute a rota abaixo:
 
-    url: http://localhost:[porta]/cliente/v1
+    url: http://localhost:[porta]/cliente/v1/pageable
     method: GET
 
     . Vira 25 registros por página, que é o default do "pageSize"
 
 . Acesse o Postman e execute a rota abaixo e vá executando modificando o número da página ( page = 1,2,3,4,5,...):
 
-    url: http://localhost:[porta]/cliente/v1/?page=1&pageSize=2
+    url: http://localhost:[porta]/cliente/v1/pageable?page=1&pageSize=2
     method: GET
 
     . Virá somente os registros da primeira página com 2 registros
 
 
+Adicionando Autorização e Autenticação com Token
+------------------------------------------------
 
 Adicionando CACHE
 -----------------
 
-Adicionando Autorização e Autenticação com Token
-------------------------------------------------
 
 Adicionando Autorização e Autenticação com RefreshToken
 -------------------------------------------------------
