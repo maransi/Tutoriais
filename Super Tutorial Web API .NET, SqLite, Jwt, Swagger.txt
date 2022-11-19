@@ -333,14 +333,14 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using contrato5.Data;
-    using contrato5.Extensions;
-    using contrato5.Models;
-    using contrato5.ViewModels;
+    using contrato.Data;
+    using contrato.Extensions;
+    using contrato.Models;
+    using contrato.ViewModels;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
-    namespace contrato5.Controllers
+    namespace contrato.Controllers
     {
         [ApiController]
         [Route("[controller]")]
@@ -719,6 +719,386 @@ Adicionando Paginação
 
 Adicionando Autorização e Autenticação com Token
 ------------------------------------------------
+
+    . Inclua as classes models abaixo na pasta "Model":
+
+
+        // Classe "User"
+        using System.ComponentModel.DataAnnotations;
+        using System.ComponentModel.DataAnnotations.Schema;
+
+        namespace contrato.Models
+        {
+            [Table("user")]
+            public class User
+            {
+                [Key]                   
+                [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  
+                [Column("id", Order=1)]
+                public int Id { get; set; }
+
+                [Required(ErrorMessage = "Preenchimento obrigatório")]                              
+                [MinLength(3, ErrorMessage ="Tamanho mínimo de 3 caracteres")]                          
+                [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]
+                [Column("name", TypeName = "VARCHAR(50)")] 
+                public string Name { get; set; }
+
+                [Required(ErrorMessage = "Preenchimento obrigatório")]                              
+                [EmailAddress]
+                [MinLength(10, ErrorMessage ="Tamanho mínimo de 10 caracteres")]                          
+                [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]                         
+                [Column("email", TypeName = "VARCHAR(50)")] 
+                public string Email { get; set; }
+                
+                [Column("passwordHash", TypeName = "VARCHAR(100)")] 
+                public string PasswordHash { get; set; }
+
+                [Column("password", TypeName = "VARCHAR(15)")] 
+                [Required( ErrorMessage = "Password é obrigatório")]
+                [MinLength(3, ErrorMessage = "Tamanho mínimo da senha deve ser de 3 caracateres")]
+                [MaxLength(15, ErrorMessage = "Tamanho máximo da senha deve ser de 15 caracateres")]
+                public string Password { get; set; }
+            }
+        }
+
+        // Classe "Role"
+        using System.ComponentModel.DataAnnotations;
+        using System.ComponentModel.DataAnnotations.Schema;
+
+        namespace contrato.Models
+        {
+
+            [Table("role")]
+            public class Role
+            {
+                [Key]                   
+                [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  
+                [Column("id", Order=1)]
+                public int Id { get; set; }
+
+                [Required(ErrorMessage = "Preenchimento obrigatório")]                              
+                [MinLength(3, ErrorMessage ="Tamanho mínimo de 3 caracteres")]                          
+                [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]                         
+                [Column("Name", TypeName = "VARCHAR(50)")] 
+                public string Name { get; set; }
+            }
+        }
+
+
+    // Classe "UserRole"
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+
+    namespace contrato.Models
+    {
+        [Table("UserRole")]
+        public class UserRole
+        {
+            [Key]                   
+            [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  
+            [Column("id", Order=1)]
+            public int Id { get; set; }
+
+            [Column(Order = 2)]
+            public int UserId { get; set; }        
+
+            [Column(Order = 3)]
+            public int RoleId { get; set; }
+
+            [ForeignKey("id")]
+            public User User{ get; set; }
+
+            [ForeignKey("id")]
+            public Role Role { get; set; }
+        }
+    }
+
+. Insira as linhas abaixo na classe "Data/AppDbContext.cs"
+
+    using System;
+    using contrato.Models;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace contrato.Data
+    {
+        public class AppDbContext: DbContext
+        {
+            public AppDbContext(DbContextOptions<AppDbContext> options ) : base(options)
+            {
+            }
+
+            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
+                        => optionsBuilder.UseSqlite();
+
+            public DbSet<Cliente> Clientes { get; set; }
+            public DbSet<User> Users { get; set; }              // Linha inserida
+            public DbSet<Role> Roles { get; set; }              // Linha inserida
+            public DbSet<UserRole> UserRole { get; set; }       // Linha inserida
+        }
+    }
+
+. Execute os comandos abaixo na pasta raiz do projeto:
+
+    dotnet clean
+    dotnet build
+    dotnet ef migrations add SecondCreation
+    dotnet ef database update
+
+. Acesse o banco de dados e execute as DMLs abaixo:
+
+    INSERT INTO user(name, email, password ) VALUES('marco', 'marco@encoder.io', 'marco');
+    INSERT INTO user(name, email, password ) VALUES('root', 'root@encoder.io', 'root');
+
+    INSERT INTO Role( name ) VALUES('user');
+    INSERT INTO Role( name ) VALUES('admin');
+
+    INSERT INTO UserRole( UserId, RoleId ) VALUES( 1,1 );
+    INSERT INTO UserRole( UserId, RoleId ) VALUES( 2,1 );
+    INSERT INTO UserRole( UserId, RoleId ) VALUES( 2,1 );
+
+. Adicione as packages abaixo no projeto:
+
+    dotnet add package Microsoft.AspNetCore.Authentication  --version  2.2.0
+
+    dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version  5.0.17
+
+    dotnet clean
+
+    dotnet restore
+
+    dotnet build
+
+
+. Adapte o arquivo "appsettings.Development.json" como abaixo:
+
+    ...
+    "JwtKey": "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=",
+    "ApiKeyName": "api_key",
+    "ApiKey": "curso_api_IlTevUM/z0ey3NwCV/unWg=="
+    ...
+
+. Insira o arquivo "ConfigHelper.cs" na raiz do projeto como abaixo:
+
+    namespace contrato
+    {
+        public static class ConfigHelper
+        {
+            public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
+            public static string ApiKeyName = "api_key";
+            public static string ApiKey = "curso_api_IlTevUM/z0ey3NwCV/unWg==";
+        }
+    }
+
+. Crie a pasta "Services" na raiz do projeto e crie a classe abaixo:
+
+    using System;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Text;
+    using contrato.Models;
+    using Microsoft.IdentityModel.Tokens;
+
+    namespace contrato.Services
+    {
+        public class TokenService
+        {
+            public string GenerateToken(User user)
+            {
+                // Classe responsável por gerar o token
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                // Nossa chave de validação do token
+                var key = Encoding.ASCII.GetBytes(ConfigHelper.JwtKey);
+
+                // Informações contidas no nosso token
+                var tokenDescriptor = new SecurityTokenDescriptor()
+                {
+                    // Tempo de expiração do nosso token
+                    Expires = DateTime.UtcNow.AddHours(8),
+                    // Credenciais para incriptar e desincriptar nosso token
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                                                                    SecurityAlgorithms.HmacSha256Signature)
+                };
+
+                // Criação do token
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                return tokenHandler.WriteToken(token);
+
+            }
+        }
+    }
+
+. Adicione as linhas abaixo na classe "Startup.cs"
+
+    ...
+    public void ConfigureServices(IServiceCollection services)
+    {
+        var connectionStrings = Configuration.GetConnectionString("DefaultConnection");     
+
+        ConfigHelper.JwtKey = Configuration.GetValue<string>( "JwtKey" );              // Linha Inserida
+        ConfigHelper.ApiKeyName = Configuration.GetValue<string>( "ApiKeyName" );      // Linha Inserida
+        ConfigHelper.ApiKey = Configuration.GetValue<string>( "ApiKey" );               // Linha Inserida
+
+        services.AddDbContext<AppDbContext>(options =>                                      
+            options.UseSqlite(connectionStrings));
+            
+        services.AddTransient<TokenService>();                              // Linha inserida
+
+        services.AddControllers()
+                .ConfigureApiBehaviorOptions(options =>        
+                                            {                                                       
+                                                options.SuppressModelStateInvalidFilter = true;     
+                                            });            
+
+        services.AddControllers();
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "contrato", Version = "v1" });
+        });
+    }
+    ...
+
+. Inclua a classe "RegisterViewModel" dentro da pasta "ViewModels":
+
+    using System.ComponentModel.DataAnnotations;
+
+    namespace contrato.ViewModels
+    {
+        public class RegisterViewModel
+        {
+            [Required(ErrorMessage = "O nome é obrigatório")]
+            public string Name { get; set; }
+            
+            [Required(ErrorMessage = "O E-mail é obrigatório")]
+            [EmailAddress(ErrorMessage = "O E-mail é inválido")]
+            public string Email { get; set; }
+
+            [Required(ErrorMessage = "Password é obrigatório")]
+            [MinLength(3, ErrorMessage = "Tamanho mínimo da senha deve ser de 3 caracateres")]
+            [MaxLength(15, ErrorMessage = "Tamanho máximo da senha deve ser de 15 caracateres")]
+            public string Password { get; set; }
+        }
+    }
+
+. Inclua a classe "LoginViewModel" dentro da pasta "ViewModels":
+
+    using System.ComponentModel.DataAnnotations;
+
+    namespace contrato.ViewModels
+    {
+        public class LoginViewModel
+        {
+            [Required(ErrorMessage = "Informe o E-mail")]
+            [EmailAddress(ErrorMessage = "E-mail inválido")]
+            public string Email { get; set; }
+
+            [Required(ErrorMessage = "Informe a senha")]
+            public string Password { get; set; }
+        }
+    }
+
+. Execute o comando abaixo na raiz do projeto:
+
+    dotnet add package SecureIdentity --version 1.0.3
+
+. Crie a classe "AccountController" dentro da pasta "Controllers":
+
+    using System.Threading.Tasks;
+    using contrato.Data;
+    using contrato.Extensions;
+    using contrato.Models;
+    using contrato.Services;
+    using contrato.ViewModels;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+    using SecureIdentity.Password;
+
+    namespace contrato.Controllers
+    {
+        [ApiController]
+        [Route("[controller]")]
+        public class AccountController : ControllerBase
+        {
+            [HttpPost("v1/accounts/")]
+            public async Task<IActionResult> Post(
+                [FromBody] RegisterViewModel model,
+                [FromServices] AppDbContext context)
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(new ResultViewModel<string>(ModelState.GetErrors()));
+
+                var user = new User
+                {
+                    Name = model.Name,
+                    Email = model.Email,
+                    Password = model.Password
+                };
+
+                var password = PasswordGenerator.Generate(25);
+                user.PasswordHash = PasswordHasher.Hash(password);
+
+                try
+                {
+                    await context.Users.AddAsync(user);
+                    await context.SaveChangesAsync();
+
+                    return Ok(new ResultViewModel<dynamic>(new
+                    {
+                        user = user.Email,
+                        password
+                    }));
+                }
+                catch (DbUpdateException)
+                {
+                    return StatusCode(400, new ResultViewModel<string>("05X99 - Este E-mail já está cadastrado"));
+                }
+                catch
+                {
+                    return StatusCode(500, new ResultViewModel<string>("05X04 - Falha interna no servidor"));
+                }
+            }
+
+            [HttpPost("v1/accounts/login")]
+            public async Task<IActionResult> Login(
+                [FromBody] LoginViewModel model,
+                [FromServices] AppDbContext context,
+                [FromServices] TokenService tokenService)
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(new ResultViewModel<string>(ModelState.GetErrors()));
+
+                var user = await context
+                    .Users
+                    .AsNoTracking()
+                    .Include(x => x.Roles)
+                    .FirstOrDefaultAsync(x => x.Email == model.Email);
+
+                if (user == null)
+                    return StatusCode(401, new ResultViewModel<string>("Usuário ou senha inválidos"));
+
+                if (!PasswordHasher.Verify(user.PasswordHash, model.Password))
+                    return StatusCode(401, new ResultViewModel<string>("Usuário ou senha inválidos"));
+
+                try
+                {
+                    var token = tokenService.GenerateToken(user);
+                    return Ok(new ResultViewModel<string>(token, null));
+                }
+                catch
+                {
+                    return StatusCode(500, new ResultViewModel<string>("05X04 - Falha interna no servidor"));
+                }
+            }
+        }
+    }
+
+
+
+
+TESTAR AS ROTAS DA CLASSE "AccountController"
+
+
+
 
 Adicionando CACHE
 -----------------
