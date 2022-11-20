@@ -153,8 +153,13 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
             {
             }
 
-            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
-                        => optionsBuilder.UseSqlite();
+//            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
+//                        => optionsBuilder.UseSqlite();
+            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            {
+                optionsBuilder.UseSqlite();
+                optionsBuilder.LogTo( Console.WriteLine );
+            }
 
             public DbSet<Cliente> Clientes { get; set; }
         }
@@ -717,10 +722,14 @@ Adicionando Paginação
     . Virá somente os registros da primeira página com 2 registros
 
 
+
+
+
+
 Adicionando Autorização e Autenticação com Token
 ------------------------------------------------
 
-    . Inclua as classes models abaixo na pasta "Model":
+. Inclua as classes models abaixo na pasta "Model":
 
 
         // Classe "User"
@@ -828,7 +837,10 @@ Adicionando Autorização e Autenticação com Token
             }
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
-                        => optionsBuilder.UseSqlite();
+            {
+                optionsBuilder.UseSqlite();
+                optionsBuilder.LogTo( Console.WriteLine );
+            }
 
             public DbSet<Cliente> Clientes { get; set; }
             public DbSet<User> Users { get; set; }              // Linha inserida
@@ -874,7 +886,10 @@ Adicionando Autorização e Autenticação com Token
     ...
     "JwtKey": "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=",
     "ApiKeyName": "api_key",
-    "ApiKey": "curso_api_IlTevUM/z0ey3NwCV/unWg=="
+    "ApiKey": "curso_api_IlTevUM/z0ey3NwCV/unWg==",
+    "TokenExpireIn": 10800,
+    "TokenExpireInUnit": "seconds" 
+
     ...
 
 . Insira o arquivo "ConfigHelper.cs" na raiz do projeto como abaixo:
@@ -883,9 +898,12 @@ Adicionando Autorização e Autenticação com Token
     {
         public static class ConfigHelper
         {
-            public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
-            public static string ApiKeyName = "api_key";
-            public static string ApiKey = "curso_api_IlTevUM/z0ey3NwCV/unWg==";
+            public static string JwtKey;
+            public static string ApiKeyName;
+            public static string ApiKey;
+            public static int TokenExpireIn;
+            public static string TokenExpireInUnit; 
+
         }
     }
 
@@ -913,7 +931,8 @@ Adicionando Autorização e Autenticação com Token
                 var tokenDescriptor = new SecurityTokenDescriptor()
                 {
                     // Tempo de expiração do nosso token
-                    Expires = DateTime.UtcNow.AddHours(8),
+                    Expires = ConfigHelper.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds( ConfigHelper.TokenExpireIn ): 
+                                                                                 DateTime.UtcNow.AddHours( ConfigHelper.TokenExpireIn ),
                     // Credenciais para incriptar e desincriptar nosso token
                     SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                                                                     SecurityAlgorithms.HmacSha256Signature)
@@ -938,6 +957,8 @@ Adicionando Autorização e Autenticação com Token
         ConfigHelper.JwtKey = Configuration.GetValue<string>( "JwtKey" );              // Linha Inserida
         ConfigHelper.ApiKeyName = Configuration.GetValue<string>( "ApiKeyName" );      // Linha Inserida
         ConfigHelper.ApiKey = Configuration.GetValue<string>( "ApiKey" );               // Linha Inserida
+        ConfigHelper.TokenExpireIn = Configuration.GetValue<int>("TokenExpireIn");     // Linha Inserida
+        ConfigHelper.TokenExpireInUnit = Configuration.GetValue<string>("TokenExpireInUnit");     // Linha Inserida
 
         services.AddDbContext<AppDbContext>(options =>                                      
             options.UseSqlite(connectionStrings));
@@ -1004,6 +1025,7 @@ Adicionando Autorização e Autenticação com Token
 . Crie a classe "AccountController" dentro da pasta "Controllers":
 
     using System.Threading.Tasks;
+    using contrato;
     using contrato.Data;
     using contrato.Extensions;
     using contrato.Models;
@@ -1019,7 +1041,7 @@ Adicionando Autorização e Autenticação com Token
         [Route("[controller]")]
         public class AccountController : ControllerBase
         {
-            [HttpPost("v1/accounts/")]
+            [HttpPost("v1")]
             public async Task<IActionResult> Post(
                 [FromBody] RegisterViewModel model,
                 [FromServices] AppDbContext context)
@@ -1058,7 +1080,7 @@ Adicionando Autorização e Autenticação com Token
                 }
             }
 
-            [HttpPost("v1/accounts/login")]
+            [HttpPost("v1/login")]
             public async Task<IActionResult> Login(
                 [FromBody] LoginViewModel model,
                 [FromServices] AppDbContext context,
@@ -1071,6 +1093,7 @@ Adicionando Autorização e Autenticação com Token
                     .Users
                     .AsNoTracking()
                     .Include(x => x.Roles)
+                        .ThenInclude( x => x.Role )
                     .FirstOrDefaultAsync(x => x.Email == model.Email);
 
                 if (user == null)
@@ -1082,7 +1105,14 @@ Adicionando Autorização e Autenticação com Token
                 try
                 {
                     var token = tokenService.GenerateToken(user);
-                    return Ok(new ResultViewModel<string>(token, null));
+                    return Ok(new ResultViewModel<dynamic>(new 
+                                                            { 
+                                                                accessToken = token,
+                                                                refreshToken = "",
+                                                                tokenType = "Bearer",
+                                                                expireIn = ConfigHelper.TokenExpireIn,
+                                                                expireInUnit = ConfigHelper.TokenExpireInUnit
+                                                            }, null));
                 }
                 catch
                 {
@@ -1092,11 +1122,58 @@ Adicionando Autorização e Autenticação com Token
         }
     }
 
+. Execute a URL abaixo no Postman:
+
+    method: POST
+    url: http://localhost:[porta]/accounts/v1
+    body.json: true
+    body.raw: 
+        {
+            "email": "jose.silva@encoder.com",
+            "Name": "Jose da Silva",
+            "password": "jose"
+        }
+
+    . Guarde o retorno da rota acima, principalmente a "password" para utilizar na aula seguinte.
+
+        {
+            "data": {
+                "user": "jose.silva@encoder.com",
+                "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+            },
+            "errors": []
+        }
 
 
 
-TESTAR AS ROTAS DA CLASSE "AccountController"
 
+Continuar da Aula 47. Configurando Autenticação e Autorização
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CRIAR UMA ROTA QUE ADICIONE AS ROLES NO USUARIO 
+
+MUDAR OS CATCH PARA PEGAR A EXCEPTION
+
+COLOCAR CONTROLE DE AUTORIZAÇÃO NOS CONTROLLER
+
+ADICIONAR OS CLAIMS/ROLES NO RETORNO DO TOKEN
+
+COLOCAR CONTROLE DE AUTORIZAÇÃO NOS CONTROLLER APROVEITANDO AS ROLES
 
 
 
