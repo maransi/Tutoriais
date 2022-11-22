@@ -1125,7 +1125,7 @@ Adicionando Autorização e Autenticação com Token
 . Execute a URL abaixo no Postman:
 
     method: POST
-    url: http://localhost:[porta]/accounts/v1
+    url: http://localhost:[porta]/account/v1
     body.json: true
     body.raw: 
         {
@@ -1144,11 +1144,235 @@ Adicionando Autorização e Autenticação com Token
             "errors": []
         }
 
+. Execute a URL abaixo no Postman:
+
+    method: POST
+    url: https://localhost:[porta]/account/v1/login
+    body.json: true
+    body.raw: 
+        {
+            "email": "jose.silva@encoder.com",
+            "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+        }
+
+    . Guarde o token gerado para futuras consultas
+
+. Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
+    no nosso projeto, obrigatório ser nessa ordem:
+
+    using contrato.Services;
+    using contrato.Data;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.OpenApi.Models;
+    using System.Text;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
+    using Microsoft.IdentityModel.Tokens;
+
+    ...
+    public void ConfigureServices(IServiceCollection services)
+    {
+        ...
+
+        // Linha inserida. Pode colocar no final do metodo
+        var key = Encoding.ASCII.GetBytes( ConfigHelper.JwtKey );           // 
+
+        // Linha abaixo inserida, não é para alterar
+        services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(x =>
+        {
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        });
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        ...
+        app.UseAuthentication();    // Linha inserida   "Nessa ordem"
+        app.UseAuthorization();     // Linha inserida   "Nessa ordem"
+    }
+
+. Dentro da classe AccountController crie os métodos abaixo:
+
+    ...
+    using Microsoft.AspNetCore.Authorization;       // Linha inserida
+
+    [ApiController]
+    public class AccountController: ControllerBase
+    {
+        ...                                         
+        
+        // Métodos abaixo inseridos
+        [Authorize]                     
+        [HttpGet("v1/user")]
+        public IActionResult GetUser() => Ok( new ResultViewModel<string>("GetUser Authorized") );
+
+        [Authorize]                     
+        [HttpGet("v1/admin")]
+        public IActionResult GetAdmin() => Ok( new ResultViewModel<string>("GetUser Authorized") );
+        ...
+    }
 
 
+. Execute a URL abaixo no Postman:
 
-Continuar da Aula 47. Configurando Autenticação e Autorização
+    method: POST
+    url: https://localhost:[porta]/account/v1/login
+    body.json: true
+    body.raw: 
+        {
+            "email": "jose.silva@encoder.com",
+            "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+        }
 
+    . Guarde o token gerado para futuras consultas
+
+. Acesse o Postman e execute a URL abaixo:
+
+    url: https://localhost:[porta]/account/v1/user
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+. Acesse o Postman e execute a URL abaixo:
+
+    url: https://localhost:[porta]/account/v1/admin
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:[porta]/account/v1/admin
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+
+. Dentro da pasta "Extensions" crie a classe abaixo:
+
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Security.Claims;
+    using contrato5.Models;
+
+    namespace contrato.Extensions
+    {
+        public static class RoleClaimsExtension
+        {
+            public static IEnumerable<Claim> GetClaims(this User user)
+            {
+                var result = new List<Claim>
+                    {
+                        new(ClaimTypes.Name, user.Email)
+                    };
+                result.AddRange(
+                    user.Roles.Select(role => new Claim(ClaimTypes.Role, role.Role.Name ))
+                );
+                return result;
+            }
+        }
+    }
+
+. Acesse a classe "TokenService" e faça as alterações abaixo:
+
+    using contrato.Extensions;     // Linha inserida
+    using System.Security.Claims;   // Linha inserida
+    ...
+    public class TokenService
+    {
+        public string GenerateToken(User user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(Configuration.JwtKey);
+
+            var claims = user.GetClaims();              // Linha inserida
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),       // Linha alterada
+                Expires = DateTime.UtcNow.AddHours(8),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+    }
+    ...    
+
+. Execute as DMLS abaixo para criar as roles para o usuário "jose.silva@encoder.com":
+
+    INSERT INTO UserRole( UserId, RoleId ) 
+    VALUES( 4,  1);
+            |   |
+            |   +-> Role de "user"
+            |
+            +-> Código do usuário "jose.silva@encoder.com"
+
+    . Futuramente substituir esse comando por uma rota de criação de role para o usuário
+
+. Altere os retornos dos métodos abaixo da classe "AccountController":
+
+    ...
+    [Authorize( Roles = "user")]        // Linha alterada                  
+    [HttpGet("v1/user")]
+    public IActionResult GetUser() => Ok( User.Identity.Name ); // Linha alterada
+
+    [Authorize( Roles = "admin" )]     // Linha alterada
+    [HttpGet("v1/admin")]
+    public IActionResult GetAdmin() => Ok( User.Identity.Name ); // Linha alterada
+    ...
+
+. Execute a URL abaixo no Postman:
+
+    method: POST
+    url: https://localhost:[porta]/account/v1/login
+    body.json: true
+    body.raw: 
+        {
+            "email": "jose.silva@encoder.com",
+            "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+        }
+
+    . Guarde o token gerado para futuras consultas
+
+. Acesse o Postman e execute a URL abaixo:
+
+    url: https://localhost:[porta]/account/v1/user
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+. Acesse o Postman e execute a URL abaixo:
+
+    url: https://localhost:[porta]/account/v1/admin
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:[porta]/account/v1/admin
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+
+PAREI AQUI -> Montar usuário administrador, conceder a role "admin" e executar novamente as 
+                rotas acima com esse novo usuário
 
 
 
