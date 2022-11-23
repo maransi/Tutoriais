@@ -863,15 +863,8 @@ Adicionando Autorização e Autenticação com Token
 
 . Acesse o banco de dados e execute as DMLs abaixo:
 
-    // INSERT INTO user(name, email, password ) VALUES('marco', 'marco@encoder.io', 'marco');
-    // INSERT INTO user(name, email, password ) VALUES('root', 'root@encoder.io', 'root');
-
     INSERT INTO Role( name, defaultRole ) VALUES('user', 'S');
     INSERT INTO Role( name, defaultRole ) VALUES('admin', 'N');
-
-    // INSERT INTO UserRole( UserId, RoleId ) VALUES( 1,1 );
-    // INSERT INTO UserRole( UserId, RoleId ) VALUES( 2,1 );
-    // INSERT INTO UserRole( UserId, RoleId ) VALUES( 2,1 );
 
 . Adicione as packages abaixo no projeto:
 
@@ -960,12 +953,12 @@ Adicionando Autorização e Autenticação com Token
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using contrato5.Data;
-    using contrato5.Models;
+    using contrato.Data;
+    using contrato.Models;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
 
-    namespace contrato5.Services
+    namespace contrato.Services
     {
         public class AccountService
         {
@@ -1288,7 +1281,7 @@ Adicionando Autorização e Autenticação com Token
     public class AccountController: ControllerBase
     {
         ...                                         
-        
+
         // Métodos abaixo inseridos
         [Authorize]                     
         [HttpGet("v1/user")]
@@ -1340,7 +1333,7 @@ Adicionando Autorização e Autenticação com Token
     using System.Collections.Generic;
     using System.Linq;
     using System.Security.Claims;
-    using contrato5.Models;
+    using contrato.Models;
 
     namespace contrato.Extensions
     {
@@ -1444,13 +1437,204 @@ Adicionando Autorização e Autenticação com Token
     method: GET
     Headers.Authorization: Bearer [Token obtido no item anterior]
 
+. Vamos fechar a possibilidade de qualquer um incluir um novo login, somente usuários com a role de "admin"
+    terão essa responsabilidade.
+
+
+. Execute a URL abaixo no Postman:
+
+    method: POST
+    url: http://localhost:[porta]/account/v1
+    body.json: true
+    body.raw: 
+        {
+            "email": "administrator@encoder.com",
+            "Name": "Administrator",
+            "password": "administrator"
+        }
+
+    . Guarde o retorno da rota acima, principalmente a "password" para utilizar na aula seguinte.
+
+        {
+            "data": {
+                "user": "administrator@encoder.com",
+                "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+            },
+            "errors": []
+        }
+
+. Execute o comando abaixo no banco de dados, isto será feito para identificar o "administrator" como "admin". 
+    Futuramente alterar em fazer isso através de um rota:
+
+    INSERT INTO UserRole( UserId, RoleId ) 
+    VALUES( [UserId],  [RoleId]);
+            |           |
+            |           +-> Role de "admin"
+            |
+            +-> Código do usuário "administrator@encoder.com"
+
+
+. Vamos automatizar a inclusão da role "user" para qualquer usuário incluido.
+
+. Inclua a classe "AccountService" abaixo dentro da pasta "Service":
+
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using contrato.Data;
+    using contrato.Models;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace contrato.Services
+    {
+        public class AccountService
+        {
+            AppDbContext _context;
+
+            public AccountService(AppDbContext context)
+            {
+                _context = context;
+            }
+            public async Task  GrantRoleAsync(int userId, 
+                                        string roleName)
+            {
+                Role role = await _context.Roles
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync( x => x.Name == roleName);
+
+                UserRole userRole = new UserRole{
+                    UserId = userId,
+                    RoleId = role.Id
+                };
+
+                await _context.UserRole.AddAsync( userRole );
+                await _context.SaveChangesAsync();
+            }
+
+
+            public async Task GrantDefaultRole( int userId )
+            {
+                var roles = await _context.Roles
+                                    .AsNoTracking()
+                                    .Where( r => r.DefaultRole == "S")
+                                    .ToListAsync();
+                foreach( var item in roles )
+                {
+                    await GrantRoleAsync( userId, item.Name );
+                }
+            }
+        }
+    }
+
+. Inclua a injeção de dependência da classe acima no "Startup.cs":
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        var connectionStrings = Configuration.GetConnectionString("DefaultConnection");
+
+        ConfigHelper.JwtKey = Configuration.GetValue<string>("JwtKey");              
+        ConfigHelper.ApiKeyName = Configuration.GetValue<string>( "ApiKeyName" );    
+        ConfigHelper.ApiKey = Configuration.GetValue<string>( "ApiKey" );            
+        ConfigHelper.TokenExpireIn = Configuration.GetValue<int>( "TokenExpireIn");  
+        ConfigHelper.TokenExpireInUnit = Configuration.GetValue<string>( "TokenExpireInUnit");
+
+        services.AddDbContext<AppDbContext>(options =>                                      
+            options.UseSqlite(connectionStrings));
+
+        services.AddTransient<TokenService>();
+        services.AddTransient<AccountService>();            // Linha inserida
+        ...
+    }
+
+. Altere as linhas do método abaixo da classe "AccountController":
+
+        [HttpPost("v1")]
+        [Authorize( Roles = "admin" ) ]             // Linha inserida
+        public async Task<IActionResult> Post(
+            [FromBody] RegisterViewModel model,
+            [FromServices] AppDbContext context,
+            [FromServices] AccountService accountService)    // Linha inserida
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new ResultViewModel<string>(ModelState.GetErrors()));
+
+            var user = new User
+            {
+                Name = model.Name,
+                Email = model.Email,
+                Password = model.Password
+            };
+
+            var password = PasswordGenerator.Generate(25);
+            user.PasswordHash = PasswordHasher.Hash(password);
+
+            try
+            {
+                await context.Database.BeginTransactionAsync();
+
+                await context.Users.AddAsync(user);
+                await context.SaveChangesAsync();
+
+                await accountService.GrantDefaultRole( user.Id );
+
+
+                await context.Database.CommitTransactionAsync();
+
+                return Ok(new ResultViewModel<dynamic>(new
+                {
+                    user = user.Email,
+                    password
+                }));
+            }
+            catch (DbUpdateException)
+            {
+                await context.Database.RollbackTransactionAsync();
+
+                return StatusCode(400, new ResultViewModel<string>("05X99 - Este E-mail já está cadastrado"));
+            }
+            catch
+            {
+                await context.Database.RollbackTransactionAsync();
+
+                return StatusCode(500, new ResultViewModel<string>("05X04 - Falha interna no servidor"));
+            }
+        }
+
+. Para incluir um login de agora em diante precisaremos da role "admin". O login "administrator@encoder.com"
+    possui essa autorização. Execute a rota abaixo no Postman:
+
+    method: POST
+    url: https://localhost:[porta]/account/v1/login
+    body.json: true
+    body.raw: 
+        {
+            "email": "administrator@encoder.com",
+            "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+        }
+
+    . Guarde o token gerado para a proxima consulta
+
+
+    method: POST
+    url: http://localhost:[porta]/account/v1
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+    body.json: true
+    body.raw: 
+        {
+            "email": "geronimo.silva@encoder.com",
+            "Name": "Geronimo da Silva",
+            "password": "geronimo"
+        }
+
+
+
+
 
 PAREI AQUI -> Montar usuário administrador, conceder a role "admin" e executar novamente as 
                 rotas acima com esse novo usuário
 
-Testar "AccountService", implementar rota GrantRole no controller
-
-
+Mudar controle de transação BEGINTRANS para o chamador do método "GrantDefaultRole"
 
 
 
