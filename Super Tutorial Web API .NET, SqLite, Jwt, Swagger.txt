@@ -790,6 +790,11 @@ Adicionando Autorização e Autenticação com Token
                 [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]                         
                 [Column("Name", TypeName = "VARCHAR(50)")] 
                 public string Name { get; set; }
+
+                [Column("defaultRole", TypeName = "CHAR(1)")]
+                [DefaultValue("N")]
+                // [DataType(DataType.Text)]
+                public string DefaultRole{ get; set;}
             }
         }
 
@@ -858,15 +863,15 @@ Adicionando Autorização e Autenticação com Token
 
 . Acesse o banco de dados e execute as DMLs abaixo:
 
-    INSERT INTO user(name, email, password ) VALUES('marco', 'marco@encoder.io', 'marco');
-    INSERT INTO user(name, email, password ) VALUES('root', 'root@encoder.io', 'root');
+    // INSERT INTO user(name, email, password ) VALUES('marco', 'marco@encoder.io', 'marco');
+    // INSERT INTO user(name, email, password ) VALUES('root', 'root@encoder.io', 'root');
 
-    INSERT INTO Role( name ) VALUES('user');
-    INSERT INTO Role( name ) VALUES('admin');
+    INSERT INTO Role( name, defaultRole ) VALUES('user', 'S');
+    INSERT INTO Role( name, defaultRole ) VALUES('admin', 'N');
 
-    INSERT INTO UserRole( UserId, RoleId ) VALUES( 1,1 );
-    INSERT INTO UserRole( UserId, RoleId ) VALUES( 2,1 );
-    INSERT INTO UserRole( UserId, RoleId ) VALUES( 2,1 );
+    // INSERT INTO UserRole( UserId, RoleId ) VALUES( 1,1 );
+    // INSERT INTO UserRole( UserId, RoleId ) VALUES( 2,1 );
+    // INSERT INTO UserRole( UserId, RoleId ) VALUES( 2,1 );
 
 . Adicione as packages abaixo no projeto:
 
@@ -907,7 +912,9 @@ Adicionando Autorização e Autenticação com Token
         }
     }
 
-. Crie a pasta "Services" na raiz do projeto e crie a classe abaixo:
+. Crie a pasta "Services" na raiz do projeto e crie as classes abaixo:
+
+    // Classe "TokenService"
 
     using System;
     using System.IdentityModel.Tokens.Jwt;
@@ -947,6 +954,72 @@ Adicionando Autorização e Autenticação com Token
         }
     }
 
+
+    // Classe AccountService
+
+    using System;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using contrato5.Data;
+    using contrato5.Models;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace contrato5.Services
+    {
+        public class AccountService
+        {
+            AppDbContext _context;
+
+            public AccountService(AppDbContext context)
+            {
+                _context = context;
+            }
+            public async Task  GrantRoleAsync(int userId, 
+                                        string roleName)
+            {
+                Role role = await _context.Roles
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync( x => x.Name == roleName);
+
+                UserRole userRole = new UserRole{
+                    UserId = userId,
+                    RoleId = role.Id
+                };
+
+                await _context.UserRole.AddAsync( userRole );
+                await _context.SaveChangesAsync();
+            }
+
+
+            public async void GrantDefaultRole( int userId, 
+                                                [FromServices] AppDbContext context )
+            {
+                var roles = await context.Roles
+                                    .AsNoTracking()
+                                    .Where( r => r.DefaultRole == "S")
+                                    .ToListAsync();
+                try
+                {
+                    await _context.Database.BeginTransactionAsync();
+
+                    foreach( var item in roles )
+                    {
+                        await GrantRoleAsync( userId, item.Name );
+
+                    }
+
+                    await _context.Database.CommitTransactionAsync();
+                } catch( Exception ex )
+                {
+                    await _context.Database.RollbackTransactionAsync();
+
+                    throw ex;
+                }
+            }
+        }
+    }
+
 . Adicione as linhas abaixo na classe "Startup.cs"
 
     ...
@@ -964,6 +1037,7 @@ Adicionando Autorização e Autenticação com Token
             options.UseSqlite(connectionStrings));
             
         services.AddTransient<TokenService>();                              // Linha inserida
+        services.AddTransient<AccountService>();                            // Linha inserida
 
         services.AddControllers()
                 .ConfigureApiBehaviorOptions(options =>        
@@ -1374,6 +1448,7 @@ Adicionando Autorização e Autenticação com Token
 PAREI AQUI -> Montar usuário administrador, conceder a role "admin" e executar novamente as 
                 rotas acima com esse novo usuário
 
+Testar "AccountService", implementar rota GrantRole no controller
 
 
 
@@ -1386,8 +1461,7 @@ PAREI AQUI -> Montar usuário administrador, conceder a role "admin" e executar 
 
 
 
-
-
+COLOCAR DMLS DE INSERÇÃO DAS ROLES
 
 CRIAR UMA ROTA QUE ADICIONE AS ROLES NO USUARIO 
 
