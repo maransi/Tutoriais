@@ -1458,7 +1458,7 @@ Adicionando Autorização e Autenticação com Token
         {
             "data": {
                 "user": "administrator@encoder.com",
-                "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+                "password": "@K6DRzguOuQDI)8hP1F;3Q6c2"
             },
             "errors": []
         }
@@ -1610,7 +1610,7 @@ Adicionando Autorização e Autenticação com Token
     body.raw: 
         {
             "email": "administrator@encoder.com",
-            "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+            "password": "@K6DRzguOuQDI)8hP1F;3Q6c2"
         }
 
     . Guarde o token gerado para a proxima consulta
@@ -1627,35 +1627,154 @@ Adicionando Autorização e Autenticação com Token
             "password": "geronimo"
         }
 
+. Desenvolvimento da rota para cadastrar as roles dos usuários
 
+. Execute os comandos abaixo no banco de dados:
 
+    INSERT INTO Role( Name, defaultRole )
+    VALUES('guest', 'N'),
+            ('marketing', 'N'),
+            ('finance', 'N'),
+            ('humanResource', 'N');
 
+. Inclua a classe abaixo na pasta "ViewModels":
 
-PAREI AQUI -> Montar usuário administrador, conceder a role "admin" e executar novamente as 
-                rotas acima com esse novo usuário
+    using System.ComponentModel.DataAnnotations;
 
-Mudar controle de transação BEGINTRANS para o chamador do método "GrantDefaultRole"
+    namespace contrato5.ViewModels
+    {
+        public class UserRoleViewModel
+        {
+            [Required(ErrorMessage = "Preenchimento obrigatório")]                              
+            [EmailAddress]
+            [MinLength(10, ErrorMessage ="Tamanho mínimo de 10 caracteres")]                          
+            [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]                         
+            public string Email { get; set; }
 
+            [Required(ErrorMessage = "Preenchimento obrigatório")]                              
+            [MinLength(3, ErrorMessage ="Tamanho mínimo de 3 caracteres")]                          
+            [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]                         
+            public string RoleName { get; set; }
+        }
+    }
 
+. Implemente o método abaixo na classe "AccountController.cs":
 
+    ...
+    [HttpPost("v1/grant-roles")]
+    [Authorize( Roles = "admin")]
+    public async Task<IActionResult> GrantRole([FromBody] List<UserRoleViewModel> roles,
+                                                [FromServices] AppDbContext context )
+    {
 
+        if (!ModelState.IsValid)
+        {
+            return BadRequest( new ResultViewModel<string>( ModelState.GetErrors()  ));
+        }
 
+        List<UserRole> userRolesAdd = new List<UserRole>();
+        List<string> errors = new List<string>();
 
+        roles.ForEach(async userRole => {
+            System.Console.WriteLine( $"{userRole.Email} - {userRole.RoleName}");
 
+            Role role = await context.Roles
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync( x => x.Name == userRole.RoleName );
 
+            User user = await context.Users
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync( x => x.Email == userRole.Email );
 
+            if (  role != null 
+                ||  user != null ) 
+            {
 
-COLOCAR DMLS DE INSERÇÃO DAS ROLES
+                UserRole ur = await context.UserRole
+                                        .AsNoTracking()
+                                        .FirstOrDefaultAsync( x => x.UserId == user.Id 
+                                                                    && x.RoleId == role.Id );
 
-CRIAR UMA ROTA QUE ADICIONE AS ROLES NO USUARIO 
+                if ( ur == null )
+                {
+                    userRolesAdd.Add( new UserRole{
+                        UserId = user.Id,
+                        RoleId = role.Id
+                    } );
+                }
+            } else
+            {
+                errors.Add( $"{userRole.Email} ou {userRole.RoleName} Inválido" );
+            }
+        });
+
+        try
+        {
+            if ( userRolesAdd.Count > 0 
+                &&  errors.Count == 0 )
+            {
+                await context.AddRangeAsync( userRolesAdd );
+            
+                await context.SaveChangesAsync();
+            }
+
+            if ( errors.Count == 0 )
+            {
+                return Ok();
+            } else
+            {
+                return BadRequest( new ResultViewModel<List<string>>( errors ) );
+            }
+        } catch( Exception ex )
+        {
+            return StatusCode( 500, $"Falha Interna [ {ex.Message} ]");
+        }
+    }
+    ...
+
+. Execute as rotas abaixo no Postman para criar as roles num determinado usuário:
+
+    method: POST
+    url: https://localhost:[porta]/account/v1/login
+    body.json: true
+    body.raw: 
+        {
+            "email": "administrator@encoder.com",
+            "password": "@K6DRzguOuQDI)8hP1F;3Q6c2"
+        }
+
+    . Guarde o token gerado para a proxima consulta
+
+    method: POST
+    url: https://localhost:5001/account/v1/grant-roles
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+    body.json: true
+    body.raw: 
+        [
+            { 
+                "Email": "joaquim@encoder.com",
+                "RoleName": "guest"
+            },
+            { 
+                "Email": "joaquim@encoder.com",
+                "RoleName": "finance"
+            },
+            { 
+                "Email": "joaquim@encoder.com",
+                "RoleName": "marketing"
+            },
+            { 
+                "Email": "joaquim@encoder.com",
+                "RoleName": "humanResource"
+            }
+        ]
+
+REFATORAR/CRIAR NOVA ROTA PARA ACEITAR UM UNICO ROLE
 
 MUDAR OS CATCH PARA PEGAR A EXCEPTION
 
 COLOCAR CONTROLE DE AUTORIZAÇÃO NOS CONTROLLER
 
-ADICIONAR OS CLAIMS/ROLES NO RETORNO DO TOKEN
-
-COLOCAR CONTROLE DE AUTORIZAÇÃO NOS CONTROLLER APROVEITANDO AS ROLES
 
 
 
