@@ -3,6 +3,7 @@ ASP.NET WebApi JWT Refresh Token
 
 https://www.youtube.com/watch?v=HsypCNm56zs
 https://github.com/brunobritodev/refresh-token-sample
+https://github.com/muhammadelhelaly/JWTRefreshTokenInDotNet6
 
 
 . Acesse a pasta central de projetos e execute o comando abaixo:
