@@ -1,7 +1,7 @@
 https://github.com/balta-io/api-aspnet-5-ef-core-sqlite
 
 Desenvolvimento de API com ASP.NET, EF Core e SQLite
-----------------------------------------------------
+====================================================
 
 . Acesse a pasta de projetos e digite o comando abaixo:
 
@@ -545,6 +545,9 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
                                     .Where(x => x.cpf == cpf)
                                     .FirstOrDefault();
 
+                    if (cliente == null)
+                        return NotFound(new ResultViewModel<Cliente>("Cliente não encontrado"));
+
                     context.Clientes.Remove(cliente);
 
                     await context.SaveChangesAsync();
@@ -559,8 +562,8 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
         }
     }
 
-    . Acesse a aula "Aula 36.  Padronizando erros" do curso "Fundamentos ASP.NET 6" e faça as 
-        configurações para deixar a validação manual dentro dos controllers os models através 
+    . Acesse a aula "Aula 36.  Padronizando erros" do curso "Fundamentos ASP.NET 6" e veja mais detalhes sobre 
+        configurações para deixar a validação manual dentro dos controllers dos models através 
         do método "ModelState.IsValid":
 
             ...
@@ -640,29 +643,30 @@ https://www.macoratti.net/19/08/aspnc_restrota1.htm
 Adicionando Paginação
 ---------------------
 
-. Altere o método "GetAsync" como abaixo:
+. Altere o método "GetAsyncPage" como abaixo:
 
     [HttpGet("v1/pageable")]
-    public async Task<ActionResult<List<Cliente>>> GetAsync([FromServices] AppDbContext context,
-                                                            [FromQuery] int page = 0,               
-                                                            [FromQuery] int pageSize = 25)          
+        public async Task<ActionResult<List<Cliente>>> GetAsyncPage([FromServices] AppDbContext context,
+                                                                    [FromQuery] int page = 0,               // Linha inserida
+                                                                    [FromQuery] int pageSize = 25,          // Linha inserida
+                                                                    [FromQuery] string orderBy = "cpf")     // Linha inserida
     {
         try
         {
-            var count = await context.Clientes.AsNoTracking().CountAsync();    
+            var count = await context.Clientes.AsNoTracking().CountAsync();    // Linha inserida
 
-            var clientes = await context.Clientes                              
+            var clientes = await context.Clientes                                                       // Linha alterada
                                         .AsNoTracking()
                                         .Skip(page * pageSize)
                                         .Take(pageSize)
-                                        .OrderByDescending(x => x.cpf)
+                                        .OrderBy(x => ( orderBy == "cpf"? x.cpf: x.nome ))
                                         .ToListAsync();
 
             return Ok(new ResultViewModel<dynamic>(new
             {
                 totalItem = count,
-                toalPage = Math.Floor( (float) (count / pageSize)),
-                page,
+                totalPage = Math.Floor( (float) (count / pageSize)),
+                currentPage = page,
                 pageSize,
                 clientes
             }));
@@ -716,7 +720,7 @@ Adicionando Paginação
 
 . Acesse o Postman e execute a rota abaixo e vá executando modificando o número da página ( page = 1,2,3,4,5,...):
 
-    url: http://localhost:[porta]/cliente/v1/pageable?page=1&pageSize=2
+    url: http://localhost:[porta]/cliente/v1/pageable?page=1&pageSize=2&orderBy=nome
     method: GET
 
     . Virá somente os registros da primeira página com 2 registros
@@ -727,77 +731,80 @@ Adicionando Paginação
 
 
 Adicionando Autorização e Autenticação com Token
-------------------------------------------------
+================================================
 
 . Inclua as classes models abaixo na pasta "Model":
 
 
-        // Classe "User"
-        using System.ComponentModel.DataAnnotations;
-        using System.ComponentModel.DataAnnotations.Schema;
+    // Classe "User"
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
-        namespace contrato.Models
+    namespace contrato5.Models
+    {
+        [Table("user")]
+        public class User
         {
-            [Table("user")]
-            public class User
-            {
-                [Key]                   
-                [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  
-                [Column("id", Order=1)]
-                public int Id { get; set; }
+            [Key]
+            [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+            [Column("id", Order = 1)]
+            public int Id { get; set; }
 
-                [Required(ErrorMessage = "Preenchimento obrigatório")]                              
-                [MinLength(3, ErrorMessage ="Tamanho mínimo de 3 caracteres")]                          
-                [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]
-                [Column("name", TypeName = "VARCHAR(50)")] 
-                public string Name { get; set; }
+            [Required(ErrorMessage = "Preenchimento obrigatório")]
+            [MinLength(3, ErrorMessage = "Tamanho mínimo de 3 caracteres")]
+            [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]
+            [Column("name", TypeName = "VARCHAR(50)")]
+            public string Name { get; set; }
 
-                [Required(ErrorMessage = "Preenchimento obrigatório")]                              
-                [EmailAddress]
-                [MinLength(10, ErrorMessage ="Tamanho mínimo de 10 caracteres")]                          
-                [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]                         
-                [Column("email", TypeName = "VARCHAR(50)")] 
-                public string Email { get; set; }
-                
-                [Column("passwordHash", TypeName = "VARCHAR(100)")] 
-                public string PasswordHash { get; set; }
+            [Required(ErrorMessage = "Preenchimento obrigatório")]
+            [EmailAddress]
+            [MinLength(10, ErrorMessage = "Tamanho mínimo de 10 caracteres")]
+            [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]
+            [Column("email", TypeName = "VARCHAR(50)")]
+            public string Email { get; set; }
 
-                [Column("password", TypeName = "VARCHAR(15)")] 
-                [Required( ErrorMessage = "Password é obrigatório")]
-                [MinLength(3, ErrorMessage = "Tamanho mínimo da senha deve ser de 3 caracateres")]
-                [MaxLength(15, ErrorMessage = "Tamanho máximo da senha deve ser de 15 caracateres")]
-                public string Password { get; set; }
-            }
+            [Column("passwordHash", TypeName = "VARCHAR(100)")]
+            public string PasswordHash { get; set; }
+
+            [Column("password", TypeName = "VARCHAR(15)")]
+            [Required(ErrorMessage = "Password é obrigatório")]
+            [MinLength(3, ErrorMessage = "Tamanho mínimo da senha deve ser de 3 caracateres")]
+            [MaxLength(15, ErrorMessage = "Tamanho máximo da senha deve ser de 15 caracateres")]
+            public string Password { get; set; }
+
+            public List<UserRole> Roles { get; set; }
         }
+    }
 
-        // Classe "Role"
-        using System.ComponentModel.DataAnnotations;
-        using System.ComponentModel.DataAnnotations.Schema;
+    // Classe "Role"
+    using System.ComponentModel;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
-        namespace contrato.Models
+    namespace contrato.Models
+    {
+
+        [Table("role")]
+        public class Role
         {
+            [Key]                   
+            [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  
+            [Column("id", Order=1)]
+            public int Id { get; set; }
 
-            [Table("role")]
-            public class Role
-            {
-                [Key]                   
-                [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  
-                [Column("id", Order=1)]
-                public int Id { get; set; }
+            [Required(ErrorMessage = "Preenchimento obrigatório")]                              
+            [MinLength(3, ErrorMessage ="Tamanho mínimo de 3 caracteres")]                          
+            [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]                         
+            [Column("Name", TypeName = "VARCHAR(50)")] 
+            public string Name { get; set; }
 
-                [Required(ErrorMessage = "Preenchimento obrigatório")]                              
-                [MinLength(3, ErrorMessage ="Tamanho mínimo de 3 caracteres")]                          
-                [MaxLength(50, ErrorMessage = "Tamanho maximo de 50 caracteres")]                         
-                [Column("Name", TypeName = "VARCHAR(50)")] 
-                public string Name { get; set; }
-
-                [Column("defaultRole", TypeName = "CHAR(1)")]
-                [DefaultValue("N")]
-                // [DataType(DataType.Text)]
-                public string DefaultRole{ get; set;}
-            }
+            [Column("defaultRole", TypeName = "CHAR(1)")]
+            [DefaultValue("N")]
+            // [DataType(DataType.Text)]
+            public string DefaultRole{ get; set;}
         }
-
+    }
 
     // Classe "UserRole"
     using System.ComponentModel.DataAnnotations;
@@ -819,10 +826,10 @@ Adicionando Autorização e Autenticação com Token
             [Column(Order = 3)]
             public int RoleId { get; set; }
 
-            [ForeignKey("id")]
+            [ForeignKey("UserId")]
             public User User{ get; set; }
 
-            [ForeignKey("id")]
+            [ForeignKey("RoleId")]
             public Role Role { get; set; }
         }
     }
@@ -841,10 +848,10 @@ Adicionando Autorização e Autenticação com Token
             {
             }
 
-            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
+            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)   // Método alterado
             {
                 optionsBuilder.UseSqlite();
-                optionsBuilder.LogTo( Console.WriteLine );
+                optionsBuilder.LogTo( Console.WriteLine );     // Linha inserida
             }
 
             public DbSet<Cliente> Clientes { get; set; }
@@ -985,29 +992,16 @@ Adicionando Autorização e Autenticação com Token
             }
 
 
-            public async void GrantDefaultRole( int userId, 
-                                                [FromServices] AppDbContext context )
+            public async Task GrantDefaultRole( int userId )
             {
-                var roles = await context.Roles
+                var roles = await _context.Roles
                                     .AsNoTracking()
                                     .Where( r => r.DefaultRole == "S")
                                     .ToListAsync();
-                try
+                foreach( var item in roles )
                 {
-                    await _context.Database.BeginTransactionAsync();
+                    await GrantRoleAsync( userId, item.Name );
 
-                    foreach( var item in roles )
-                    {
-                        await GrantRoleAsync( userId, item.Name );
-
-                    }
-
-                    await _context.Database.CommitTransactionAsync();
-                } catch( Exception ex )
-                {
-                    await _context.Database.RollbackTransactionAsync();
-
-                    throw ex;
                 }
             }
         }
@@ -1175,10 +1169,10 @@ Adicionando Autorização e Autenticação com Token
                     return Ok(new ResultViewModel<dynamic>(new 
                                                             { 
                                                                 accessToken = token,
-                                                                refreshToken = "",
                                                                 tokenType = "Bearer",
-                                                                expireIn = ConfigHelper.TokenExpireIn,
-                                                                expireInUnit = ConfigHelper.TokenExpireInUnit
+                                                                tokenExpireIn = ConfigHelper.TokenExpireIn,
+                                                                tokenExpireInUnit = ConfigHelper.TokenExpireInUnit,
+                                                                refreshToken = "",
                                                             }, null));
                 }
                 catch
@@ -1201,12 +1195,20 @@ Adicionando Autorização e Autenticação com Token
             "password": "jose"
         }
 
-    . Guarde o retorno da rota acima, principalmente a "password" para utilizar na aula seguinte.
+    . Guarde o retorno da rota acima, principalmente a "password" para utilizar na aula seguinte. Por exemplo:
 
         {
             "data": {
                 "user": "jose.silva@encoder.com",
                 "password": "U8{bT[]0Bpq7}z#Qz)aIk6MHx"
+            },
+            "errors": []
+        }
+
+        {
+            "data": {
+                "user": "administrator@encoder.com",
+                "password": "!6LA94et%1]ntRBPt)yJa9#0w"
             },
             "errors": []
         }
@@ -1224,7 +1226,7 @@ Adicionando Autorização e Autenticação com Token
 
     . Guarde o token gerado para futuras consultas
 
-. Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
+. Acesse a classe "Startup.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
     no nosso projeto, obrigatório ser nessa ordem:
 
     using contrato.Services;
@@ -1327,6 +1329,9 @@ Adicionando Autorização e Autenticação com Token
     method: GET
     Headers.Authorization: Bearer [Token obtido no item anterior]
 
+
+Autorização baseada em Claims via JWT
+=====================================
 
 . Dentro da pasta "Extensions" crie a classe abaixo:
 
@@ -1476,77 +1481,6 @@ Adicionando Autorização e Autenticação com Token
 
 . Vamos automatizar a inclusão da role "user" para qualquer usuário incluido.
 
-. Inclua a classe "AccountService" abaixo dentro da pasta "Service":
-
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using contrato.Data;
-    using contrato.Models;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.EntityFrameworkCore;
-
-    namespace contrato.Services
-    {
-        public class AccountService
-        {
-            AppDbContext _context;
-
-            public AccountService(AppDbContext context)
-            {
-                _context = context;
-            }
-            public async Task  GrantRoleAsync(int userId, 
-                                        string roleName)
-            {
-                Role role = await _context.Roles
-                                .AsNoTracking()
-                                .FirstOrDefaultAsync( x => x.Name == roleName);
-
-                UserRole userRole = new UserRole{
-                    UserId = userId,
-                    RoleId = role.Id
-                };
-
-                await _context.UserRole.AddAsync( userRole );
-                await _context.SaveChangesAsync();
-            }
-
-
-            public async Task GrantDefaultRole( int userId )
-            {
-                var roles = await _context.Roles
-                                    .AsNoTracking()
-                                    .Where( r => r.DefaultRole == "S")
-                                    .ToListAsync();
-                foreach( var item in roles )
-                {
-                    await GrantRoleAsync( userId, item.Name );
-                }
-            }
-        }
-    }
-
-. Inclua a injeção de dependência da classe acima no "Startup.cs":
-
-    public void ConfigureServices(IServiceCollection services)
-    {
-        var connectionStrings = Configuration.GetConnectionString("DefaultConnection");
-
-        ConfigHelper.JwtKey = Configuration.GetValue<string>("JwtKey");              
-        ConfigHelper.ApiKeyName = Configuration.GetValue<string>( "ApiKeyName" );    
-        ConfigHelper.ApiKey = Configuration.GetValue<string>( "ApiKey" );            
-        ConfigHelper.TokenExpireIn = Configuration.GetValue<int>( "TokenExpireIn");  
-        ConfigHelper.TokenExpireInUnit = Configuration.GetValue<string>( "TokenExpireInUnit");
-
-        services.AddDbContext<AppDbContext>(options =>                                      
-            options.UseSqlite(connectionStrings));
-
-        services.AddTransient<TokenService>();
-        services.AddTransient<AccountService>();            // Linha inserida
-        ...
-    }
-
 . Altere as linhas do método abaixo da classe "AccountController":
 
         [HttpPost("v1")]
@@ -1569,14 +1503,17 @@ Adicionando Autorização e Autenticação com Token
             var password = PasswordGenerator.Generate(25);
             user.PasswordHash = PasswordHasher.Hash(password);
 
+
+            // Bloco Try/Catch abaixo refeito
             try
             {
-                await context.Database.BeginTransactionAsync();
+                await context.Database.BeginTransactionAsync();         
 
                 await context.Users.AddAsync(user);
                 await context.SaveChangesAsync();
 
-                await accountService.GrantDefaultRole( user.Id );
+                // Criação dos roles default
+                await accountService.GrantDefaultRole( user.Id );       
 
 
                 await context.Database.CommitTransactionAsync();
@@ -1641,7 +1578,7 @@ Adicionando Autorização e Autenticação com Token
 
     using System.ComponentModel.DataAnnotations;
 
-    namespace contrato5.ViewModels
+    namespace contrato.ViewModels
     {
         public class UserRoleViewModel
         {
