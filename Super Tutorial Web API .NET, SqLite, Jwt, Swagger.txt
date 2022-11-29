@@ -1706,6 +1706,312 @@ Autorização baseada em Claims via JWT
             }
         ]
 
+
+
+
+Renovando o Access Token com o Refresh Token
+============================================
+
+. Acrescente as propriedades abaixo na classe "User.cs":
+
+    ...
+    [Column("refreshToken", TypeName = "VARCHAR(255)")]
+    public string refreshToken { get; set; }
+
+    [Column( "refreshTokenExpire", TypeName = "DATETIME")]
+    public DateTime refreshTokenExpire { get; set; }
+    ...
+
+. Execute os comandos abaixo na pasta raiz do projeto:
+
+    dotnet clean
+
+    dotnet build
+
+    dotnet ef migrations add InitialCreation
+
+    dotnet ef database update
+
+. Crie a pasta "Repositories" e dentro dela a classe "TokenRepository":
+
+    using System;
+    using System.Threading.Tasks;
+    using contrato5;
+    using contrato5.Data;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace Contrato5.Repositories
+    {
+        public class TokenRepository
+        {
+
+            public AppDbContext _context { get; set; }
+            public TokenRepository(AppDbContext context)
+            {
+                _context = context;
+            }
+
+            public async Task SaveRefreshTokenAsync( string email, string refreshToken)
+            {
+                var user = await _context.Users
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync( x => x.Name == email );
+
+                if ( user == null )
+                {
+                    throw new Exception("Usuário não cadastrado");
+                }
+
+                user.refreshToken = refreshToken;
+                user.refreshTokenExpire = ConfigHelper.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(ConfigHelper.RefreshTokenExpireIn) :
+                                                                            DateTime.UtcNow.AddHours(ConfigHelper.RefreshTokenExpireIn);
+
+                try
+                {
+                    _context.Users
+                            .Update( user );
+
+                    await _context.SaveChangesAsync();
+                } catch( Exception ex )
+                {
+                    throw ex;
+                }
+
+            }
+
+        }
+    }
+
+. Acrescente a propriedade abaixo na classe "ConfigHelper":
+
+    namespace contrato
+    {
+        public static class ConfigHelper
+        {
+            ...
+
+            public static int RefreshTokenExpireIn;     // Linha inserida
+        }
+    }
+
+. Acrescente a linha abaixo no arquivo "appsettings.Development.json":
+
+    {
+    "Logging": {
+        "LogLevel": {
+        "Default": "Information",
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information"
+        }
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "DataSource=app.db;Cache=Shared"
+    },
+    "JwtKey": "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=",
+    "ApiKeyName": "api_key",
+    "ApiKey": "curso_api_IlTevUM/z0ey3NwCV/unWg=="  ,
+    "TokenExpireIn": 10800,
+    "TokenExpireInUnit": "seconds",
+    "RefreshTokenExpireIn": 604800          // Linha inserida
+    }
+
+. Acrescente a linha abaixo na classe "Startup.cs":
+
+    namespace contrato5
+    {
+        public class Startup
+        {
+            public void ConfigureServices(IServiceCollection services)
+            {
+                var connectionStrings = Configuration.GetConnectionString("DefaultConnection");     
+
+                ConfigHelper.JwtKey = Configuration.GetValue<string>("JwtKey");              
+                ConfigHelper.ApiKeyName = Configuration.GetValue<string>( "ApiKeyName" );    
+                ConfigHelper.ApiKey = Configuration.GetValue<string>( "ApiKey" );            
+                ConfigHelper.TokenExpireIn = Configuration.GetValue<int>( "TokenExpireIn");  
+                ConfigHelper.TokenExpireInUnit = Configuration.GetValue<string>( "TokenExpireInUnit"); 
+
+                ConfigHelper.RefreshTokenExpireIn = Configuration.GetValue<int>( "RefreshTokenExpireIn");       // Linha Inserida
+                ...
+                services.AddTransient<TokenRepository>();                                                       // Linha inserida
+                ...
+            }
+
+            ...
+        }
+    }
+
+. Inclua os métodos abaixo na classe "TokenService.cs":
+
+    public class TokenService
+    {
+        TokenRepository _tokenRepository;                           // Linha inserida
+
+        public TokenService(TokenRepository tokenRepository)        // Método inserido
+        {
+            _tokenRepository = tokenRepository;
+        }
+
+        ...
+        public string GenerateRefreshToken()                        // Método inserido
+        {
+            var randomNumber = new byte[32];
+
+            using var rng = RandomNumberGenerator.Create();
+
+            rng.GetBytes( randomNumber );
+
+            return Convert.ToBase64String( randomNumber );
+        }
+
+        public ClaimsPrincipal GetPrincipalFromExpiredToken( string token )     // Método inserido
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey( Encoding.UTF8.GetBytes( Settings.JwtKey )),
+                ValidateLifetime = false
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var principal = tokenHandler.ValidateToken( token, tokenValidationParameters, out var securityToken );
+
+            if ( securityToken is not JwtSecurityToken jwtSecurityToken || 
+                    ! jwtSecurityToken.Header.Alg.Equals( SecurityAlgorithms.HmacSha256, 
+                                                            StringComparison.InvariantCultureIgnoreCase ))
+                throw new SecurityTokenException( "Invalid Token" );
+
+            return principal;
+        }
+
+        private List<(string, string)> _refreshTokens = new();
+
+        public async Task SaveRefreshTokenAsync(string username, string refreshToken)
+        {
+            await _tokenRepository.SaveRefreshTokenAsync( username, refreshToken );
+        }
+
+
+        public  string GetRefreshToken( string username )                       // Método inserido
+        {
+            return _refreshTokens.FirstOrDefault( x => x.Item1 == username).Item2;
+        }
+
+        public  void DeleteRefreshToken( string username, string refreshToken )     // Método inserido
+        {
+            
+            // ATENÇÃO: Verificar se "x.items2 == refreshToken ).item2;" está correto
+
+            var item = _refreshTokens.FirstOrDefault( x => x.Item1 == username &&
+                                                            x.Item2 == refreshToken );
+
+            _refreshTokens.Remove( item );
+        }
+        ...
+    }
+
+. Insira/Altere as linhas abaixo na classe "AccountController":
+
+    [AllowAnonymous]
+    [HttpPost("v1/login")]
+    public async Task<IActionResult> Login(
+        [FromBody] LoginViewModel model,
+        [FromServices] AppDbContext context,
+        [FromServices] TokenService tokenService)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new ResultViewModel<string>(ModelState.GetErrors()));
+
+        var user = await context
+            .Users
+            .AsNoTracking()
+            .Include(x => x.Roles )
+                .ThenInclude( x => x.Role )
+            .FirstOrDefaultAsync(x => x.Email == model.Email);
+
+        if (user == null)
+            return StatusCode(401, new ResultViewModel<string>("Usuário ou senha inválidos"));
+
+        if (!PasswordHasher.Verify(user.PasswordHash, model.Password))
+            return StatusCode(401, new ResultViewModel<string>("Usuário ou senha inválidos"));
+
+        try
+        {
+            var token = tokenService.GenerateToken(user);
+            var refreshToken = tokenService.GenerateRefreshToken();                             // Linha inserida
+
+            await tokenService.SaveRefreshTokenAsync(model.Email, refreshToken);                // Linha inserida
+
+            return Ok(new ResultViewModel<dynamic>(new 
+                                                    { 
+                                                        accessToken = token,
+                                                        refreshToken = refreshToken,            // Linha alterada
+                                                        tokenType = "Bearer",
+                                                        expireIn = ConfigHelper.TokenExpireIn,
+                                                        expireInUnit = ConfigHelper.TokenExpireInUnit
+                                                    }, null));
+        }
+        catch
+        {
+            return StatusCode(500, new ResultViewModel<string>("05X04 - Falha interna no servidor"));
+        }
+    }
+
+. Inclua o método abaixo na classe "AccountController":
+
+    [AllowAnonymous]
+    [HttpPost("v1/refreshToken")]
+    public async Task<IActionResult> RefreshAsync([FromServices] TokenService tokenService,
+                                    [FromServices] AppDbContext context,
+                                    RefreshTokenViewModel refreshTokenViewModel)
+
+    {
+
+        var principal = tokenService.GetPrincipalFromExpiredToken(refreshTokenViewModel.Token);
+
+        var username = principal.Identity.Name;
+
+        var user = await context
+            .Users
+            .AsNoTracking()
+            .Include(x => x.Roles )
+                .ThenInclude( x => x.Role )
+            .FirstOrDefaultAsync(x => x.Email == username);
+        
+        var savedRefreshToken = tokenService.GetRefreshToken( username );
+
+        // TODO: Descomentar quando o refreshToken estiver sendo gravado no banco de dados
+        // if (savedRefreshToken != refreshToken)
+        //     // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
+        //     return Unauthorized( new { Error =  "RefreshToken Inválido"} );
+        //     //  throw new SecurityTokenException("Invalid Token");  // Ao invés de levantar um exception, devolver um StatusCode
+
+        // var newJwtToken = tokenService.GenerateToken(principal.Claims);
+        var newJwtToken = tokenService.GenerateToken(user);
+
+        // TODO: Fazer novo refreshToken somente se expirou
+        var newRefreshToken = tokenService.GenerateRefreshToken();
+
+        tokenService.DeleteRefreshToken(username, refreshTokenViewModel.RefreshToken);
+
+        await tokenService.SaveRefreshTokenAsync(username, newRefreshToken);   
+
+        return new ObjectResult(new
+        {
+            token = newJwtToken,
+            refreshToken = newRefreshToken
+
+            // Retornar a data de expiração do refreshToken
+        });
+    }
+
+
+TESTAR O METODO "await tokenService.SaveRefreshTokenAsync(username, newRefreshToken)" NAS ROTAS LOGIN E RefreshToken
+
+
 REFATORAR/CRIAR NOVA ROTA PARA ACEITAR UM UNICO ROLE
 
 MUDAR OS CATCH PARA PEGAR A EXCEPTION
