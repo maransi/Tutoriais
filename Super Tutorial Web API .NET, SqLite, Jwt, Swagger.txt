@@ -1715,6 +1715,9 @@ Renovando o Access Token com o Refresh Token
 . Acrescente as propriedades abaixo na classe "User.cs":
 
     ...
+    [Column("token", TypeName = "VARCHAR(255)")]
+    public string Token { get; set; }
+
     [Column("refreshToken", TypeName = "VARCHAR(255)")]
     public string refreshToken { get; set; }
 
@@ -1755,7 +1758,7 @@ Renovando o Access Token com o Refresh Token
             {
                 var user = await _context.Users
                                 .AsNoTracking()
-                                .FirstOrDefaultAsync( x => x.Name == email );
+                                .FirstOrDefaultAsync( x => x.Email == email );
 
                 if ( user == null )
                 {
@@ -1847,9 +1850,11 @@ Renovando o Access Token com o Refresh Token
     {
         TokenRepository _tokenRepository;                           // Linha inserida
 
-        public TokenService(TokenRepository tokenRepository)        // Método inserido
+        public TokenService(TokenRepository tokenRepository,        // Método alterado
+                                AppDbContext context)
         {
             _tokenRepository = tokenRepository;
+            _context = context;
         }
 
         ...
@@ -1895,9 +1900,25 @@ Renovando o Access Token com o Refresh Token
         }
 
 
-        public  string GetRefreshToken( string username )                       // Método inserido
+        public async Task<string> GetRefreshTokenAsync( string email )  // Metodo inserido
         {
-            return _refreshTokens.FirstOrDefault( x => x.Item1 == username).Item2;
+            User user = await _context.Users
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync( x => x.Email == email );
+
+            if ( user == null )
+            {
+                throw new Exception("Usuário não cadastrado");
+            }
+
+            if ( user.refreshTokenExpire < DateTime.UtcNow )
+            {
+                throw new Exception("Refresh Token Expirado");
+            } 
+            else
+            {
+                return user.refreshToken;
+            }
         }
 
         public  void DeleteRefreshToken( string username, string refreshToken )     // Método inserido
@@ -1948,10 +1969,11 @@ Renovando o Access Token com o Refresh Token
             return Ok(new ResultViewModel<dynamic>(new 
                                                     { 
                                                         accessToken = token,
-                                                        refreshToken = refreshToken,            // Linha alterada
+                                                        refreshToken = refreshToken,
                                                         tokenType = "Bearer",
-                                                        expireIn = ConfigHelper.TokenExpireIn,
-                                                        expireInUnit = ConfigHelper.TokenExpireInUnit
+                                                        TokenExpireIn = ConfigHelper.TokenExpireIn,
+                                                        RefreshTokenExpireIn = ConfigHelper.RefreshTokenExpireIn,
+                                                        ExpireUnit = ConfigHelper.TokenExpireInUnit,
                                                     }, null));
         }
         catch
