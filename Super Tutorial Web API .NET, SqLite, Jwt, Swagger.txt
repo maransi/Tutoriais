@@ -1735,6 +1735,39 @@ Renovando o Access Token com o Refresh Token
 
     dotnet ef database update
 
+. Acrescente a propriedade abaixo na classe "ConfigHelper":
+
+    namespace contrato
+    {
+        public static class ConfigHelper
+        {
+            ...
+
+            public static int RefreshTokenExpireIn; // Linha inserida
+        }
+    }
+
+. Acrescente a linha abaixo no arquivo "appsettings.Development.json":
+
+    {
+    "Logging": {
+        "LogLevel": {
+        "Default": "Information",
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information"
+        }
+    },
+    "ConnectionStrings": {
+        "DefaultConnection": "DataSource=app.db;Cache=Shared"
+    },
+    "JwtKey": "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=",
+    "ApiKeyName": "api_key",
+    "ApiKey": "curso_api_IlTevUM/z0ey3NwCV/unWg=="  ,
+    "TokenExpireIn": 10800,
+    "TokenExpireInUnit": "seconds",
+    "RefreshTokenExpireIn": 604800          // Linha inserida
+    }
+
 . Crie a pasta "Repositories" e dentro dela a classe "TokenRepository":
 
     using System;
@@ -1766,8 +1799,8 @@ Renovando o Access Token com o Refresh Token
                 }
 
                 user.Token = token;
-                user.refreshToken = refreshToken;
-                user.refreshTokenExpire = ConfigHelper.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(ConfigHelper.RefreshTokenExpireIn) :
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpire = ConfigHelper.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(ConfigHelper.RefreshTokenExpireIn) :
                                                                             DateTime.UtcNow.AddHours(ConfigHelper.RefreshTokenExpireIn);
 
                 try
@@ -1786,40 +1819,6 @@ Renovando o Access Token com o Refresh Token
         }
     }
 
-. Acrescente a propriedade abaixo na classe "ConfigHelper":
-
-    namespace contrato
-    {
-        public static class ConfigHelper
-        {
-            ...
-
-            public static string TokenExpireInUnit; // Linha inserida
-
-            public static int RefreshTokenExpireIn; // Linha inserida
-        }
-    }
-
-. Acrescente a linha abaixo no arquivo "appsettings.Development.json":
-
-    {
-    "Logging": {
-        "LogLevel": {
-        "Default": "Information",
-        "Microsoft": "Warning",
-        "Microsoft.Hosting.Lifetime": "Information"
-        }
-    },
-    "ConnectionStrings": {
-        "DefaultConnection": "DataSource=app.db;Cache=Shared"
-    },
-    "JwtKey": "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=",
-    "ApiKeyName": "api_key",
-    "ApiKey": "curso_api_IlTevUM/z0ey3NwCV/unWg=="  ,
-    "TokenExpireIn": 10800,
-    "TokenExpireInUnit": "seconds",
-    "RefreshTokenExpireIn": 604800          // Linha inserida
-    }
 
 . Acrescente a linha abaixo na classe "Startup.cs":
 
@@ -1847,13 +1846,26 @@ Renovando o Access Token com o Refresh Token
         }
     }
 
+. Insira a classe "RefreshTokeViewModel" abaixo na pasta "ViewModels":
+
+    namespace contrato.ViewModels
+    {
+        public class RefreshTokenViewModel
+        {
+            public string Token { get; set; }        
+            public string RefreshToken { get; set; }
+        }
+    }
+
+
 . Inclua os métodos abaixo na classe "TokenService.cs":
 
     public class TokenService
     {
         TokenRepository _tokenRepository;                           // Linha inserida
+        AppDbContext _context;                                      // Linha inserida
 
-        public TokenService(TokenRepository tokenRepository,        // Método alterado
+        public TokenService(TokenRepository tokenRepository,        // Construtor inserido
                                 AppDbContext context)
         {
             _tokenRepository = tokenRepository;
@@ -1861,7 +1873,7 @@ Renovando o Access Token com o Refresh Token
         }
 
         ...
-        public string GenerateToken(User user)                  // Metodo Inserido
+        public string GenerateToken(User user)                  // Metodo Alterado
         {
             // Classe responsável por gerar o token
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -1890,6 +1902,16 @@ Renovando o Access Token com o Refresh Token
             return tokenHandler.WriteToken(token);
         }
 
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+
+            using var rng = RandomNumberGenerator.Create();
+
+            rng.GetBytes(randomNumber);
+
+            return Convert.ToBase64String(randomNumber);
+        }
 
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)   // Metodo inserido
         {
@@ -1938,13 +1960,13 @@ Renovando o Access Token com o Refresh Token
                 throw new Exception("Usuário não cadastrado");
             }
 
-            if ( user.refreshTokenExpire < DateTime.UtcNow )
+            if ( user.RefreshTokenExpire < DateTime.UtcNow )
             {
                 throw new Exception("Refresh Token Expirado");
             } 
             else
             {
-                return user.refreshToken;
+                return user.RefreshToken;
             }
         }
 
@@ -1955,7 +1977,7 @@ Renovando o Access Token com o Refresh Token
 
     [AllowAnonymous]
     [HttpPost("v1/login")]
-    public async Task<IActionResult> Login(
+    public async Task<IActionResult> Login(                     // Metodo alterado
         [FromBody] LoginViewModel model,
         [FromServices] AppDbContext context,
         [FromServices] TokenService tokenService)
@@ -1983,32 +2005,31 @@ Renovando o Access Token com o Refresh Token
             var token = tokenService.GenerateToken(user);
             string refreshToken = null;
 
-            if ( user.refreshTokenExpire > DateTime.UtcNow )
+            if ( user.RefreshTokenExpire > DateTime.UtcNow )
             {
-                refreshToken = user.refreshToken;
+                refreshToken = user.RefreshToken;
 
-                refreshTokenExpireIn = (int) user.refreshTokenExpire.Subtract(DateTime.UtcNow).TotalSeconds;
+                refreshTokenExpireIn = (int) user.RefreshTokenExpire.Subtract(DateTime.UtcNow).TotalSeconds;
             }
             else
             {
                 refreshToken = tokenService.GenerateRefreshToken();
 
                 // TODO: Fazer refactoring para que a o método "SaveRefreshTokenAsync" retorne o "refreshTokenExpire"                   
-                await tokenService.SaveRefreshTokenAsync(model.Email, token, refreshToken);
-
-                // var paramUserEmail = new SqlParameter("email", model.Email);
 
                 var userRefreshTokenExpire = await context
                     .Users
                     .FromSqlRaw( $"SELECT refreshTokenExpire FROM User WHERE email = '{model.Email}'" )
                     .AsNoTracking()
                     .Select( u => new {
-                        refreshTokenExpireIn = u.refreshTokenExpire
+                        refreshTokenExpireIn = u.RefreshTokenExpire
                     })
                     .FirstOrDefaultAsync();
 
                 refreshTokenExpireIn = (int) userRefreshTokenExpire.refreshTokenExpireIn.Subtract(DateTime.UtcNow).TotalSeconds;
             }
+
+            await tokenService.SaveRefreshTokenAsync(model.Email, token, refreshToken);
 
             return Ok(new ResultViewModel<dynamic>(new 
                                                     { 
@@ -2047,16 +2068,16 @@ Renovando o Access Token com o Refresh Token
                     .ThenInclude( x => x.Role )
                 .FirstOrDefaultAsync(x => x.Email == username);
 
-            if (user.refreshToken != refreshTokenViewModel.RefreshToken ||
+            if (user.RefreshToken != refreshTokenViewModel.RefreshToken ||
                     user.Token != refreshTokenViewModel.Token )
                 return Unauthorized( new { Error =  "Tokens Inválidos"} );
 
-            if ( user.refreshTokenExpire < DateTime.UtcNow )
+            if ( user.RefreshTokenExpire < DateTime.UtcNow )
             {
                 return Unauthorized( new { Error =  "RefreshToken Expirado"} );
             }
 
-            string refreshToken = user.refreshToken;
+            string refreshToken = user.RefreshToken;
 
             var newJwtToken = tokenService.GenerateToken(user);
 
@@ -2072,6 +2093,76 @@ Renovando o Access Token com o Refresh Token
             return StatusCode(500, new ResultViewModel<string>($"05X04 - Falha interna no servidor: {ex.Message} "));
         }
     }
+
+. Testes
+
+    . Apague o usuario administrator caso exista na base
+
+    . Crie o usuario administrator com a rota abaixo:
+
+        method: POST
+        url: https://localhost:5001/account/v1
+        body: {
+                    "email": "administrator@encoder.com",
+                    "Name": "Administrator",
+                    "password": "administrator"
+                }
+
+        . Guarde o retorno da password para ser utilizado nos proximos logins
+
+            {
+                "data": {
+                    "user": "administrator@encoder.com",
+                    "password": "Jˆ)Q@4qo7Cb#v0!fDKtZx)!HB"
+                },
+                "errors": []
+            }
+
+    . Por se tratar de um usuário "admin", será necessário incluir a role "admin" manualmente no banco,
+        execute a DML abaixo no banco de dados:
+
+        INSERT INTO UserRole( UserId, RoleId ) 
+        VALUES( 3,  2);
+                |   |
+                |   +---> RoleId
+                |
+                +--> UserId
+
+    . Execute o login para ter acesso aos tokens:
+
+        method: POST
+        url: https://localhost:5001/account/v1/login
+        body: {
+                    "user": "administrator@encoder.com",
+                    "password": "Jˆ)Q@4qo7Cb#v0!fDKtZx)!HB"
+               }
+
+
+        . Guarde o retorno dos tokens:
+
+            {
+                "data": {
+                    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImFkbWluaXN0cmF0b3JAZW5jb2Rlci5jb20iLCJyb2xlIjoidXNlciIsIm5iZiI6MTY3MDM1MjEyOSwiZXhwIjoxNjcwMzYyOTI5LCJpYXQiOjE2NzAzNTIxMjl9.j9V5HuVKNjLU8DQB_aZDobwSjdaumSuBYF9Qig_xtiA",
+                    "refreshToken": "Sg95Wxiv2d3ewoMXdwUbZXKbMVw7kDzu8AK6VNAPdyI=",
+                    "tokenType": "Bearer",
+                    "tokenExpireIn": 10800,
+                    "refreshTokenExpireIn": 604799,
+                    "expireUnit": "seconds"
+                },
+                "errors": null
+            }
+
+    . Insira a grant de "admin" para o usuário "administrator@encoder.com":
+
+        method: POST
+        url: https://localhost:5001/account/v1/grant-roles
+        body:     [ 
+                        { 
+                            "Email": "administrator@encoder.com",
+                            "RoleName": "admin"
+                        }
+                    ]
+        Header.Authorization: Bearer [accessToken gerado anteriormente]
 
 
 
