@@ -1739,8 +1739,8 @@ Renovando o Access Token com o Refresh Token
 
     using System;
     using System.Threading.Tasks;
-    using contrato5;
-    using contrato5.Data;
+    using contrato;
+    using contrato.Data;
     using Microsoft.EntityFrameworkCore;
 
     namespace Contrato5.Repositories
@@ -1754,7 +1754,7 @@ Renovando o Access Token com o Refresh Token
                 _context = context;
             }
 
-            public async Task SaveRefreshTokenAsync( string email, string refreshToken)
+            public async Task SaveRefreshTokenAsync( string email, string token, string refreshToken)
             {
                 var user = await _context.Users
                                 .AsNoTracking()
@@ -1765,6 +1765,7 @@ Renovando o Access Token com o Refresh Token
                     throw new Exception("Usuário não cadastrado");
                 }
 
+                user.Token = token;
                 user.refreshToken = refreshToken;
                 user.refreshTokenExpire = ConfigHelper.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(ConfigHelper.RefreshTokenExpireIn) :
                                                                             DateTime.UtcNow.AddHours(ConfigHelper.RefreshTokenExpireIn);
@@ -1793,7 +1794,9 @@ Renovando o Access Token com o Refresh Token
         {
             ...
 
-            public static int RefreshTokenExpireIn;     // Linha inserida
+            public static string TokenExpireInUnit; // Linha inserida
+
+            public static int RefreshTokenExpireIn; // Linha inserida
         }
     }
 
@@ -1820,7 +1823,7 @@ Renovando o Access Token com o Refresh Token
 
 . Acrescente a linha abaixo na classe "Startup.cs":
 
-    namespace contrato5
+    namespace contrato
     {
         public class Startup
         {
@@ -1858,49 +1861,73 @@ Renovando o Access Token com o Refresh Token
         }
 
         ...
-        public string GenerateRefreshToken()                        // Método inserido
+        public string GenerateToken(User user)                  // Metodo Inserido
         {
-            var randomNumber = new byte[32];
+            // Classe responsável por gerar o token
+            var tokenHandler = new JwtSecurityTokenHandler();
 
-            using var rng = RandomNumberGenerator.Create();
+            // Nossa chave de validação do token
+            var key = Encoding.ASCII.GetBytes(ConfigHelper.JwtKey);
 
-            rng.GetBytes( randomNumber );
+            var claims = user.GetClaims();
 
-            return Convert.ToBase64String( randomNumber );
+            // Informações contidas no nosso token
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(claims),
+
+                // Tempo de expiração do nosso token
+                Expires = ConfigHelper.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(ConfigHelper.TokenExpireIn) :
+                                                                        DateTime.UtcNow.AddHours(ConfigHelper.TokenExpireIn),
+                // Credenciais para incriptar e desincriptar nosso token
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                                                                SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            // Criação do token
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
         }
 
-        public ClaimsPrincipal GetPrincipalFromExpiredToken( string token )     // Método inserido
+
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)   // Metodo inserido
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
                 ValidateAudience = false,
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey( Encoding.UTF8.GetBytes( Settings.JwtKey )),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(ConfigHelper.JwtKey)),
                 ValidateLifetime = false
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
-            var principal = tokenHandler.ValidateToken( token, tokenValidationParameters, out var securityToken );
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
 
-            if ( securityToken is not JwtSecurityToken jwtSecurityToken || 
-                    ! jwtSecurityToken.Header.Alg.Equals( SecurityAlgorithms.HmacSha256, 
-                                                            StringComparison.InvariantCultureIgnoreCase ))
-                throw new SecurityTokenException( "Invalid Token" );
+                if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                        !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                                                                StringComparison.InvariantCultureIgnoreCase))
+                    throw new SecurityTokenException("Invalid Token");
+            
+                return principal;
+            } catch( Exception ex )
+            {
+                throw ex;
+            }
 
-            return principal;
         }
 
-        private List<(string, string)> _refreshTokens = new();
-
-        public async Task SaveRefreshTokenAsync(string username, string refreshToken)
+        public async Task SaveRefreshTokenAsync(string username, string token, string refreshToken)     // Metodo inserido
         {
-            await _tokenRepository.SaveRefreshTokenAsync( username, refreshToken );
+            await _tokenRepository.SaveRefreshTokenAsync( username, token, refreshToken );
         }
 
 
-        public async Task<string> GetRefreshTokenAsync( string email )  // Metodo inserido
+        public async Task<string> GetRefreshTokenAsync( string email )      // Metodo inserido
         {
             User user = await _context.Users
                             .AsNoTracking()
@@ -1921,16 +1948,6 @@ Renovando o Access Token com o Refresh Token
             }
         }
 
-        public  void DeleteRefreshToken( string username, string refreshToken )     // Método inserido
-        {
-            
-            // ATENÇÃO: Verificar se "x.items2 == refreshToken ).item2;" está correto
-
-            var item = _refreshTokens.FirstOrDefault( x => x.Item1 == username &&
-                                                            x.Item2 == refreshToken );
-
-            _refreshTokens.Remove( item );
-        }
         ...
     }
 
@@ -1959,12 +1976,39 @@ Renovando o Access Token com o Refresh Token
         if (!PasswordHasher.Verify(user.PasswordHash, model.Password))
             return StatusCode(401, new ResultViewModel<string>("Usuário ou senha inválidos"));
 
+
         try
         {
+            int refreshTokenExpireIn = 0;
             var token = tokenService.GenerateToken(user);
-            var refreshToken = tokenService.GenerateRefreshToken();                             // Linha inserida
+            string refreshToken = null;
 
-            await tokenService.SaveRefreshTokenAsync(model.Email, refreshToken);                // Linha inserida
+            if ( user.refreshTokenExpire > DateTime.UtcNow )
+            {
+                refreshToken = user.refreshToken;
+
+                refreshTokenExpireIn = (int) user.refreshTokenExpire.Subtract(DateTime.UtcNow).TotalSeconds;
+            }
+            else
+            {
+                refreshToken = tokenService.GenerateRefreshToken();
+
+                // TODO: Fazer refactoring para que a o método "SaveRefreshTokenAsync" retorne o "refreshTokenExpire"                   
+                await tokenService.SaveRefreshTokenAsync(model.Email, token, refreshToken);
+
+                // var paramUserEmail = new SqlParameter("email", model.Email);
+
+                var userRefreshTokenExpire = await context
+                    .Users
+                    .FromSqlRaw( $"SELECT refreshTokenExpire FROM User WHERE email = '{model.Email}'" )
+                    .AsNoTracking()
+                    .Select( u => new {
+                        refreshTokenExpireIn = u.refreshTokenExpire
+                    })
+                    .FirstOrDefaultAsync();
+
+                refreshTokenExpireIn = (int) userRefreshTokenExpire.refreshTokenExpireIn.Subtract(DateTime.UtcNow).TotalSeconds;
+            }
 
             return Ok(new ResultViewModel<dynamic>(new 
                                                     { 
@@ -1972,13 +2016,13 @@ Renovando o Access Token com o Refresh Token
                                                         refreshToken = refreshToken,
                                                         tokenType = "Bearer",
                                                         TokenExpireIn = ConfigHelper.TokenExpireIn,
-                                                        RefreshTokenExpireIn = ConfigHelper.RefreshTokenExpireIn,
+                                                        RefreshTokenExpireIn = refreshTokenExpireIn,
                                                         ExpireUnit = ConfigHelper.TokenExpireInUnit,
                                                     }, null));
         }
-        catch
+        catch ( Exception ex )
         {
-            return StatusCode(500, new ResultViewModel<string>("05X04 - Falha interna no servidor"));
+            return StatusCode(500, new ResultViewModel<string>($"05X04 - Falha interna no servidor: {ex.Message} "));
         }
     }
 
@@ -1987,48 +2031,48 @@ Renovando o Access Token com o Refresh Token
     [AllowAnonymous]
     [HttpPost("v1/refreshToken")]
     public async Task<IActionResult> RefreshAsync([FromServices] TokenService tokenService,
-                                    [FromServices] AppDbContext context,
-                                    RefreshTokenViewModel refreshTokenViewModel)
-
+                                                    [FromServices] AppDbContext context,
+                                                    RefreshTokenViewModel refreshTokenViewModel)
     {
-
-        var principal = tokenService.GetPrincipalFromExpiredToken(refreshTokenViewModel.Token);
-
-        var username = principal.Identity.Name;
-
-        var user = await context
-            .Users
-            .AsNoTracking()
-            .Include(x => x.Roles )
-                .ThenInclude( x => x.Role )
-            .FirstOrDefaultAsync(x => x.Email == username);
-        
-        var savedRefreshToken = tokenService.GetRefreshToken( username );
-
-        // TODO: Descomentar quando o refreshToken estiver sendo gravado no banco de dados
-        // if (savedRefreshToken != refreshToken)
-        //     // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
-        //     return Unauthorized( new { Error =  "RefreshToken Inválido"} );
-        //     //  throw new SecurityTokenException("Invalid Token");  // Ao invés de levantar um exception, devolver um StatusCode
-
-        // var newJwtToken = tokenService.GenerateToken(principal.Claims);
-        var newJwtToken = tokenService.GenerateToken(user);
-
-        // TODO: Fazer novo refreshToken somente se expirou
-        var newRefreshToken = tokenService.GenerateRefreshToken();
-
-        tokenService.DeleteRefreshToken(username, refreshTokenViewModel.RefreshToken);
-
-        await tokenService.SaveRefreshTokenAsync(username, newRefreshToken);   
-
-        return new ObjectResult(new
+        try
         {
-            token = newJwtToken,
-            refreshToken = newRefreshToken
+            var principal = tokenService.GetPrincipalFromExpiredToken(refreshTokenViewModel.Token);
 
-            // Retornar a data de expiração do refreshToken
-        });
+            var username = principal.Identity.Name;
+
+            var user = await context
+                .Users
+                .AsNoTracking()
+                .Include(x => x.Roles )
+                    .ThenInclude( x => x.Role )
+                .FirstOrDefaultAsync(x => x.Email == username);
+
+            if (user.refreshToken != refreshTokenViewModel.RefreshToken ||
+                    user.Token != refreshTokenViewModel.Token )
+                return Unauthorized( new { Error =  "Tokens Inválidos"} );
+
+            if ( user.refreshTokenExpire < DateTime.UtcNow )
+            {
+                return Unauthorized( new { Error =  "RefreshToken Expirado"} );
+            }
+
+            string refreshToken = user.refreshToken;
+
+            var newJwtToken = tokenService.GenerateToken(user);
+
+            await tokenService.SaveRefreshTokenAsync(username, newJwtToken, refreshToken);
+
+            return new ObjectResult(new
+            {
+                token = newJwtToken,
+                refreshToken = refreshToken
+            });
+        } catch ( Exception ex )
+        {
+            return StatusCode(500, new ResultViewModel<string>($"05X04 - Falha interna no servidor: {ex.Message} "));
+        }
     }
+
 
 
 TESTAR O METODO "await tokenService.SaveRefreshTokenAsync(username, newRefreshToken)" NAS ROTAS LOGIN E RefreshToken
