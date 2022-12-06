@@ -741,7 +741,7 @@ Adicionando Autorização e Autenticação com Token
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    namespace contrato5.Models
+    namespace contrato.Models
     {
         [Table("user")]
         public class User
@@ -1743,7 +1743,7 @@ Renovando o Access Token com o Refresh Token
     using contrato.Data;
     using Microsoft.EntityFrameworkCore;
 
-    namespace Contrato5.Repositories
+    namespace contrato.Repositories
     {
         public class TokenRepository
         {
