@@ -1,0 +1,818 @@
+Tutorial Consumer API em Delphi
+-------------------------------
+
+1. Execute o script abaixo no banco de dados:
+
+
+CREATE TABLE credencialAPI(         idCredencial            INT                             UNSIGNED
+                                                                                            NOT NULL
+                                                                                            AUTO_INCREMENT,
+                                    nome                    VARCHAR(50)                     NOT NULL,
+                                    ambiente                ENUM('P','H'),
+                                    url                     VARCHAR(254)                    COMMENT 'URL dona do Token',
+                                    metodo                  VARCHAR(20)                     COMMENT 'GET, POST, PUT, DELETE',
+                                    tokenType               VARCHAR(50)                     COMMENT 'Basic, Bearer',
+--                                    urlToken                VARCHAR(254),                                                               -- ELIMINADO
+                                    accessToken             VARCHAR(1000),
+                                    tokenExpireIn           DATETIME,
+                                    basicAuthenticationPwd  VARCHAR(254),
+                                    dtinclusao                                              TIMESTAMP
+                                                                                            NOT NULL
+                                                                                            DEFAULT CURRENT_TIMESTAMP,
+                                        CONSTRAINT pkCredencialAPI PRIMARY KEY( idCredencial ) );
+
+CREATE INDEX idxCredencialAPI_Nome ON credencialAPI(nome);
+
+CREATE TABLE credencialAPIParam(    idCredencialParam       INT                             UNSIGNED
+                                                                                            NOT NULL
+                                                                                            PRIMARY KEY
+                                                                                            AUTO_INCREMENT,
+                                    idCredencial            INT                             NOT NULL,
+                                    keyParam                VARCHAR(100)                    NOT NULL,
+                                    valueParam               VARCHAR(254)                    NOT NULL);
+
+CREATE INDEX idxCredAPIParam_IdCred ON credencialAPIParam( idCredencial );
+
+INSERT INTO credencialAPI( nome, ambiente, url, metodo)                                                                             -- ALTERADO                                         
+VALUES( 'StatusReleaseLog', 'H', 'http://api.jbcred.com.br/hml/credito/v1/api/Marketplace/status/{{partner}}', 'POST'),
+      ( 'StatusReleaseLog', 'P', 'https://apigw-ecred-hml.ecsbr.net/ecred-integration/v1/order/status/{{partner}}', 'POST');
+
+INSERT INTO credencialAPI( nome, ambiente, url, metodo, tokenType, basicAuthenticationPwd )
+VALUES( 'DocumentStatusLog', 'H','http://api.jbcred.com.br/hml/credito/v1/api/Marketplace/documentsStatus/{{partner}}', 'POST'),
+      ( 'DocumentStatusLog', 'P','https://apigw-ecred-hml.ecsbr.net/ecred-integration/v1/order/document-status/{{partner}}', 'POST');
+
+INSERT INTO credencialAPI( nome, ambiente, url, metodo, tokenType, basicAuthenticationPwd )                                         -- ALTERADO
+VALUES( 'Token Sensedia', 'H', 'http://api.jbcred.com.br/hml/rfc-oauth/v1/access-token', 'POST', 'Basic','NGViNzY3YTItMjNkNC00ZmNiLThlM2YtM2RjNmFlNzE4YzdmOjM2NTcwYmVhLWRhNzktNDgyNy1iODQ2LWEwZDc4YzdiODViZA==');
+
+INSERT INTO credencialAPIParam( idCredencial, keyParam, valueParam )                                                                -- INCLUIDO
+VALUES( (SELECT idCredencial FROM credencialAPI WHERE nome = 'Token Sensedia'), 'grant_type', 'password'),
+      ( (SELECT idCredencial FROM credencialAPI WHERE nome = 'Token Sensedia'), 'username', '7004'),
+      ( (SELECT idCredencial FROM credencialAPI WHERE nome = 'Token Sensedia'), 'password', '7U2G5H'),
+      ( (SELECT idCredencial FROM credencialAPI WHERE nome = 'Token Sensedia'), 'sequencial', '1');
+
+
+
+2. Crie a classe "Base" abaixo no projeto:
+
+
+unit ClasseTBaseAPIConsumer;
+
+interface
+
+uses   SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, IPPeerClient, Vcl.StdCtrls, REST.Client, DB, DBClient, ADODB,
+  Data.Bind.Components, Data.Bind.ObjectScope,REST.Types, System.JSON,
+   REST.Authenticator.Basic, Generics.Collections, Rest.Json,
+  REST.Authenticator.OAuth, dados, Sialib;
+type
+
+   TBaseAPIConsumer = class( TObject)
+      private
+
+         function GetMethod: TRESTRequestMethod;
+         procedure SetMethod(const Value: TRESTRequestMethod);
+         function GetURLBase: String;
+         procedure SetURLBase(const Value: String);
+         function GetNome: string;
+         procedure SetNome(const Value: string);
+      public
+         FClient : TRestClient;
+         FRequest : TRestRequest;
+         FResponse : TRestResponse;
+
+         FNome: string;
+         FURLBase: string;
+         FMethod: TRESTRequestMethod;
+         FModelBody: TObject;
+
+         property URLBase: String read GetURLBase write SetURLBase;
+         property Method: TRESTRequestMethod read GetMethod write SetMethod;
+         property Nome: string read GetNome write SetNome;
+
+         constructor Create; overload; virtual;
+
+         constructor Create( prAPINome: string; prMethod: TRESTRequestMethod ); overload; virtual;
+
+         destructor Destroy; virtual;
+
+      protected
+         procedure SetAuthorizeRequest; virtual;
+
+         procedure ConfigRequest; virtual;
+
+         function GetAmbiente: string;
+   end;
+
+implementation
+
+{ TBaseAPIConsumer }
+
+procedure TBaseAPIConsumer.ConfigRequest;
+begin
+   FClient.Accept  := 'application/json';
+   FClient.AcceptCharSet := 'UTF-8';
+   FClient.ContentType   := 'application/json';
+   FClient.RaiseExceptionOn500 := true;
+
+   FRequest.Client := FClient;
+
+   FRequest.Response := FResponse;
+   FRequest.Timeout := 900000;
+
+   FRequest.Method := Method;
+
+end;
+
+constructor TBaseAPIConsumer.Create;
+begin
+   FClient := TRestClient.Create(Nil);
+   FRequest := TRestRequest.Create(Nil);
+   FResponse := TRestResponse.Create(Nil);
+
+   ConfigRequest;
+end;
+
+constructor TBaseAPIConsumer.Create(prAPINome: string;
+  prMethod: TRESTRequestMethod);
+var
+   Ambiente: string;
+begin
+   URLBase  := GetURL( prAPINome, GetAmbiente );
+   Nome     := prAPINome;
+   Method   := prMethod;
+
+   FClient := TRestClient.Create( URLBase );
+   FRequest := TRestRequest.Create(Nil);
+   FResponse := TRestResponse.Create(Nil);
+
+   Ambiente := GetAmbiente;
+
+   ConfigRequest;
+
+//   Self.SetAuthorizeRequest;
+end;
+
+destructor TBaseAPIConsumer.Destroy;
+begin
+   FreeAndNil( FResponse );
+   FreeAndNil( FRequest );
+   FreeAndNil( FClient );
+end;
+
+function TBaseAPIConsumer.GetAmbiente: string;
+var
+   stringConexao, ambiente: string;
+begin
+   stringConexao := GD.JBConect.ConnectionString;
+
+   if (Pos('jbmysql', stringConexao) > 0 ) then
+      ambiente := 'P'
+   else
+      ambiente := 'H';
+
+   Result := ambiente;
+end;
+
+function TBaseAPIConsumer.GetMethod: TRESTRequestMethod;
+begin
+   Result := FMethod;
+end;
+
+function TBaseAPIConsumer.GetNome: string;
+begin
+   Result := FNome;
+end;
+
+function TBaseAPIConsumer.GetURLBase: String;
+begin
+   Result := FURLBase;
+end;
+procedure TBaseAPIConsumer.SetAuthorizeRequest;
+begin
+  FRequest.Method := Method;
+  FRequest.Params.Clear;
+{
+  FRequest.Params.AddItem;
+  FRequest.Params.Items[0].name := 'scope';
+  FRequest.Params.Items[0].Value := 'readonly';    // TODO: trocar por param cadastrado em banco
+  FRequest.Params.Items[0].ContentType := ctAPPLICATION_X_WWW_FORM_URLENCODED;
+  FRequest.Params.Items[0].Kind := pkGETorPOST;
+
+  FRequest.Params.AddItem;
+  FRequest.Params.Items[1].name := 'grant_type';
+  FRequest.Params.Items[1].Value := 'password';   // TODO: trocar por param cadastrado em banco
+  FRequest.Params.Items[1].ContentType := ctAPPLICATION_X_WWW_FORM_URLENCODED;
+  FRequest.Params.Items[1].Kind := pkGETorPOST;
+
+  FRequest.Params.AddItem;
+  FRequest.Params.Items[2].name := 'client_id';
+  FRequest.Params.Items[2].Value := '123';         // TODO: trocar por param cadastrado em banco
+  FRequest.Params.Items[2].ContentType := ctAPPLICATION_X_WWW_FORM_URLENCODED;
+  FRequest.Params.Items[2].Kind := pkGETorPOST;
+
+  FRequest.Params.AddItem;
+  FRequest.Params.Items[3].name := 'password';
+  FRequest.Params.Items[3].Value := 'pwd';         // TODO: trocar por param cadastrado em banco
+  FRequest.Params.Items[3].ContentType := ctAPPLICATION_X_WWW_FORM_URLENCODED;
+  FRequest.Params.Items[3].Kind := pkGETorPOST;
+
+  FRequest.Params.AddItem;
+  FRequest.Params.Items[4].name := 'username';
+  FRequest.Params.Items[4].Value := 'user';        // TODO: trocar por param cadastrado em banco
+  FRequest.Params.Items[4].ContentType := ctAPPLICATION_X_WWW_FORM_URLENCODED;
+  FRequest.Params.Items[4].Kind := pkGETorPOST;
+}
+end;
+
+procedure TBaseAPIConsumer.SetMethod(const Value: TRESTRequestMethod);
+begin
+   FMethod := Value;
+end;
+
+procedure TBaseAPIConsumer.SetNome(const Value: string);
+begin
+   FNome := Value;
+end;
+
+procedure TBaseAPIConsumer.SetURLBase(const Value: String);
+begin
+   FURLBase := Value;
+end;
+
+end.
+
+
+3. Crie a classe responsável pela geração dos Tokens:
+
+
+unit ClasseTTokenSensedia;
+
+interface
+
+uses ADODB, dados, SysUtils, REST.Types, REST.Client, System.JSON,
+    Rest.Json, System.DateUtils, ClasseTBaseAPIConsumer;
+//  Generics.Collections, REST.Authenticator.Basic, REST.Authenticator.OAuth;
+
+type
+
+
+   TTokenSensedia = class(TBaseAPIConsumer)
+      FURLToken: string;
+      FAmbiente: string;
+      FAccessToken:  WideString;
+      FTokenExpireIn: TDateTime;
+      FTokenType: string;
+      FBasicAuthenticationPwd: WideString;
+{
+   String encoding = Base64.getEncoder().encodeToString((user + ":" + password).getBytes());
+   HttpPost httpPost = new HttpPost("http://localhost:8080/api-url");
+   httpPost.setHeader(HttpHeaders.AUTHORIZATION, "Basic " + encoding);
+
+   HttpResponse response = httpClient.execute(httpPost);
+   HttpEntity entity = response.getEntity();
+}
+      private
+         function GetAccessToken: WideString;
+         function GetURLBase: string;
+         procedure SetURLBase(const Value: string);
+         function GetTokenExpireIn: TDate;
+         procedure SetTokenExpireIn(const Value: TDate);
+         function GetTokenType: string;
+         procedure SetTokenType(const Value: string);
+         function GetBasicAuthenticationPwd: WideString;
+         procedure SetBasicAuthenticationPwd(const Value: WideString);
+         function Expired: Boolean;
+         procedure GetNewToken;
+         procedure StrToToken( prTokenJSONString: String);
+         procedure SaveToken;
+      public
+         property AccessToken: WideString read GetAccessToken;
+         property URLBase: string read GetURLBase write SetURLBase;
+         property TokenExpireIn: TDate read GetTokenExpireIn write SetTokenExpireIn;
+         property TokenType: string read GetTokenType write SetTokenType;
+         property BasicAuthenticationPwd: WideString read GetBasicAuthenticationPwd write SetBasicAuthenticationPwd;
+
+         procedure SetAuthorizeRequest; override;
+
+         procedure ConfigAuthentication( prURLBase: string; prAmbiente: string  ); overload;
+
+         procedure ConfigAuthentication; overload;
+
+         procedure Revoke;
+
+         constructor Create( prAPINome: string; prMethod: TRESTRequestMethod ); overload; virtual;
+
+         destructor Destroy; override;
+
+   end;
+
+implementation
+
+{ TTokenSensedia }
+
+procedure TTokenSensedia.ConfigAuthentication(prURLBase, prAmbiente: string);
+begin
+   FAmbiente := prAmbiente;
+   FURLBase := prURLBase;
+
+   ConfigAuthentication;
+end;
+
+procedure TTokenSensedia.ConfigAuthentication;
+var
+   qryParamAuthentication: TADOQuery;
+begin
+// TODO:    1. Conectar o banco  .ok
+//          2. Pegar as infs     .ok
+//          3. Armazenar na propriedade record
+//          4. Ver se será necessário retornar o record
+
+   try
+      qryParamAuthentication := TADOQuery.Create( Nil );
+
+      with qryParamAuthentication do
+      begin
+         Connection := GD.JBConect;
+
+         Close;
+
+         SQL.Clear;
+
+         SQL.Text := 'SELECT tokenType, basicAuthenticationPwd, urlToken, accessToken, tokenExpireIn ' +
+                     'FROM credencialAPI ' +
+                     'WHERE url = ' + QuotedStr( FURLBase ) +
+                     '   AND ambiente = ' + QuotedStr( FAmbiente );
+
+         Open;
+{
+uses synacode;
+...
+String(EncodeBase64(AnsiString('admin'+':'+'admin')));
+}
+         if not Eof then
+         begin
+            FAccessToken := FieldByName('accessToken').AsWideString;
+            FURLToken := FieldByName('urlToken').AsString;
+            FTokenExpireIn := FieldByName('tokenExpireIn').AsDateTime;
+            FBasicAuthenticationPwd := FieldByName('basicAuthenticationPwd').AsWideString;
+            FTokenType := FieldByName('tokenType').AsString;
+         end
+         else
+            raise Exception.Create('[TTokenSensedia.ConfigAuthentication] Não foi encontrado parâmetros suficientes para construir a autenticação do Token.');
+      end;
+   finally
+      FreeAndNil( qryParamAuthentication );
+   end;
+
+end;
+
+function TTokenSensedia.Expired: Boolean;
+begin
+   if FTokenExpireIn < now then
+      Result := true
+   else
+      Result := False;
+end;
+
+function TTokenSensedia.GetAccessToken: WideString;
+begin
+   if ( FTokenExpireIn < Now ) then
+      GetNewToken;
+
+   Result := FAccessToken;
+end;
+
+
+function TTokenSensedia.GetBasicAuthenticationPwd: WideString;
+begin
+   Result := FBasicAuthenticationPwd;
+end;
+
+procedure TTokenSensedia.GetNewToken;
+var
+  tokenString : String;
+  token : TTokenSensedia;
+begin
+   SetAuthorizeRequest;
+
+   FRequest.Execute;
+
+   if FRequest.Response.StatusCode <> 200 then
+   begin
+      token := Nil;
+
+      raise Exception.Create('[TTokenSensedia.GetNewToken] Problemas ao Obter o TOKEN no Servidor!');
+   end
+   else
+   begin
+      tokenString := FRequest.Response.Content;
+
+      StrToToken( tokenString );
+
+      SaveToken;
+   end;
+end;
+
+function TTokenSensedia.GetTokenExpireIn: TDate;
+begin
+   Result := FTokenExpireIn;
+end;
+
+function TTokenSensedia.GetTokenType: string;
+begin
+   Result := FTokenType;
+end;
+
+function TTokenSensedia.GetURLBase: string;
+begin
+   Result := FURLBase;
+end;
+
+procedure TTokenSensedia.Revoke;
+var
+   StrSql: string;
+begin
+   StrSql := 'UPDATE credencialAPI ' +
+             'SET tokenExpireIn = CURRENT_TIMESTAMP() ' +
+             'WHERE nome = ' + QuotedStr( FNome );
+
+   GD.JbConect.Execute( StrSql );
+
+   FTokenExpireIn := Now;
+
+//   ConfigAuthentication;
+end;
+
+procedure TTokenSensedia.SaveToken;
+var
+   qryToken: TADOQuery;
+begin
+   try
+      qryToken := TADOQuery.Create(Nil);
+
+      with qryToken do
+      begin
+         Connection := GD.JbConect;
+
+         Close;
+
+         SQL.Clear;
+
+         SQL.Text := 'UPDATE credencialAPI ' +
+                     'SET accessToken = ' + QuotedStr( FAccessToken ) + ', ' +
+                     '   tokenExpireIn = ' + QuotedStr(FormatDateTime( 'yyyy-mm-dd hh:nn', FTokenExpireIn ) ) + ' ' +
+                     'WHERE nome = ' + QuotedStr( FNome );
+
+         ExecSQL;
+      end;
+
+   finally
+      FreeAndNil( qryToken );
+   end;
+end;
+
+// TODO: Montar configurações abaixo em banco de dados
+procedure TTokenSensedia.SetAuthorizeRequest;
+var
+   qryCredencialAPIParam:  TADOQuery;
+   i: Integer;
+begin
+   inherited;
+
+   FRequest.AddAuthParameter('Authorization',
+                             FTokenType + ' ' + FBasicAuthenticationPwd,
+                             TRESTRequestParameterKind.pkHTTPHEADER,
+                             [TRESTRequestParameterOption.poDoNotEncode]);
+
+   FRequest.Params.Clear;
+
+   try
+      qryCredencialAPIParam := TADOQuery.Create( Nil );
+
+      with qryCredencialAPIParam do
+      begin
+         Close;
+
+         Connection := GD.JBConect;
+
+         SQL.Clear;
+
+         SQL.Text := 'SELECT b.keyParam, b.valueParam ' +
+                     'FROM credencialAPI a ' +
+                     '   INNER JOIN credencialAPIParam b ' +
+                     '      ON a.idCredencial = b.idCredencial ' +
+                     'WHERE a.nome = ''Token Sensedia'' ';
+
+         Open;
+
+         i := 0;
+
+         while not Eof do
+         begin
+            FRequest.Params.AddItem;
+            FRequest.Params.Items[i].name := FieldByName('keyParam').AsString;
+            FRequest.Params.Items[i].Value := FieldByName('ValueParam').AsString;
+            FRequest.Params.Items[i].ContentType := ctNone;
+            FRequest.Params.Items[i].Kind := TRESTRequestParameterKind.pkGETorPOST;
+
+            i := i + 1;
+
+            Next;
+         end;
+      end;
+   finally
+      FreeAndNil( qryCredencialAPIParam );
+   end;
+{
+   FRequest.Params.AddItem;
+   FRequest.Params.Items[0].name := 'grant_type';
+   FRequest.Params.Items[0].Value := 'password';
+   FRequest.Params.Items[0].ContentType := ctNone;
+   FRequest.Params.Items[0].Kind := TRESTRequestParameterKind.pkGETorPOST;
+
+   FRequest.Params.AddItem;
+   FRequest.Params.Items[1].name := 'username';
+   FRequest.Params.Items[1].Value := '7004';
+   FRequest.Params.Items[1].ContentType := ctNone;
+   FRequest.Params.Items[1].Kind := TRESTRequestParameterKind.pkGETorPOST;
+
+   FRequest.Params.AddItem;
+   FRequest.Params.Items[2].name := 'password';
+   FRequest.Params.Items[2].Value := '7U2G5H';
+   FRequest.Params.Items[2].ContentType := ctNone;
+   FRequest.Params.Items[2].Kind := TRESTRequestParameterKind.pkGETorPOST;
+
+   FRequest.Params.AddItem;
+   FRequest.Params.Items[3].name := 'sequencial';
+   FRequest.Params.Items[3].Value := '1';
+   FRequest.Params.Items[3].ContentType := ctNone;
+   FRequest.Params.Items[3].Kind := TRESTRequestParameterKind.pkGETorPOST;
+}
+end;
+
+procedure TTokenSensedia.SetBasicAuthenticationPwd(const Value: WideString);
+begin
+   FBasicAuthenticationPwd := Value;
+end;
+
+procedure TTokenSensedia.SetTokenExpireIn(const Value: TDate);
+begin
+   FTokenExpireIn := Value;
+end;
+
+procedure TTokenSensedia.SetTokenType(const Value: string);
+begin
+   FTokenType := Value;
+end;
+
+procedure TTokenSensedia.SetURLBase(const Value: string);
+begin
+   FURLBase := Value;
+end;
+
+procedure TTokenSensedia.StrToToken(prTokenJSONString: String);
+var
+  JSONValue: TJSONValue;
+  JSONArray: TJSONArray;
+
+  ArrayElement: TJSONValue;
+
+  token : TTokenSensedia;
+  i : Integer;
+   TimeExperition: Integer;
+begin
+  JSONValue := TJSONObject.ParseJSONValue(prTokenJSONString);
+
+  if not Assigned(JSONValue) then
+  begin
+    token := Nil;
+
+    raise Exception.Create('String JSON Inválido!');
+  end
+  else
+  begin
+// '{"access_token":"d0ab3395-8461-4b55-88ac-6002b3ed31d4","token_type":"bearer","expires_in":1739,"scope":"read write"}'
+
+      TimeExperition :=  StrToInt( JSONValue.GetValue<string>('expires_in') );
+
+      FAccessToken := JSONValue.GetValue<string>('access_token');
+//      FTokenExpireIn := IncSecond( now, StrToInt( JSONValue.GetValue<string>('expires_in') )  ) ;
+      FTokenExpireIn := IncSecond( now, 7200  ) ;
+  end;
+
+end;
+
+
+constructor TTokenSensedia.Create(prAPINome : string;  prMethod: TRESTRequestMethod );
+begin
+   inherited Create( prAPINome, TRESTRequestMethod.rmPOST  );
+
+   ConfigAuthentication( FURLBase, GetAmbiente );
+end;
+
+destructor TTokenSensedia.Destroy;
+begin
+
+  inherited;
+end;
+
+end.
+
+
+
+
+4. Crie a classe abaixo responsável pelo consumo da API
+
+
+unit ClasseTMktDocumentStatusAPI;
+
+interface
+
+uses
+  SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, IPPeerClient, Vcl.StdCtrls, REST.Client, DB, DBClient, ADODB,
+  Data.Bind.Components, Data.Bind.ObjectScope,REST.Types, System.JSON,
+   REST.Authenticator.Basic, Generics.Collections, Rest.Json,
+  REST.Authenticator.OAuth, dados, ClasseTTokenSensedia, ClasseTMktDocumentStatusDTO, ClasseTBaseAPIConsumer, Sialib;
+
+Type
+    TMktDocumentStatusAPI = class(TBaseAPIConsumer)
+
+      private
+         FModelBody: TObject;
+         FIdMktDocumentStatusLog: Integer;
+         FGUID: TGuid;
+         FToken: TTokenSensedia;
+
+         function GetModelBody: TObject;
+         procedure SetModelBody(const Value: TObject);
+
+         procedure PostRequest;
+
+         procedure SetAuthorizeRequest; override;
+
+         procedure SaveResponse( prStatusCode: Integer; prResposta: string );
+
+      public
+         { Public declarations }
+         property ModelBody: TObject read GetModelBody write SetModelBody;
+
+         procedure Execute; overload;
+
+         procedure Execute(prIdMktDocumentStatusLog: Integer; prModelBody: TObject); overload;
+
+         constructor Create; overload;
+
+         constructor Create( prAPINome: string; prLote: TGUID; prMethod: TRESTRequestMethod ); overload;
+
+         destructor Destroy; override;
+
+      end;
+
+
+implementation
+
+{ TMktDocumentStatusAPI }
+
+constructor TMktDocumentStatusAPI.Create;
+begin
+   inherited Create;
+end;
+
+constructor TMktDocumentStatusAPI.Create(prAPINome: string; prLote: TGUID; prMethod: TRESTRequestMethod );
+begin
+   inherited Create( prAPINome, prMethod );
+
+   FGUID    := prLote;
+
+   FToken := TTokenSensedia.Create( 'Token Sensedia', TRESTRequestMethod.rmPOST );
+end;
+
+destructor TMktDocumentStatusAPI.Destroy;
+begin
+   inherited Destroy;
+
+   FreeAndNil( FToken );
+end;
+
+procedure TMktDocumentStatusAPI.Execute(prIdMktDocumentStatusLog: Integer; prModelBody: TObject);
+begin
+   ModelBody := prModelBody;
+   FIdMktDocumentStatusLog := prIdMktDocumentStatusLog;
+
+   Execute;
+end;
+
+procedure TMktDocumentStatusAPI.Execute;
+var
+   ambiente: string;
+begin
+   try
+      ambiente := GetAmbiente;
+
+      SetAuthorizeRequest;
+
+      PostRequest;
+   except
+      on ex: Exception do
+      begin
+         raise Exception.Create( '[TMktDocumentStatusAPI.Execute] Ocorreu o seguinte erro na Proposta " ' +
+                                       ( FModelBody As TMktDocumentStatusDTO ).proposal_id +  #13#10 + #13#10 +
+                                       ex.Message );
+      end;
+   end;
+end;
+
+function TMktDocumentStatusAPI.GetModelBody: TObject;
+begin
+   Result := FModelBody;
+end;
+
+procedure TMktDocumentStatusAPI.PostRequest;
+var
+  jsonEntrada: string;
+begin
+   FClient.BaseURL := StringReplace( FURLBase, '{{partner}}', (ModelBody as TMktDocumentStatusDTO).proposal_id, [rfReplaceAll, rfIgnoreCase] );
+
+   // Parar verificar em tempo de debug o json que será gerado para a request
+   jsonEntrada := (System.JSON.TJSONObject.ParseJSONValue( TEncoding.UTF8.GetBytes( TJson.ObjectToJsonString(FModelBody )),0 ) as TJsonObject).ToString;
+
+   FRequest.AddBody(FModelBody);
+
+   FRequest.Method := FMethod;
+   FRequest.Execute;
+
+   SaveResponse( FResponse.StatusCode, FResponse.Content );
+
+   if not ( FResponse.StatusCode in [200, 201] ) then
+   begin
+      if ( FResponse.StatusCode = 401 ) then    // Erro de Authorization, forçar a renovação do token na próxima execução
+         FToken.Revoke;
+
+      raise Exception.Create( '[TMktDocumentStatusAPI.PostRequest] Erro no Registro do Status Release: ' + #13#10 + #13#10 +
+                              '[StatusCode] ' + IntToStr(FResponse.StatusCode) + #13#10 +
+                              '[Content] ' + FResponse.Content )
+   end;
+end;
+
+procedure TMktDocumentStatusAPI.SaveResponse(prStatusCode: Integer; prResposta: string);
+var
+   qryResponse: TADOQuery;
+begin
+   try
+     qryResponse := TADOQuery.Create(Nil);
+
+      with qryResponse do
+      begin
+         Connection := GD.JBConect;
+
+         Close;
+
+         SQL.Clear;
+
+         if ( prStatusCode IN [ 200, 201 ] ) then
+            SQL.Text := 'UPDATE mktDocumentStatusLog ' +
+                        'SET respostaStatusRelease = ' + QuotedStr( prResposta ) + ', ' +
+                        '    situacaoEnvio = ''S'', ' +
+                        '    dtEnvio = CURDATE(), ' +
+                        '    loteRemessa = ' + QuotedStr( StringReplace(
+                                                               StringReplace( GUIDToString(FGUID),'{','', [rfReplaceAll, rfIgnoreCase] ),
+                                                                '}','', [rfReplaceAll, rfIgnoreCase])
+                                                          ) + ' ' +
+                        'WHERE IdDocumentStatusLog = ' + IntToStr( FIdMktDocumentStatusLog )
+         else
+            SQL.Text := 'UPDATE mktDocumentStatusLog ' +
+                        'SET respostaStatusRelease = ' + QuotedStr( prResposta ) + ', ' +
+                        '    situacaoEnvio = ''E'', ' +
+                        '    loteRemessa = ' + QuotedStr( StringReplace(
+                                                               StringReplace( GUIDToString(FGUID),'{','', [rfReplaceAll, rfIgnoreCase] ),
+                                                                '}','', [rfReplaceAll, rfIgnoreCase])
+                                                          ) + ' ' +
+                        'WHERE IdDocumentStatusLog = ' + IntToStr( FIdMktDocumentStatusLog );
+
+
+         ExecSQL;
+      end;
+   finally
+      FreeAndNil( qryResponse );
+   end;
+
+end;
+
+procedure TMktDocumentStatusAPI.SetAuthorizeRequest;
+begin
+   inherited SetAuthorizeRequest;
+
+   FRequest.AddAuthParameter('Authorization',
+                             'Bearer ' + FToken.AccessToken,
+                             TRESTRequestParameterKind.pkHTTPHEADER,
+                             [TRESTRequestParameterOption.poDoNotEncode]);
+end;
+
+procedure TMktDocumentStatusAPI.SetModelBody(const Value: TObject);
+begin
+   FModelBody := Value;
+end;
+
+end.
+
