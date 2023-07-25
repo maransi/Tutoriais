@@ -1,5 +1,10 @@
 Projeto
 
+. O Delphi possui a diretiva "{$region 'Descrição'} ... {$endregion}"
+
+    . Ela ajuda seu código ficar mais organizado, limpo e até mesmo achar mais fácil um bloco de código, 
+        pois ela “esconde” um determinado bloco
+
 . Criar um projeto "VCL Forms Application"
 
 . Acessar o formulário padrão do projeto e alterar a propriedade "name" para :
