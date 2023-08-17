@@ -1,6 +1,72 @@
 Tutorial ASP.NET Core 6 MVC
 ---------------------------
 
+Instalações
+===========
+
+. Instalação para as versões acima do Ubuntu 22.04
+
+    wget https://dot.net/v1/dotnet-install.sh
+    chmod +x dotnet-install.sh
+    ./dotnet-install.sh -c 3.1
+    ./dotnet-install.sh -c 5.0
+    ./dotnet-install.sh -c 6.0
+    ./dotnet-install.sh -c 7.0
+
+    dotnet --version
+
+    # insira as linhas abaixo no arquivo ".bashrc"
+    export PATH="home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"
+    export DOTNET_ROOT=/home/$USER/.dotnet/
+
+    source ~/.bashrc
+
+    sudo ln -s /home/$USER/.dotnet/dotnet /usr/bin/dotnet
+
+    dotnet --version
+    dotnet --list-runtimes
+    dotnet --list-sdks
+
+
+Instalação das extensões do VSCode
+----------------------------------
+
+        C# 
+        C# Extensions
+        C# XML Documentation Comments
+        ASP.NET Helper
+        Razor Snippets
+        Libman
+        Docker
+        vscode-icons (Opcional)
+        NuGet Gallery
+        VZ Dotnet File Template
+        Dotnet Project References
+        Auto-Using for C#
+        Bracket Pair Colorization Toggler
+        Error Lens
+        RapidApi
+
+Instalação do Nodejs
+--------------------
+
+    sudo apt-get install nodejs
+    sudo apt-get install npm
+
+    ou
+
+    sudo apt-get install curl python-software-properties
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo bash -
+    sudo apt-get install -y nodejs
+    
+    node -v
+    npm -v
+
+
+
+Tutorial
+========
+
 . Na pasta raiz do projeto execute o comando abaixo:
 
     dotnet new web -o bethanysPieShop -n bethanysPieShop -f net6.0
@@ -13,7 +79,10 @@ Tutorial ASP.NET Core 6 MVC
 
     dotnet run
 
- 
+. Levante o projeto e execute a rota abaixo no navegador:
+
+    https://localhost:[porta]
+
 . Acesse a classe "Program.cs" do seu projeto e acrescente as linhas abaixo:
 
         var builder = WebAppication.CreateBuilder(args);
@@ -149,7 +218,14 @@ Tutorial ASP.NET Core 6 MVC
         public IEnumerable<Pie> AllPies =>
             new List<Pie>
             {
-                new Pie {PieId = 1, Name="Strawberry Pie", Price=15.95M, ShortDescription="Lorem Ipsum", LongDescription="Icing carrot cake jelly-o cheesecake. Sweet roll marzipan marshmallow toffee brownie brownie candy tootsie roll. Chocolate cake gingerbread tootsie roll oat cake pie chocolate bar cookie dragée brownie. Lollipop cotton candy cake bear claw oat cake. Dragée candy canes dessert tart. Marzipan dragée gummies lollipop jujubes chocolate bar candy canes. Icing gingerbread chupa chups cotton candy cookie sweet icing bonbon gummies. Gummies lollipop brownie biscuit danish chocolate cake. Danish powder cookie macaroon chocolate donut tart. Carrot cake dragée croissant lemon drops liquorice lemon drops cookie lollipop toffee. Carrot cake carrot cake liquorice sugar plum topping bonbon pie muffin jujubes. Jelly pastry wafer tart caramels bear claw. Tiramisu tart pie cake danish lemon drops. Brownie cupcake dragée gummies.", Category = _categoryRepository.AllCategories.ToList()[0],ImageUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/fruitpies/strawberrypie.jpg", InStock=true, IsPieOfTheWeek=false, ImageThumbnailUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/fruitpies/strawberrypiesmall.jpg"},
+                new Pie {   PieId = 1, 
+                            Name="Strawberry Pie", 
+                            Price=15.95M, 
+                            ShortDescription="Lorem Ipsum", 
+                            LongDescription="Icing carrot cake jelly-o cheesecake. Sweet roll marzipan marshmallow toffee brownie brownie candy tootsie roll. Chocolate cake gingerbread tootsie roll oat cake pie chocolate bar cookie dragée brownie. Lollipop cotton candy cake bear claw oat cake. Dragée candy canes dessert tart. Marzipan dragée gummies lollipop jujubes chocolate bar candy canes. Icing gingerbread chupa chups cotton candy cookie sweet icing bonbon gummies. Gummies lollipop brownie biscuit danish chocolate cake. Danish powder cookie macaroon chocolate donut tart. Carrot cake dragée croissant lemon drops liquorice lemon drops cookie lollipop toffee. Carrot cake carrot cake liquorice sugar plum topping bonbon pie muffin jujubes. Jelly pastry wafer tart caramels bear claw. Tiramisu tart pie cake danish lemon drops. Brownie cupcake dragée gummies.", 
+                            Category = _categoryRepository.AllCategories.ToList()[0],
+                            ImageUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/fruitpies/strawberrypie.jpg", InStock=true, IsPieOfTheWeek=false, ImageThumbnailUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/fruitpies/strawberrypiesmall.jpg"
+                        },
                 new Pie {PieId = 2, Name="Cheese cake", Price=18.95M, ShortDescription="Lorem Ipsum", LongDescription="Icing carrot cake jelly-o cheesecake. Sweet roll marzipan marshmallow toffee brownie brownie candy tootsie roll. Chocolate cake gingerbread tootsie roll oat cake pie chocolate bar cookie dragée brownie. Lollipop cotton candy cake bear claw oat cake. Dragée candy canes dessert tart. Marzipan dragée gummies lollipop jujubes chocolate bar candy canes. Icing gingerbread chupa chups cotton candy cookie sweet icing bonbon gummies. Gummies lollipop brownie biscuit danish chocolate cake. Danish powder cookie macaroon chocolate donut tart. Carrot cake dragée croissant lemon drops liquorice lemon drops cookie lollipop toffee. Carrot cake carrot cake liquorice sugar plum topping bonbon pie muffin jujubes. Jelly pastry wafer tart caramels bear claw. Tiramisu tart pie cake danish lemon drops. Brownie cupcake dragée gummies.", Category = _categoryRepository.AllCategories.ToList()[1],ImageUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/cheesecakes/cheesecake.jpg", InStock=true, IsPieOfTheWeek=false, ImageThumbnailUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/cheesecakes/cheesecakesmall.jpg"},
                 new Pie {PieId = 3, Name="Rhubarb Pie", Price=15.95M, ShortDescription="Lorem Ipsum", LongDescription="Icing carrot cake jelly-o cheesecake. Sweet roll marzipan marshmallow toffee brownie brownie candy tootsie roll. Chocolate cake gingerbread tootsie roll oat cake pie chocolate bar cookie dragée brownie. Lollipop cotton candy cake bear claw oat cake. Dragée candy canes dessert tart. Marzipan dragée gummies lollipop jujubes chocolate bar candy canes. Icing gingerbread chupa chups cotton candy cookie sweet icing bonbon gummies. Gummies lollipop brownie biscuit danish chocolate cake. Danish powder cookie macaroon chocolate donut tart. Carrot cake dragée croissant lemon drops liquorice lemon drops cookie lollipop toffee. Carrot cake carrot cake liquorice sugar plum topping bonbon pie muffin jujubes. Jelly pastry wafer tart caramels bear claw. Tiramisu tart pie cake danish lemon drops. Brownie cupcake dragée gummies.", Category = _categoryRepository.AllCategories.ToList()[0],ImageUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/fruitpies/rhubarbpie.jpg", InStock=true, IsPieOfTheWeek=true, ImageThumbnailUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/fruitpies/rhubarbpiesmall.jpg"},
                 new Pie {PieId = 4, Name="Pumpkin Pie", Price=12.95M, ShortDescription="Lorem Ipsum", LongDescription="Icing carrot cake jelly-o cheesecake. Sweet roll marzipan marshmallow toffee brownie brownie candy tootsie roll. Chocolate cake gingerbread tootsie roll oat cake pie chocolate bar cookie dragée brownie. Lollipop cotton candy cake bear claw oat cake. Dragée candy canes dessert tart. Marzipan dragée gummies lollipop jujubes chocolate bar candy canes. Icing gingerbread chupa chups cotton candy cookie sweet icing bonbon gummies. Gummies lollipop brownie biscuit danish chocolate cake. Danish powder cookie macaroon chocolate donut tart. Carrot cake dragée croissant lemon drops liquorice lemon drops cookie lollipop toffee. Carrot cake carrot cake liquorice sugar plum topping bonbon pie muffin jujubes. Jelly pastry wafer tart caramels bear claw. Tiramisu tart pie cake danish lemon drops. Brownie cupcake dragée gummies.", Category = _categoryRepository.AllCategories.ToList()[2],ImageUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/seasonal/pumpkinpie.jpg", InStock=true, IsPieOfTheWeek=true, ImageThumbnailUrl="https://gillcleerenpluralsight.blob.core.windows.net/files/bethanyspieshop/seasonal/pumpkinpiesmall.jpg"}
@@ -264,6 +340,15 @@ Tutorial ASP.NET Core 6 MVC
 
 . Levante o projeto e execute a rota abaixo no navegador:
 
+    dotnet clean
+
+    dotnet restore
+
+    dotnet build
+
+    dotnet run
+
+
     https://localhost:[porta]/pie/list
 
 
@@ -333,5 +418,97 @@ Tutorial ASP.NET Core 6 MVC
 
     </html>
 
+. Levante o projeto e execute a rota abaixo no navegador:
+
+    dotnet clean
+
+    dotnet restore
+
+    dotnet build
+
+    dotnet run
+
+
+    https://localhost:[porta]/pie/list
+
+
+. Crie a pasta "Shared" dentro da pasta Views 
+
+. Crie o arquivo "_Layout.cshtml" como abaixo na pasta "Views/Shared". 
+    IMPORTANTE: No Visual Studio dê um clique direito sobre a pasta "Shared" / Add New Item / Installed / C# / ASP.NET Core / Web / Razor Layout
+
+    <!DOCTYPE html>
+
+    <html>
+        <head>
+            <meta name="viewport" content="width=device-width" />
+            <title>@ViewBag.Title</title>
+        </head>
+
+        <body>
+            <div>
+                @RenderBody()           --------------------------------------------------------------------------------------------------------------------+
+            </div>                                                                                                                                          |
+        </body>                                                                                                                                             |
+    </html>                                                                                                                                                 |   Substituirá por esse
+                                                                                                                                                            |   código
+. Altere a view "Views/Pie/List.cshml" como abaixo, retirando todo código de responsabilidade do _Layout.cshtml deixando somente o miolo:                   |
+                                                                                                                                                            |
+    @model bethanysPieShop.ViewModels.PieListViewModel                                                                                                      |
+                                                                                                                                                            |
+    @{                                                                                                                                                      |
+        Layout = "_Layout";                 <---------------------------------------------------------------------------------------------------------------+
+    }
+    <h1>@Model.CurrentCategory</h1>                             
+
+            
+    @foreach( var pie in Model.Pies )
+    {
+        <div>
+            <h2>@pie.Name </h2>
+            <h3>@pie.Price.ToString("c") </h3>
+            <h4>@pie.Category.CategoryName </h4>
+        </div>
+    }
+    
+. Levante o projeto e execute a rota abaixo no navegador:
+
+    https://localhost:[porta]/pie/list
+
+
+. Retire o trecho de código abaixo da view "Views/Pie/List.cshml":
+
+    @model bethanysPieShop.ViewModels.PieListViewModel    
+
+    @*
+                                                            
+    @{                                                      
+        Layout = "_Layout"                                  
+    }                                                       
+
+    *@                                                     
+
+    <h1>@Model.CurrentCategory</h1>                                                                                                                         
+
+    @foreach( var pie in Model )
+    {
+        <div>
+            <h2>@pie.Name </h2>
+            <h3>@pie.Price.ToString("c") </h3>
+            <h4>@pie.Category.CategoryName </h4>
+        </div>
+    }
+
+. Crie o arquivo "_ViewStart.cshtml" como abaixo na pasta "Views".                                                                                        
+    IMPORTANTE: No Visual Studio dê um clique direito sobre a pasta "Views" / Add New Item / Installed / C# / ASP.NET Core / Web / Razor View Start       
+                                                                                                                                                          
+                                                                                                                                                          
+    @{                                                                                                                                                    
+        Layout = "_Layout";
+    }
+
+. Levante o projeto e execute a rota abaixo no navegador:
+
+    https://localhost:[porta]/pie/list
 
 
