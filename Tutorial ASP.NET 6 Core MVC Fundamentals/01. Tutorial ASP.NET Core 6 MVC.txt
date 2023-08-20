@@ -1,5 +1,5 @@
-Tutorial ASP.NET Core 6 MVC
----------------------------
+Tutorial ASP.NET Core 6 MVC - Configurando a aplicação para ASP.NET Core 6 MVC
+------------------------------------------------------------------------------
 
 Instalações
 ===========
