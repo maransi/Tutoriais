@@ -1,3 +1,0 @@
-Tutorial ASP.NET Core 6 MVC - Working with Real Data Using Entity Framework
----------------------------------------------------------------------------
-
