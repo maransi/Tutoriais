@@ -526,7 +526,7 @@ Tutorial
 
     . Os arquivos encontram-se na URL abaixo, no repositório do github:
 
-        https://github.com/maransi/Courses/tree/master/Material%20Complementar%20do%20Curso%20ASP.NET%20Core%206%20Fundamentals
+        https://github.com/maransi/Tutoriais/tree/a8c17ebd0ac175b6dbc03764c168d6742b70ee88/Tutorial%20ASP.NET%206%20Core%20MVC%20Fundamentals/Material%20Complementar
 
     . Atualize o conteúdo do arquivo "Shared/_Layout.cshtml" com o código abaixo:
 
