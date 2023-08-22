@@ -1,0 +1,277 @@
+Tutorial ASP.NET Core 6 MVC - Configurando Rotas e Navegação
+------------------------------------------------------------
+
+. Crie o método abaixo na classe "PieController.cs":
+
+    ...
+    public class PieController: Controller
+    {
+        ...
+
+        public IActionResult Details( int id )              // Método inserido
+        {
+            var pie = _pieRepository.GetPieById( id );
+
+            if (pie == null)
+                return NotFound();
+
+            return View( pie );
+        }
+    }
+
+. Crie a View "~/View/Pie/Details.cshtml" com o conteúdo abaixo:
+
+    @model bethanysPieShop.Models.Pie
+
+    <h3 class="my-5">
+        @Model.Name
+    </h3>
+
+    <div class="row gx-5">
+        <img alt="@Model.Name" src="@Model.ImageUrl" class="img-fluid col-5" />
+        <div class="col-7">
+            <h4>@Model.ShortDescription</h4>
+            <p>@Model.LongDescription</p>
+            <h3 class="pull-right">@Model.Price.ToString("c")</h3>
+            <div class="addToCart">
+                <p class="button">
+                
+                </p>
+            </div>
+        </div>
+    </div>
+
+. Levante o projeto e execute a rota abaixo:
+
+    https://localhost:[porta]/pie/details/7
+
+
+. Insira a linha abaixo no arquivo "_ViewImports.cshtml":
+
+    @using bethanysPieShop.Models    
+    @using bethanysPieShop.ViewModels            
+
+    @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers            // Linha inserida
+
+. Altere as linhas abaixo no arquivo "Views/Pie/List.cshtml":
+
+    @model PieListViewModel
+
+    <h1>@Model.CurrentCategory</h1>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+
+        @foreach (var pie in Model.Pies)
+        {
+            <div class="col">
+                <div class="card pie-card">
+                    <img src="@pie.ImageThumbnailUrl" class="card-img-top" alt="@pie.Name">
+                    <div class="card-body pie-button">
+                        <h4 class="d-grid">
+                        </h4>
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <h2 class="text-start">
+
+                            <!-- <a class="pie-link">@pie.Name</a> -->
+
+                            <!-- Div "a" alterada -->
+
+                                <a asp-controller="Pie"
+                                asp-action="Details"
+                                asp-route-id="@pie.PieId"
+                                class="pie-link">@pie.Name</a>
+
+                            <!-- -->
+
+                            </h2>
+                            <h5 class="text-nowrap">
+                                @pie.Price.ToString("c")
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+
+
+. Levante o projeto e verifique se os links de "details" na tela de "List" estão funcionando:
+
+. Crie o "ViewModel" abaixo:
+
+    using bethanysPieShop.Models;
+
+    namespace bethanysPieShop.ViewModels
+    {
+        public class HomeViewModel
+        {
+            public IEnumerable<Pie> PiesOfTheWeek { get; }
+
+            public HomeViewModel(IEnumerable<Pie> piesOfTheWeek)
+            {
+                PiesOfTheWeek = piesOfTheWeek;
+            }
+        }
+    }
+
+. Acesse o arquivo "Program.cs" e comente a linha abaixo:
+
+    ...
+
+    // app.MapGet("/", () => "Hello World!");
+
+    ...
+
+. Crie o controller abaixo:
+
+    using bethanysPieShop.Models;
+    using bethanysPieShop.ViewModels;
+    using Microsoft.AspNetCore.Mvc;
+
+    namespace bethanysPieShop.Controllers
+    {
+        public class HomeController : Controller
+        {
+            private readonly IPieRepository _pieRepository;
+
+            public HomeController(IPieRepository pieRepository)
+            {
+                _pieRepository = pieRepository;
+            }
+
+            public ViewResult Index()
+            {
+                var piesOfTheWeek = _pieRepository.PiesOfTheWeek;
+
+                var homeViewModel = new HomeViewModel(piesOfTheWeek);
+
+                return View(homeViewModel);
+            }
+        }
+    }
+
+. Crie na pasta "Views/Home" o arquivo "Index.cshtml":
+
+    @model HomeViewModel
+
+
+    <div id="carouselImages" class="carousel slide" data-bs-ride="true">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="~/images/carousel1.jpg" class="d-block w-100" alt="Carousel image 1">
+            </div>
+            <div class="carousel-item">
+                <img src="~/images/carousel2.jpg" class="d-block w-100" alt="Carousel image 2">
+            </div>
+            <div class="carousel-item">
+                <img src="~/images/carousel3.jpg" class="d-block w-100" alt="Carousel image 3">
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center">
+        <img src="images/bethanys-pie-shop-logomark.png" class="logo-mark mx-auto" />
+        <h1>Pies of the week</h1>
+        <h5>Enjoy a weekly selection of our favorite pies</h5>
+
+        <div class="row pies-of-the-week">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                @foreach (var pie in Model.PiesOfTheWeek)
+                {
+                    <div class="col">
+                <div class="card pie-card">
+                    <img src="@pie.ImageThumbnailUrl" class="card-img-top" alt="@pie.Name">
+                    <div class="card-body pie-button">
+                        <h4 class="d-grid">
+                        </h4>
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <h2 class="text-start">
+                                <a asp-controller="Pie"
+                                asp-action="Details"
+                                asp-route-id="@pie.PieId"
+                                class="pie-link">@pie.Name</a>
+                            </h2>
+                            <h5 class="text-nowrap">
+                                @pie.Price.ToString("c")
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                }
+            </div>
+
+        </div>
+    </div>
+
+
+. Levante o projeto e verifique se na tela inicial está funcionando corretamente
+
+    https://localhost:[porta]
+
+. Faça as alterações no arquivo "Views/Shared/_Layout.cshtml" abaixo:
+
+    <!DOCTYPE html>
+
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Bethany's Pie Shop</title>
+        <link href='https://fonts.googleapis.com/css?family=Work+Sans' rel='stylesheet' type='text/css'>
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+        <link href="~/css/site.css" rel="stylesheet" />
+        <base href="/" />
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-primary"
+                    aria-label="Bethany's Pie Shop navigation header">
+                    <div class="container-xl">
+                        
+                        <!-- Div "a" alterada -->
+                        <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                            <img src="images/bethanys-pie-shop-logo_horiz-white.png" width="151" height="47" class="d-inline-block align-top mb-2 mt-1"
+                                alt="Bethany's Pie Shop Logo">
+                        </a>
+                        <!-- -->
+
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+
+                        <!-- Div abaixo alterada totalmente -->
+                        <div class="collapse navbar-collapse" id="navbarCollapse">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a asp-controller="Home" asp-action="Index" class="nav-link">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a asp-controller="Pie" asp-action="List" class="nav-link">Pies</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- -->
+
+                    </div>
+                </nav>
+            </header>
+
+            @RenderBody()
+        </div>
+    </body>
+    </html>
+
+. Levante o projeto e verifique se os links "Home" e "Pies" da tela inicial estão funcionando:
+
+    https://localhost:[porta]
