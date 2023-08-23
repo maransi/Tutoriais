@@ -1,0 +1,180 @@
+Tutorial ASP.NET Core 6 MVC - Melhorando os Formulários da Aplicação
+--------------------------------------------------------------------
+
+. Iremos retirar o trecho de código do arquivo "Index.cshtml", que apresenta os links "Pie" e colocá-lo
+    na "Partial View" abaixo:
+
+. Crie a "Partial View" "_PieCard.cshtml" abaixo dentro da pasta "Shared":
+
+    @model Pie
+
+    <div class="col">
+        <div class="card pie-card">
+            <img src="@Model.ImageThumbnailUrl" class="card-img-top" alt="@Model.Name">     <!-- Foi alterado de @Pie para @Model -->
+            <div class="card-body pie-button">
+                <h4 class="d-grid">
+                    <a class="btn btn-secondary" 
+                    asp-controller="ShoppingCart" 
+                    asp-action="AddToShoppingCart"
+                    asp-route-pieId="@Model.PieId"> + Add to cart</a>
+                </h4>
+                
+                <div class="d-flex justify-content-between mt-2">
+                    <h2 class="text-start">
+                        <a asp-controller="Pie"
+                        asp-action="Details"
+                        asp-route-id="@Model.PieId"
+                        class="pie-link">@Model.Name</a>
+                    </h2>
+                    <h5 class="text-nowrap">
+                        @Model.Price.ToString("c")
+                    </h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+. Apague o trecho de código acima do arquivo "View/Home/Index.cshtml" e coloque o conteúdo como abaixo:
+
+    ...
+    <div class="text-center">
+        <img src="Images/bethanys-pie-shop-logomark.png" class="logo-mark mx-auto" />
+        <h1>Pies of the week</h1>
+        <h5>Enjoy a weekly selection of our favorite pies</h5>
+
+        <div class="row pies-of-the-week">
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                @foreach (var pie in Model.PiesOfTheWeek)
+                {
+
+                <!-- Trecho apagado
+
+                <div class="col">
+                    <div class="card pie-card">
+                        <img src="@pie.ImageThumbnailUrl" class="card-img-top" alt="@pie.Name">
+                        <div class="card-body pie-button">
+                            <h4 class="d-grid">
+                            </h4>
+
+                            <div class="d-flex justify-content-between mt-2">
+                                <h2 class="text-start">
+                                    <a asp-controller="Pie"
+                                    asp-action="Details"
+                                    asp-route-id="@pie.PieId"
+                                    class="pie-link">@pie.Name</a>
+                                </h2>
+                                <h5 class="text-nowrap">
+                                    @pie.Price.ToString("c")
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                -->
+
+                <partial name="_PieCard" model="pie" />     <!-- Linha inserida -->
+
+
+                }
+            </div>
+
+        </div>
+    </div>
+
+. Acesse o arquivo "Views/Pie/List.cshtml" e substitua o código que lista "Pies" pela tag "Partial View" como abaixo:
+
+    @model PieListViewModel
+
+    <h1>@Model.CurrentCategory</h1>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+
+        @foreach (var pie in Model.Pies)
+        {
+            <!-- Trecho eliminado
+
+            <div class="col">
+                <div class="card pie-card">
+                    <img src="@pie.ImageThumbnailUrl" class="card-img-top" alt="@pie.Name">
+                    <div class="card-body pie-button">
+                        <h4 class="d-grid">
+                        </h4>
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <h2 class="text-start">
+                                <a class="pie-link">@pie.Name</a>
+                            </h2>
+                            <h5 class="text-nowrap">
+                                @pie.Price.ToString("c")
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            -->
+
+            <partial name="_PieCard" model="pie" />     <!-- Linha inserida -->
+        }
+
+    </div>
+
+. Levante o projeto e verifique se a lista DE "Pies" da página inicial e da lista de "Pies" estão funcionando:
+
+    https://localhost:[porta]
+
+. Crie a "Partial View" "_Carroussel.cshtml" abaixo na pasta "Views/Shared" 
+
+    <div id="carouselImages" class="carousel slide" data-bs-ride="true">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="~/Images/carousel1.jpg" class="d-block w-100" alt="Carousel image 1">
+            </div>
+            <div class="carousel-item">
+                <img src="~/Images/carousel2.jpg" class="d-block w-100" alt="Carousel image 2">
+            </div>
+            <div class="carousel-item">
+                <img src="~/Images/carousel3.jpg" class="d-block w-100" alt="Carousel image 3">
+            </div>
+        </div>
+    </div>
+
+. Substitua o trecho de código que fazia o carrossel pela "Partial View" no arquivo "Views/Home/Index.cshtml":
+
+    @model HomeViewModel
+
+    <!-- Trecho Eliminado 
+
+    <div id="carouselImages" class="carousel slide" data-bs-ride="true">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselImages" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="~/images/carousel1.jpg" class="d-block w-100" alt="Carousel image 1">
+            </div>
+            <div class="carousel-item">
+                <img src="~/images/carousel2.jpg" class="d-block w-100" alt="Carousel image 2">
+            </div>
+            <div class="carousel-item">
+                <img src="~/images/carousel3.jpg" class="d-block w-100" alt="Carousel image 3">
+            </div>
+        </div>
+    </div>
+    -->
+
+    <partial name="_Carroussel" />  <!-- Linha inserida -->
+
+    ...
+
+. Levante o projeto e verifique se o carrossel da página inicial está funcionando:
+
+    https://localhost:[porta]

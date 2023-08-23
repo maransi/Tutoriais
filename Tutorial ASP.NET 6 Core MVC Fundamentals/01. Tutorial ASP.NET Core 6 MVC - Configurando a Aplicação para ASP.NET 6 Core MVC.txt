@@ -571,15 +571,21 @@ Tutorial
         </body>
         </html>
 
+    . Crie o arquivo "_ViewImports.cshtml" como abaixo na pasta "Views".                                                                 
+        IMPORTANTE: No Visual Studio dê um clique direito sobre a pasta "Views" / Add New Item / Installed / C# / ASP.NET Core / Web / Razor View Imports
+
+        @using bethanysPieShop.Models                  
+        @using bethanysPieShop.ViewModels              
+
     . Atualize o conteúdo do arquivo "Views/Pie/List.cshtml" com o conteúdo abaixo:
 
-        @model PieListViewModel
+        @model PieListViewModel     <!-- Linha alterada -->
 
         <h1>@Model.CurrentCategory</h1>
 
         <div class="row row-cols-1 row-cols-md-3 g-4">
 
-            @foreach (var pie in Model.Pies)
+            @foreach (var pie in Model.Pies)        <!-- forEach alterada -->
             {
                 <div class="col">
                     <div class="card pie-card">
