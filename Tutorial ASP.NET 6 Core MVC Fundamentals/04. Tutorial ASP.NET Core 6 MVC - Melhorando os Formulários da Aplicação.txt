@@ -178,3 +178,425 @@ Tutorial ASP.NET Core 6 MVC - Melhorando os Formulários da Aplicação
 . Levante o projeto e verifique se o carrossel da página inicial está funcionando:
 
     https://localhost:[porta]
+
+
+. Crie a classe Model "ShoppingCartItem" dentro da pasta "Models":
+
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace bethanysPieShop.Models;
+
+    [Table("ShoppingCartItem")]
+    [Index(nameof(ShoppingCartId), nameof(ShoppingCartItemId), 
+            IsUnique = true,
+            Name = "idxShopCartItem_ShoppingCartId")]
+    public class ShoppingCartItem
+    {
+        [Key]    
+        [DatabaseGenerated( DatabaseGeneratedOption.Identity )]
+        [Column("ShoppingCartItemId")]
+        public int ShoppingCartItemId { get; set; }
+
+        [Column("PiedId", TypeName = "INTEGER")]
+        public int PieId { get; set; }
+
+        [ForeignKey("PieId")]
+        public Pie Pie  { get; set; } = default!;
+
+        [Column("Amount", TypeName="INTEGER")]
+        public int Amount { get; set; }
+
+        [Column("ShoppingCartId", TypeName = "INTEGER")]
+        public string? ShoppingCartId { get; set; }
+    }
+
+. Insira a linha abaixo na classe "AppDbContext":
+
+    using bethanysPieShop.Models;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace bethanysPieShop.Data
+    {
+        public class AppDbContext : DbContext
+        {
+            public DbSet<Category>? Categories { get; set; }
+            public DbSet<Pie>? Pies { get; set; }
+
+            public DbSet<ShoppingCartItem>? ShoppingCartItems { get; set; }  // Linha inserida
+
+            public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+            {
+            }
+
+            //            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
+            //                        => optionsBuilder.UseSqlite();
+            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+            {
+                optionsBuilder.UseSqlite();
+                optionsBuilder.LogTo(Console.WriteLine);
+            }
+
+
+        }
+    }
+
+. Na raiz do projeto execute os comandos abaixo:
+
+    dotnet clean
+
+    dotnet build
+
+    dotnet ef migrations add [Nome da nova migration]
+
+    dotnet ef database update
+
+. Crie a interface "IShoppingCart" abaixo na pasta "Models":
+
+    namespace bethanysPieShop.Models
+    {
+        public interface IShoppingCart
+        {
+            void AddToCart(Pie pie);
+            int RemoveFromCart(Pie pie);
+            List<ShoppingCartItem> GetShoppingCartItems();
+            void ClearCart();
+            decimal GetShoppingCartTotal();
+            List<ShoppingCartItem> ShoppingCartItems { get; set; }
+        }
+    }
+
+(17.55)
+
+. Crie a classe de implementação "ShoppingCart" abaixo na pasta "Models":
+
+    using Microsoft.EntityFrameworkCore;
+    using bethanysPieShop.Data;
+
+
+    namespace bethanysPieShop.Models
+    {
+        public class ShoppingCart : IShoppingCart
+        {
+            private readonly AppDbContext _context;
+
+            public string? ShoppingCartId { get; set; }
+
+            public List<ShoppingCartItem> ShoppingCartItems { get; set; } = default!;
+
+            private ShoppingCart(AppDbContext context)
+            {
+                _context = context;
+            }
+
+            public static ShoppingCart GetCart(IServiceProvider services)
+            {
+                ISession? session = services.GetRequiredService<IHttpContextAccessor>()?.HttpContext?.Session;
+
+                AppDbContext context = services.GetService<AppDbContext>() ?? throw new Exception("Error initializing");
+
+                string cartId = session?.GetString("CartId") ?? Guid.NewGuid().ToString();
+
+                session?.SetString("CartId", cartId);
+
+                return new ShoppingCart(context) { ShoppingCartId = cartId };
+            }
+
+            public void AddToCart(Pie pie)
+            {
+                var shoppingCartItem =
+                        _context.ShoppingCartItems.SingleOrDefault(
+                            s => s.Pie.PieId == pie.PieId && s.ShoppingCartId == ShoppingCartId);
+
+                if (shoppingCartItem == null)
+                {
+                    shoppingCartItem = new ShoppingCartItem
+                    {
+                        ShoppingCartId = ShoppingCartId,
+                        Pie = pie,
+                        Amount = 1
+                    };
+
+                    _context.ShoppingCartItems.Add(shoppingCartItem);
+                }
+                else
+                {
+                    shoppingCartItem.Amount++;
+                }
+                _context.SaveChanges();
+            }
+
+            public int RemoveFromCart(Pie pie)
+            {
+                var shoppingCartItem =
+                        _context.ShoppingCartItems.SingleOrDefault(
+                            s => s.Pie.PieId == pie.PieId && s.ShoppingCartId == ShoppingCartId);
+
+                var localAmount = 0;
+
+                if (shoppingCartItem != null)
+                {
+                    if (shoppingCartItem.Amount > 1)
+                    {
+                        shoppingCartItem.Amount--;
+                        localAmount = shoppingCartItem.Amount;
+                    }
+                    else
+                    {
+                        _context.ShoppingCartItems.Remove(shoppingCartItem);
+                    }
+                }
+
+                _context.SaveChanges();
+
+                return localAmount;
+            }
+
+            public List<ShoppingCartItem> GetShoppingCartItems()
+            {
+                return ShoppingCartItems ??=
+                        _context.ShoppingCartItems.Where(c => c.ShoppingCartId == ShoppingCartId)
+                            .Include(s => s.Pie)
+                            .ToList();
+            }
+
+            public void ClearCart()
+            {
+                var cartItems = _context
+                    .ShoppingCartItems
+                    .Where(cart => cart.ShoppingCartId == ShoppingCartId);
+
+                _context.ShoppingCartItems.RemoveRange(cartItems);
+
+                _context.SaveChanges();
+            }
+
+            public decimal GetShoppingCartTotal()
+            {
+                // IMPORTANTE: Devido a incompatibilidade do tipo "decimal" da propriedade "Pie.Price" e o 
+                //              banco "Sqlite", o EF ao usar o método "SUM()" acusou erro. 
+                //             Para contornar o problema fui obrigado fazer a totalização manualmente.
+                //             Se for outro banco, como o SQLServer, provavelmente funcionará da forma
+                //              como está comentada abaixo.
+
+                // var total = _context.ShoppingCartItems.Where(c => c.ShoppingCartId == ShoppingCartId)
+                //     .Select(c => c.Pie.Price * c.Amount).Sum();
+
+                decimal total = 0M;
+
+                var shoppingCartItens = _context.ShoppingCartItems.Where(c => c.ShoppingCartId == ShoppingCartId)
+                                .Select(c => new { preco = c.Pie.Price  * c.Amount } ) 
+                                .ToList();
+
+                if ( shoppingCartItens != null )
+                {
+                    shoppingCartItens.ForEach( item => {
+                        total = total + item.preco;        
+                    });
+                }
+
+                return total;
+            }
+        }
+    }
+
+. Insira as linhas abaixo no arquivo "Program.cs":
+
+    using bethanysPieShop.Models;
+    using Microsoft.EntityFrameworkCore;
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Services.AddControllersWithViews();
+
+    builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+    builder.Services.AddScoped<IPieRepository, PieRepository>();
+
+    builder.Services.AddScoped<IShoppingCart, ShoppingCart>(sp => ShoppingCart.GetCart(sp));    // Linha inserida
+    builder.Services.AddSession();                                                              // Linha inserida
+    builder.Services.AddHttpContextAccessor();                                                  // Linha inserida
+
+    builder.Services.AddDbContext<AppDbContext>( options => {                           
+        options.UseSqlite( 
+            builder.Configuration["ConnectionStrings:DefaultConnection"]);
+    });
+
+    var app = builder.Build();
+
+    //app.MapGet("/", () => "Hello World!");
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseDeveloperExceptionPage();
+    }
+
+    app.UseStaticFiles();
+    app.UseSession();                                                   // Linha inserida
+
+    //app.MapDefaultControllerRoute();
+
+    app.MapControllerRoute(                                             // Linha alterada
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+
+    DbInitializer.Seed(app);
+
+    app.Run();
+
+. Crie a classe "ViewModel" "ShoppingCartViewModel" na pasta "ViewModels" como abaixo:
+
+    using bethanysPieShop.Models;
+
+    namespace bethanysPieShop.ViewModels
+    {
+        public class ShoppingCartViewModel
+        {
+            public ShoppingCartViewModel(IShoppingCart shoppingCart, decimal shoppingCartTotal)
+            {
+                ShoppingCart = shoppingCart;
+                ShoppingCartTotal = shoppingCartTotal;
+            }
+
+            public IShoppingCart ShoppingCart { get; }
+            public decimal ShoppingCartTotal { get; }
+        }
+    }
+
+. Crie a classe controller "ShoppingCartController.cs" abaixo na pasta "Controllers":
+
+    using bethanysPieShop.Models;
+    using bethanysPieShop.ViewModels;
+    using Microsoft.AspNetCore.Mvc;
+
+    namespace bethanysPieShop.Controllers
+    {
+        public class ShoppingCartController : Controller
+        {
+            private readonly IPieRepository _pieRepository;
+            private readonly IShoppingCart _shoppingCart;
+
+            public ShoppingCartController(IPieRepository pieRepository, IShoppingCart shoppingCart)
+            {
+                _pieRepository = pieRepository;
+                _shoppingCart = shoppingCart;
+
+            }
+            public ViewResult Index()
+            {
+                var items = _shoppingCart.GetShoppingCartItems();
+                _shoppingCart.ShoppingCartItems = items;
+
+                var shoppingCartViewModel = new ShoppingCartViewModel(_shoppingCart, _shoppingCart.GetShoppingCartTotal());
+
+                return View(shoppingCartViewModel);
+            }
+
+            public RedirectToActionResult AddToShoppingCart(int pieId)
+            {
+                var selectedPie = _pieRepository.AllPies.FirstOrDefault(p => p.PieId == pieId);
+
+                if (selectedPie != null)
+                {
+                    _shoppingCart.AddToCart(selectedPie);
+                }
+                return RedirectToAction("Index");
+            }
+
+            public RedirectToActionResult RemoveFromShoppingCart(int pieId)
+            {
+                var selectedPie = _pieRepository.AllPies.FirstOrDefault(p => p.PieId == pieId);
+
+                if (selectedPie != null)
+                {
+                    _shoppingCart.RemoveFromCart(selectedPie);
+                }
+                return RedirectToAction("Index");
+            }
+        }
+    }
+
+. Crie a pasta "Views/ShoppingCart"
+
+. Dentro da pasta criada, crie a View "Index.cshtml" com o código abaixo:
+
+    @model ShoppingCartViewModel
+
+    <h3 class="my-5">
+        Shopping cart
+    </h3>
+
+
+    <div class="row gx-3">
+        <div class="col-8">
+            @foreach (var line in Model.ShoppingCart.ShoppingCartItems)
+            {
+                <div class="card shopping-cart-card mb-2">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img src="@line.Pie.ImageThumbnailUrl" class="img-fluid rounded-start p-2" alt="@line.Pie.Name">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h5 class="card-text">@line.Amount x @line.Pie.Name</h5>
+                                <div class="d-flex justify-content-between">
+                                    <h6>@line.Pie.ShortDescription</h6>
+                                    <h2>@line.Pie.Price.ToString("c")</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="col-4">
+            <div class="card shopping-cart-card p-3">
+                <div class="row">
+                    <h4 class="col">Total:</h4>
+                    <h4 class="col text-end">@Model.ShoppingCartTotal.ToString("c")</h4>
+                </div>
+                <hr />
+                <div class="text-center d-grid">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+. Altere a View "~/View/Pie/Details.cshtml" com o conteúdo abaixo:
+
+    @model Pie
+
+    <h3 class="my-5">
+        @Model.Name
+    </h3>
+
+    <div class="row gx-5">
+        <img alt="@Model.Name" src="@Model.ImageUrl" class="img-fluid col-5" />
+        <div class="col-7">
+            <h4>@Model.ShortDescription</h4>
+            <p>@Model.LongDescription</p>
+            <h3 class="pull-right">@Model.Price.ToString("c")</h3>
+            <div class="addToCart">
+                <p class="button">
+
+                <!-- Conteúdo inserido -->
+
+                <a class="btn btn-secondary" 
+                    asp-controller="ShoppingCart" 
+                    asp-action="AddToShoppingCart"
+                    asp-route-pieId="@Model.PieId">
+                    Add to cart
+                </a>
+
+                <!-- Fim da inserção -->
+
+
+                </p>
+            </div>
+        </div>
+    </div>
+
+(25.00)
+. Levante o projeto e verifique a partir do botão "Add Cart" de cada item está funcionando:
+
+    https://localhost:[porta]
