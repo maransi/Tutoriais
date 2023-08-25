@@ -248,7 +248,7 @@ Tutorial ASP.NET Core 6 MVC - Melhorando os Formulários da Aplicação
 
     dotnet build
 
-    dotnet ef migrations add [Nome da nova migration]
+    dotnet ef migrations add CreationNumber-0002
 
     dotnet ef database update
 

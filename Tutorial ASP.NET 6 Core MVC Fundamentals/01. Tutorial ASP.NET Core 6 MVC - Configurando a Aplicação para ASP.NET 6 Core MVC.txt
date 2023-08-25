@@ -34,6 +34,7 @@ Instalação das extensões do VSCode
         C# 
         C# Extensions
         C# XML Documentation Comments
+        C# Snippets
         ASP.NET Helper
         Razor Snippets
         Libman
