@@ -68,9 +68,37 @@ Instalação do Nodejs
 Tutorial
 ========
 
-. Na pasta raiz do projeto execute o comando abaixo:
+. Crie a pasta da solution e crie a solution nela:
+
+    mkdir Bethanys
+
+    mkdir Bethanys/src
+
+    cd Bethanys/src
+
+    dotnet new sln --name Bethanys
+
+. Na pasta "/src" execute o comando abaixo:
 
     dotnet new web -o bethanysPieShop -n bethanysPieShop -f net6.0
+
+. Na pasta "/src" execute o comando abaixo para adicionar o projeto "bethanysPieShop" a solution:
+
+    dotnet sln add ./bethanysPieShop/
+
+. Executando o projeto pela solution:
+
+    dotnet clean
+
+    dotnet restore
+
+    dotnet build
+
+    dotnet run --project bethanysPieShop/ --project bethanysPieShop/
+
+. Executando o projeto diretamente pelo projeto:
+
+    cd Bethanys/src/bethanysPieShop
 
     dotnet clean
 
