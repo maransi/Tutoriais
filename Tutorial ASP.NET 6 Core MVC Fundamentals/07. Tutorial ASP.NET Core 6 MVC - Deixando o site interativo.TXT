@@ -1,0 +1,283 @@
+Tutorial ASP.NET Core 6 MVC - Deixando o site interativo
+--------------------------------------------------------
+
+. No projeto "bethanysPieShop" na classe "Program.cs" avalie as linhas abaixo:
+
+    using System.Text.Json.Serialization;           // Linha inserida
+    ...
+
+    builder.Services.AddControllersWithViews()
+        .AddJsonOptions(options =>                                                              // Linha inserida
+        {                                                                                       // Linha inserida
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;     // Linha inserida
+        });                                                                                     // Linha inserida
+
+    ...
+    builder.Services.AddDbContext<AppDbContext>( options => {                           
+        options.UseSqlite( 
+            builder.Configuration["ConnectionStrings:DefaultConnection"]);
+    });
+
+    // builder.Services.AddControllers();           // Devido o projeto já estar configurado para trabalhar com
+                                                    // ASP.NET Core MVC e já configurado com as rotas padrões 
+                                                    // das páginas, não é necessários fazer a inserção do "middleware"
+                                                    // ".AddControllers"; o "AddControllerWithViews" já é suficiente.
+                                                    // Caso não for essa a situação, então acrescente este "middleware"
+
+    app.MapDefaultControllerRoute();                        
+
+    // app.MapControllerRoute(                              //Linha Alterada - Comente essas linhas
+    //     name: "default",
+    //    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+    // app.MapControllers();                        // Pelo mesmo motivo do projeto já estar configurado para ASP.NET Core MVC
+                                                    // não há necessidade de inserir essa linha, pois o "middleware" ".MapDefaultControllerRoute();"
+                                                    // já faz essa função. Caso não tivessemos esta configuração teriamos que adicionar o 
+                                                    // ".MapControllers()"
+
+    . IMPORTANTE: Para evitar infinitos "loops", foi inserido o método "AddJsonOptions" no middleware "AddControllersWithViews".
+                    Isto se deve a situações como o relacionamento entre as classes "Pie" e "Category" que contém coleções umas das
+                    outras. Sem isso, o container irá travar num loop infinito.
+
+
+. Crie a pasta "Controllers/Api" e dentro dela crie a classe "Controller" abaixo:
+
+    using bethanysPieShop.Models;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+
+    namespace bethanysPieShop.Controllers.Api
+    {
+        [Route("api/[controller]")]
+        [ApiController]
+        public class SearchController : ControllerBase
+        {
+            private readonly IPieRepository _pieRepository;
+
+            public SearchController(IPieRepository pieRepository)
+            {
+                _pieRepository = pieRepository;
+            }
+
+
+            [HttpGet]
+            public IActionResult GetAll()
+            {
+
+            }
+
+            [HttpGet("{id}")]
+            public IActionResult GetById(int id)
+            {
+
+            }
+
+        }
+    }
+
+. Insira a linha abaixo na interface "IPieRepository":
+
+    public interface IPieRepository
+    {
+        ...
+        IEnumerable<Pie> SearchPies( string searchQuery );                          // Linha inserida
+    }
+
+. Substitua o método abaixo na classe "PieRepository":
+
+    ...
+        public IEnumerable<Pie> SearchPies( string searchQuery )
+        {
+        return _context.Pies.Where( p => p.Name.Contains( searchQuery ));
+        }
+        ...
+
+. Insira as linhas no métodos abaixo na classe "SearchController.cs":
+
+    ...
+    [HttpGet]
+    public IActionResult GetAll()
+    {
+        var allPies = _pieRepository.AllPies;                                       // Linha inserida
+        return Ok(allPies);                                                         // Linha inserida
+    }
+
+    [HttpGet("{id}")]
+    public IActionResult GetById(int id)
+    {
+        if (!_pieRepository.AllPies.Any(p => p.PieId == id))                        // Linha inserida
+            return NotFound();                                                      // Linha inserida
+        return Ok(_pieRepository.AllPies.Where(p => p.PieId == id));                // Linha inserida
+    }
+
+    [HttpPost]                                                                      // Linha inserida
+    public IActionResult SearchPies([FromBody] string searchQuery)                  // Linha inserida
+    {
+        IEnumerable<Pie> pies = new List<Pie>();                                    // Linha inserida
+
+        if (!string.IsNullOrEmpty(searchQuery))                                     // Linha inserida
+        {
+            pies = _pieRepository.SearchPies(searchQuery);                          // Linha inserida
+        }                                                                           // Linha inserida
+        return new JsonResult(pies);                                                // Linha inserida
+    }
+
+    ...
+
+. Levante a aplicação e execute as URLs abaixo no navegador
+
+    https://localhost:[porta]/api/search            
+    https://localhost:[porta]/api/search/2
+
+. No Postman execute a URL abaixo:
+
+    url:    https://localhost:[porta]/api/search
+    method: POST
+    body:
+            {
+                JSON: true,
+                raw: "Chocolate"
+            }
+
+. Confira se os arquivos ".js" apontados na classe "_Layout.cshtml" estão disponíveis na pasta "wwwroot"
+    conforme declarado:
+
+    <!DOCTYPE html>
+
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Bethany's Pie Shop</title>
+        
+        <link href='https://fonts.googleapis.com/css?family=Work+Sans' rel='stylesheet' type='text/css'>
+        
+        <!-- Arquivos necessários para se trabalhar com JQuery -->
+
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/jquery-validate/jquery.validate.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
+        <link href="~/css/site.css" rel="stylesheet" />
+        <base href="/" />
+    </head>
+    <body>
+        ...
+    </body>
+
+. Insira o método abaixo na classe "PieController":
+
+    ...
+    public IActionResult Search()
+    {
+        return View();
+    }
+    ...
+
+(42.58)        
+. Crie a classe "Search.cshtml" com conteúdo abaixo na pasta "Views/Pie":
+
+
+    <br />
+    <br />
+    <br />
+    <br />
+    Enter your search query:
+    <input id="txtPieName" type="text" />
+    <button id="searchButton">Search</button>
+    <br />
+    <br />
+    <table id="tblPies" cellpadding="0" cellspacing="0">
+        <tr>
+            <th style="width: 120px"></th>
+            <th style="width: 120px">Name</th>
+            <th style="width: 90px">Price</th>
+        </tr>
+        <tbody></tbody>
+    </table>
+
+
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+        $("button").click(function(){
+            var searchQuery = $.trim($("#txtPieName").val());
+                $("table tbody").html("");
+                $.ajax({
+                    type: "POST",
+                    url: "/api/search",
+                    data: "\"" + searchQuery + "\"",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (pies) {
+                        var table = $("#tblPies");
+                        table.find("tr:not(:first)").remove();
+                        $.each(pies, function (i, pie) {
+                            $("tbody").append($("<tr>"));
+                            appendElement = $("tbody tr").last();
+                            appendElement.append($("<td>").html('<img src=' + pie.imageThumbnailUrl + '>'));
+                            appendElement.append($("<td>").html('<a href="/pie/details/' + pie.pieId + '">' + pie.name + '</a>'));
+                            appendElement.append($("<td>").html(pie.price));
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                            console.log(xhr)
+                    }
+                });
+            });
+            });
+
+    </script>
+
+. Insira as linhas abaixo no componente "Views/Shared/_Layout.cshtml":
+
+    ...
+    <body>
+        <div class="container">
+            <header>
+                <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-primary"
+                    aria-label="Bethany's Pie Shop navigation header">
+                    <div class="container-xl">
+                        <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                            <img src="images/bethanys-pie-shop-logo_horiz-white.png" width="151" height="47" class="d-inline-block align-top mb-2 mt-1"
+                                alt="Bethany's Pie Shop Logo">
+                        </a>
+
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+
+                        <div class="collapse navbar-collapse" id="navbarCollapse">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <vc:category-menu></vc:category-menu>
+                                <li class="nav-item">
+                                    <a asp-controller="Contact" asp-action="Index" class="nav-link">Contact</a>
+                                </li>
+                            </ul>
+
+                            <!-- Trecho inserido -->
+
+                            <ul class="navbar-nav mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Pie" asp-action="Search">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                                        </svg>
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <!-- Fim do trecho -->
+
+                            <vc:shopping-cart-summary></vc:shopping-cart-summary>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            @RenderBody()
+        </div>
+    </body>
+
+. Levante a aplicação e teste o icone de lupa no canto superior direito.
