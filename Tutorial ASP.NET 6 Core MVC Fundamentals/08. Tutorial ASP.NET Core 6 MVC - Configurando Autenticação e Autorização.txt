@@ -1,0 +1,461 @@
+Tutorial ASP.NET Core 6 MVC - Configurando Autenticação e Autorização
+---------------------------------------------------------------------
+
+
+. Objetivos:
+
+    . Configurar a aplicação para "Razor Pages"
+
+    . Recriar a página "Checkout" usando "Razor Pages"
+
+    . A adaptação do projeto para Identity tem Pré requisito configurar o projeto para "Razor Page".
+
+. Acesse o componente "Program.cs" e insira as linhas abaixo:
+
+    using bethanysPieShop.Models;
+    using Microsoft.EntityFrameworkCore;
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Services.AddControllersWithViews();
+
+    builder.Services.AddRazorPages();                       // Linha inserida
+
+    ...
+
+
+    app.MapDefaultControllerRoute();                        // Linha inserida
+
+    app.MapRazorPages();                                    // Linha inserida
+
+    // app.MapControllerRoute(                              //Linha Alterada - Comente essas linhas
+    //     name: "default",
+    //    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+    DbInitializer.Seed(app);
+
+    app.Run();
+
+. Crie a pasta "Pages" na raiz do projeto.
+
+. Crie a pasta "Pages/Shared" no projeto e insira o arquivo "_PageLayout.cshtml" com o conteúdo abaixo:
+
+    <!DOCTYPE html>
+
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Bethany's Pie Shop</title>
+        <link href='https://fonts.googleapis.com/css?family=Work+Sans' rel='stylesheet' type='text/css'>
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/jquery-validate/jquery.validate.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+        <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+        <link href="~/css/site.css" rel="stylesheet" />
+        <base href="/" />
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-primary"
+                    aria-label="Bethany's Pie Shop navigation header">
+                    <div class="container-xl">
+                        <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                            <img src="images/bethanys-pie-shop-logo_horiz-white.png" width="151" height="47" class="d-inline-block align-top mb-2 mt-1"
+                                alt="Bethany's Pie Shop Logo">
+                        </a>
+
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+
+                        <div class="collapse navbar-collapse" id="navbarCollapse">
+                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                                <vc:category-menu></vc:category-menu>
+                                <li class="nav-item">
+                                    <a asp-controller="Contact" asp-action="Index" class="nav-link">Contact</a>
+                                </li>
+                            </ul>
+                            <vc:shopping-cart-summary></vc:shopping-cart-summary>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            @RenderBody()
+        </div>
+    </body>
+    </html>
+
+. Dentro da pasta "Pages" crie o arquivo "Razor Page" "_ViewStart.cshtml" com o conteúdo abaixo:
+
+    @{
+        Layout = "_PageLayout";
+    }
+
+. Dentro da pasta "Pages" crie o arquivo "Razor Page" "_ViewImports.cshmtl" com o conteúdo abaixo:
+
+    @using bethanysPieShop
+    @using bethanysPieShop.Models
+    @using bethanysPieShop.ViewModels
+    @using bethanysPieShop.Components
+    @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+    @addTagHelper bethanysPieShop.TagHelpers.*, bethanysPieShop
+    @addTagHelper *, bethanysPieShop
+
+
+. Dentro da pasta "Pages" crie o arquivo "Razor Page" "CheckoutPage.cshtml" com o conteúdo abaixo:
+
+    @page
+    @model bethanysPieShop.Pages.CheckoutPageModel
+
+    <form method="post" class="form-horizontal" role="form">
+        <h4>You're just one step away from your delicious pies.</h4>
+
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+
+        <div class="form-group">
+            <label asp-for="Order.LastName" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.LastName" class="form-control" />
+                <span asp-validation-for="Order.LastName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.FirstName" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.FirstName" class="form-control" />
+                <span asp-validation-for="Order.FirstName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.AddressLine1" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.AddressLine1" class="form-control" />
+                <span asp-validation-for="Order.AddressLine1" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.AddressLine2" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.AddressLine2" class="form-control" />
+                <span asp-validation-for="Order.AddressLine2" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.ZipCode" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.ZipCode" class="form-control" />
+                <span asp-validation-for="Order.ZipCode" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.City" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.City" class="form-control" />
+                <span asp-validation-for="Order.City" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.State" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.State" class="form-control" />
+                <span asp-validation-for="Order.State" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.Country" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.Country" class="form-control" />
+                <span asp-validation-for="Order.Country" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.PhoneNumber" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.PhoneNumber" class="form-control" />
+                <span asp-validation-for="Order.PhoneNumber" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Order.Email" class="col-md-2 control-label"></label>
+            <div class="col-md-5">
+                <input asp-for="Order.Email" class="form-control" />
+                <span asp-validation-for="Order.Email" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-5">
+                <input type="submit" class="btn btn-primary" value="Complete order" />
+            </div>
+        </div>
+
+    </form>
+
+. Crie o componente "PageModel" abaixo com o nome "CheckoutPage.cshtml.cs" com o conteúdo abaixo:
+
+    using bethanysPieShop.Models;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.RazorPages;
+
+    namespace bethanysPieShop.Pages
+    {
+        public class CheckoutPageModel : PageModel
+        {
+            private readonly IOrderRepository _orderRepository;
+            private readonly IShoppingCart _shoppingCart;
+
+            public CheckoutPageModel(IOrderRepository orderRepository, IShoppingCart shoppingCart)
+            {
+                _orderRepository = orderRepository;
+                _shoppingCart = shoppingCart;
+            }
+
+
+            [BindProperty]
+            public Order Order { get; set; }
+
+            public void OnGet()
+            {
+            }
+
+
+            public IActionResult OnPost()
+            {
+                if (!ModelState.IsValid)
+                {
+                    return Page();          // Retorna para a página "CheckoutPageModel.cshmtl"
+                }
+
+                var items = _shoppingCart.GetShoppingCartItems();
+                _shoppingCart.ShoppingCartItems = items;
+
+                if (_shoppingCart.ShoppingCartItems.Count == 0)
+                {
+                    ModelState.AddModelError("", "Your cart is empty, add some pies first");
+                }
+
+                if (ModelState.IsValid)
+                {
+                    _orderRepository.CreateOrder(Order);
+                    _shoppingCart.ClearCart();
+                    return RedirectToPage("CheckoutCompletePage");
+                }
+                return Page();
+            }
+
+        }
+    }
+
+. Dentro da pasta "Pages" crie o arquivo "Razor Page" "CheckoutCompletePage.cshtml" com o conteúdo abaixo:
+
+    @page
+    @model bethanysPieShop.Pages.CheckoutCompletePageModel
+
+
+
+    <h1>@ViewData["CheckoutCompleteMessage"]</h1>
+
+
+. Dentro da pasta "Pages" crie o arquivo "Razor Page" "CheckoutCompletePage.cshtml.cs" com o conteúdo abaixo:
+
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.RazorPages;
+
+    namespace bethanysPieShop.Pages
+    {
+        public class CheckoutCompletePageModel : PageModel
+        {
+            public void OnGet()
+            {
+                ViewData["CheckoutCompleteMessage"] = "Thanks for your order. You'll soon enjoy our delicious pies!";
+            }
+        }
+    }
+
+. Coloque um "BreakPoint" na primeira linha do método "OnPost()" da classe "CheckoutPage.cshtml.cs" 
+
+. Levante o projeto e acesse o link abaixo:
+
+    https://localhost[porta]/checkoutpage
+
+. Acomnpanhe a execução do código onde foi marcado o "BreakPoint".
+
+
+Adaptação do projeto para Identity
+----------------------------------
+
+. Execute o comando abaixo na pasta raiz do projeto:
+
+    dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 6.0.12
+
+    dotnet add package Microsoft.AspNetCore.Identity.UI --version 6.0.12
+
+    dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.12
+
+    dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design --version 6.0.11
+
+    dotnet tool install --global dotnet-aspnet-codegenerator --version 6.0.11
+
+. Acesse a classe "AppDbContext.cs" e altere a linha abaixo:
+
+    using Microsoft.AspNetCore.Identity.EntityFrameworkCore;        // Linha inserida
+
+    ...
+    public class AppDbContext: IdentityDbContext                    // DbContext       // Linha aterada, substitução da interfae "DbContext" pela "IdentityDbContext"
+    ...
+
+. Acesse a classe "Program.cs" e faça a atualização abaixo:
+
+    ...
+    app.UseStaticFile();
+    app.UseSession();
+    app.UseAuthentication();                                    // Linha inserida
+    ...
+
+. Na raiz do projeto execute os comandos abaixo:
+
+    dotnet clean
+
+    dotnet build
+
+    dotnet ef migrations add IdentityMigration
+
+    dotnet ef database update
+
+. Acesse o banco de dados e verifique se as tabelas do ASP.NET Core Identity foram criadas com sucesso.
+
+. Execute o comando abaixo para consultar as classes disponiveis no "Identity":
+
+    dotnet aspnet-codegenerator identity -lf
+
+        # Saída do comando
+
+        Building project ...
+        Finding the generator 'identity'...
+        Running the generator 'identity'...
+        File List:
+        Account._StatusMessage
+        Account.AccessDenied
+        Account.ConfirmEmail
+        Account.ConfirmEmailChange
+        Account.ExternalLogin
+        Account.ForgotPassword
+        Account.ForgotPasswordConfirmation
+        Account.Lockout
+        Account.Login
+        Account.LoginWith2fa
+        Account.LoginWithRecoveryCode
+        Account.Logout
+        Account.Manage._Layout
+        Account.Manage._ManageNav
+        Account.Manage._StatusMessage
+        Account.Manage.ChangePassword
+        Account.Manage.DeletePersonalData
+        Account.Manage.Disable2fa
+        Account.Manage.DownloadPersonalData
+        Account.Manage.Email
+        Account.Manage.EnableAuthenticator
+        Account.Manage.ExternalLogins
+        Account.Manage.GenerateRecoveryCodes
+        Account.Manage.Index
+        Account.Manage.PersonalData
+        Account.Manage.ResetAuthenticator
+        Account.Manage.SetPassword
+        Account.Manage.ShowRecoveryCodes
+        Account.Manage.TwoFactorAuthentication
+        Account.Register
+        Account.RegisterConfirmation
+        Account.ResendEmailConfirmation
+        Account.ResetPassword
+        Account.ResetPasswordConfirmation
+
+
+. Faça a alteração abaixo na classe "Program.cs":
+
+    ...
+    using Microsoft.AspNetCore.Identity;                    // Linha inserida
+    ...
+
+    builder.Services.AddDbContext<AppDbContext>( options => {                           
+        options.UseSqlite( 
+            builder.Configuration["ConnectionStrings:DefaultConnection"]);
+    });
+15.00
+    builder.Services.AddDefaultIdentity<IdentityUser>()         // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+        .AddEntityFrameworkStores<AppDbContext>();                  // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+    ...
+    app.UseAuthentication();                                    
+    app.UseAuthorization();                                         // Linha inserida
+
+. Execute o comando abaixo na pasta raiz do projeto:
+
+    dotnet-aspnet-codegenerator identity --dbContext AppDbContext --files "Account.Login;Account.Logout;Account.Register"
+
+    # dotnet aspnet-codegenerator identity -fi Account.Login 
+    # dotnet aspnet-codegenerator identity -fi Account.Register 
+    # dotnet aspnet-codegenerator identity -fi Account.Logout 
+
+    # Se for usar os três comandos acima, apague a pasta "Areas/Data" em cada execução
+
+. Acesse o arquivo "Program.cs" e altere a linha abaixo:
+
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                                                                            |
+                                                                            +---> Alterar para esse valor "DefaultConnection"
+18.00
+. Acesse o componente "Views/Shared/_Layout.cshtml" e adicione a linha abaixo:
+
+    ...
+                <vc:shopping-cart-summary></vc:shopping-cart-summary>
+                <partial name="_LoginPartial" />                            @* Linha inserida *@
+
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    ...
+    @RenderBody()
+    @RenderSection("Scripts", required: false )                @* Linha inserida *@     
+    ...
+
+. Levante a aplicação e verifique se os links no cabeçalho da tela "Register" e "Login" estão funcionanado.
+
+. Inclua a linha abaixo na classe "OrderController.cs":
+
+    ...
+    using Microsoft.AspNetCore.Authorization;       // Linha inserida
+    ...
+    [Authorize]                                     // Linha inserida
+    public class OrderController : Controller
+    {
+        ...
+    }
+
+. Levante a aplicação e verifique se se no momento do Checkout não estiver logado se irá desviar para a tela de login
+
+    dotnet clean
+    dotnet build
+    dotnet run
+
+. Para criar uma aplicação desde o inicio com "Identity", sem a necessidade das configurações acima execute o comando abaixo:
+
+    dotnet new mvc -o sampleIdentity -n sampleIdentity -au Individual -f net6.0
+
+
+
+
