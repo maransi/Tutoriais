@@ -1,0 +1,283 @@
+Tutorial Projeto InvestTools - Criando as APIs
+----------------------------------------------
+
+. Crie dentro da pasta "Utils" a interface "IRepository" como abaixo:
+
+    using investTools.Web.Data;
+    using Microsoft.AspNetCore.Mvc;
+
+    namespace investTools.Web.Utils;
+
+    public interface IRepository<T, K, C> where T : BaseEntity
+    {
+        Task<int> InsertAsync(C item);
+        Task<T> UpdateAsync(T item);
+        Task<bool> DeleteAsync(K id);
+        Task<T> GetByIdAsync(K id);
+        Task<List<T>> GetAllAsync();
+        Task<bool> ExistAsync(K id);
+    }
+
+. Crie dentro da pasta "Models.Pessoa" a interface "IInvestidorRepository.cs" como abaixo:
+
+    using investTools.Web.Utils;
+    using investTools.Web.ViewModels.Pessoa;
+
+    namespace investTools.Web.Models.Pessoa;
+
+    public interface IInvestidorRepository: IRepository<Investidor,int, CreateInvestidorViewModel>
+    {
+        
+    }
+
+. Crie dentro da pasta "Models.Pessoa" a interface "IInvestidorRepository.cs" como abaixo:
+
+    using investTools.Web.Data;
+    using investTools.Web.Utils;
+    using investTools.Web.ViewModels;
+    using investTools.Web.ViewModels.Pessoa;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace investTools.Web.Models.Pessoa;
+
+    public class InvestidorRepository : IInvestidorRepository
+    {
+        private readonly ApplicationDbContext _context;
+        public InvestidorRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public Task<bool> DeleteAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> ExistAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<Investidor>> GetAllAsync()
+        {
+            var investidores = await _context.Investidores
+                                            .AsNoTracking()
+                                            .ToListAsync();
+
+            return investidores;
+        }
+
+        public Task<Investidor> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<int> InsertAsync(CreateInvestidorViewModel model)
+        {
+            // try
+            // {
+                var investidor = new Investidor
+                {
+                    CPF = model.CPF,
+                    Nome = model.Nome,
+                    Renda = model.Renda,
+                    AporteMensal = model.AporteMensal,
+                    DataInclusao = DateTime.Now
+                };
+
+                await _context.AddAsync( investidor );
+
+                var savechangesresult = await _context.SaveChangesAsync();
+
+                return savechangesresult;
+            // }
+            // catch( Microsoft.EntityFrameworkCore.DbUpdateException ex)
+            // {
+                // throw new Exception( ex.Message );
+            // }
+        }
+
+        public Task<Investidor> UpdateAsync(Investidor item)
+        {
+            throw new NotImplementedException();
+        }
+
+    }
+
+. Inclua as linhas abaixo na classe "Program.cs":
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Services.AddScoped<IInvestidorRepository, InvestidorRepository>();      // Linha inserida
+
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    ...
+    builder.Services.AddControllersWithViews()                                      // Linha alterada
+                    .ConfigureApiBehaviorOptions(options =>        
+                                                {                                                       
+                                                    options.SuppressModelStateInvalidFilter = true;     
+                                                }); 
+    ...
+    app.UseAuthentication();
+    app.UseAuthorization();                                                         // Linha inserida
+
+    app.MapControllerRoute(                                                         // Linha inserida
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+
+
+. Crie a pasta "ViewModels".
+
+. Crie a classe "ResultViewModel.cs" dentro da pasta "ViewModels" como abaixo:
+
+    using System.Collections.Generic;
+    using investTools.Web.Models.Pessoa;
+
+    namespace investTools.Web.ViewModels;
+
+    public class ResultViewModel<T>
+    {
+        public ResultViewModel(T data, List<string> errors)
+        {
+            Data = data;
+            Errors = errors;
+        }
+
+        public ResultViewModel(T data)
+        {
+            Data = data;
+        }
+
+        public ResultViewModel(List<string> errors)
+        {
+            Errors = errors;
+        }
+
+        public ResultViewModel(string error)
+        {
+            Errors.Add(error);
+        }
+        public T Data { get; private set; }
+        public List<string> Errors { get; private set; } = new();
+    }
+
+. Crie a pasta "ViewModels.Pessoa".
+
+. Crie a classe "CreateInvestidorViewModel.cs" dentro da pasta "ViewModels.Pessoa"
+
+    using System.ComponentModel.DataAnnotations;
+
+    namespace investTools.Web.ViewModels.Pessoa;
+
+    public class CreateInvestidorViewModel
+    {
+        [Required(ErrorMessage = "Este Campo é Obrigatório")]
+        [MaxLength(11, ErrorMessage = "Este Campo de Conter 11 Caracteres")]
+        [MinLength(11, ErrorMessage = "Este Campo de Conter 11 Caracteres")]
+        public string? CPF { get; set; }
+
+        [Required(ErrorMessage = "Este Campo é Obrigatório")]
+        [StringLength(50)]
+        public string? Nome { get; set; }
+
+        public decimal? Renda { get; set; }
+
+        public decimal AporteMensal{ get; set; }
+
+    }
+
+. Crie a classe "InvestidorViewModel.cs" dentro da pasta "ViewModels.Pessoa"
+
+    namespace investTools.Web.ViewModels.Pessoa;
+
+    public class InvestidorViewModel
+    {
+        public string? cpf { get; set; }
+        public string? nome { get; set; }
+
+    }
+
+. Crie a pasta "Controllers.Api.Pessoa" e dentro dela a classe "InvestidorAPIController.cs" como abaixo:
+
+    using investTools.Web.Data;
+    using investTools.Web.Extensions;
+    using investTools.Web.Models.Pessoa;
+    using investTools.Web.ViewModels;
+    using investTools.Web.ViewModels.Pessoa;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace investTools.Web.Controllers.Api.Pessoa;
+
+    [ApiController]
+    [Route("[controller]/api/")]
+    public class InvestidorAPIController: ControllerBase
+    {
+        private readonly IInvestidorRepository _investidorRepository;
+
+        public InvestidorAPIController(IInvestidorRepository investidorRepository)
+        {
+            _investidorRepository = investidorRepository;
+        }
+
+        [HttpGet("v1")]
+        public async Task<ActionResult<List<Investidor>>> GetAllAsync()
+        {
+            try
+            {
+                var investidores = _investidorRepository.GetAllAsync();
+
+                return Ok( new ResultViewModel< Task<List<Investidor>> >( investidores ));
+            }
+            catch( Exception ex)
+            {
+                return StatusCode( 500, new ResultViewModel<List<Investidor>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
+            }
+        }
+
+        [HttpPost("v1")]
+        public async Task<ActionResult<Investidor>> PostAsync( [FromBody] CreateInvestidorViewModel model )
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new ResultViewModel<Investidor>(ModelState.GetErrors()));
+
+            try
+            {
+                var resultRet = await _investidorRepository.InsertAsync( model );
+
+                if (resultRet > 0 )
+                {
+                    return Created($"investidor/v1/cpf/{model.CPF}", new ResultViewModel<CreateInvestidorViewModel>(model));
+                }
+                else
+                {
+                    return StatusCode(500, new ResultViewModel<Investidor>($"Ocorreu o seguinte erro "));  // Linha alterada
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ResultViewModel<Investidor>($"Ocorreu o seguinte erro [ {ex.Message} ]"));  // Linha alterada
+
+            }
+        }
+    }
+
+. Acesse o Postman e execute as URLs abaixo:
+
+    Method: GET
+    Url: https://localhost:[porta]/investidorAPI/api/v1
+
+
+    Method: POST
+    Url: https://localhost:[porta]/investidorAPI/api/v1
+    Body.raw: 
+            {
+                "CPF": "00011122231",
+                "Nome": "JOSE DA SILVA",
+                "Renda": 1000,
+                "AporteMensal":200
+            }       
+    Type: JSON
+

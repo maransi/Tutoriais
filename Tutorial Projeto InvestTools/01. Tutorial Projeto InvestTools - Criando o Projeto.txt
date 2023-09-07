@@ -1,0 +1,104 @@
+Tutorial Projeto InvestTools - Criando o projeto
+------------------------------------------------
+
+. Configurando o ambiente:
+
+    . Instale o "DB Browser for SQLite" para realizar as consultas no banco de dados
+
+        sudo apt-get update && sudo apt-get upgrade
+
+        sudo apt-get install sqlite3
+
+        sqlite3 --version
+
+        sudo apt-get install sqlitebrowser
+
+    . Instalação para as versões acima do Ubuntu 22.04
+
+        wget https://dot.net/v1/dotnet-install.sh
+        chmod +x dotnet-install.sh
+        ./dotnet-install.sh -c 3.1
+        ./dotnet-install.sh -c 5.0
+        ./dotnet-install.sh -c 6.0
+        ./dotnet-install.sh -c 7.0
+
+        dotnet --version
+
+        # insira as linhas abaixo no arquivo ".bashrc"
+        export PATH="home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"
+        export DOTNET_ROOT=/home/$USER/.dotnet/
+
+        source ~/.bashrc
+
+        sudo ln -s /home/$USER/.dotnet/dotnet /usr/bin/dotnet
+
+        dotnet --version
+        dotnet --list-runtimes
+        dotnet --list-sdks
+
+
+    . Instalação das extensões do VSCode
+
+            C# 
+            C# Extensions (JosKreativ)
+            C# XML Documentation Comments
+            C# Snippets
+            vscode-solution-explorer
+            ASP.NET Helper
+            RapidApi
+            Bracket Pair Colorization Toggler
+            Razor Snippets
+            Libman
+            Docker
+            vscode-icons (Opcional)
+            VZ Dotnet File Template
+            Auto-Using for C#
+            Error Lens
+
+    . Instalação do Nodejs
+
+        sudo apt-get install nodejs
+        sudo apt-get install npm
+
+        ou
+
+        sudo apt-get install curl python-software-properties
+        curl -sL https://deb.nodesource.com/setup_12.x | sudo bash -
+        sudo apt-get install -y nodejs
+        
+        node -v
+        npm -v
+
+
+
+. Na pasta de projetos, execute os comandos abaixo para criar a solução:
+
+    dotnet new sln -n "InvestTools"
+
+    dotnet new mvc -o InvestTools.Web -n investTools.Web -f net6.0
+    dotnet sln add ./InvestTools.Web/
+
+    dotnet new "classlib" -lang "C#" -n "investTools.Service" -o "InvestTools.Service"
+    dotnet sln add ./InvestTools.Service/
+
+. Execute os comandos abaixo dentro do projeto "InvestTools.Web"
+
+    cd InvestTools.Web
+
+    dotnet add package Microsoft.EntityFrameworkCore --version 6.0.12
+    dotnet add package Microsoft.EntityFrameworkCore.Tools --version 6.0.12
+
+    dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.12
+
+    dotnet add package Microsoft.EntityFrameworkCore.Sqlite --version 6.0.12
+
+. Levante e execute o projeto:
+
+    dotnet clean
+    dotnet restore
+    dotnet build
+    dotnet run
+    
+
+    dotnet run --project /InvestTools.Web/
+
