@@ -740,8 +740,10 @@ Polimorfismo
 
     end;
 
-
 . Exemplo de uma classe que implementa uma Interface:
+
+    . Pressione "Ctrl + Shift + G" para criar um código GUID "['{FB1F4FB1-8AD8-48FD-AEA5-1E33B4628879}']"
+
 
     unit ClasseTBridgeClientePrejuizo;
 
