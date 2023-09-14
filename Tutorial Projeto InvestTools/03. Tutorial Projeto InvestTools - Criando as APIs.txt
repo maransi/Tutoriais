@@ -3,12 +3,9 @@ Tutorial Projeto InvestTools - Criando as APIs
 
 . Crie dentro da pasta "Utils" a interface "IRepository" como abaixo:
 
-    using investTools.Web.Data;
-    using Microsoft.AspNetCore.Mvc;
-
     namespace investTools.Web.Utils;
 
-    public interface IRepository<T, K, C> where T : BaseEntity
+    public interface IRepository<T, K, C> where T : AuditEntity
     {
         Task<int> InsertAsync(C item);
         Task<T> UpdateAsync(T item);
@@ -30,7 +27,7 @@ Tutorial Projeto InvestTools - Criando as APIs
         
     }
 
-. Crie dentro da pasta "Models.Pessoa" a interface "IInvestidorRepository.cs" como abaixo:
+. Crie dentro da pasta "Models.Pessoa" a classe "InvestidorRepository.cs" como abaixo:
 
     using investTools.Web.Data;
     using investTools.Web.Utils;
@@ -122,12 +119,12 @@ Tutorial Projeto InvestTools - Criando as APIs
     app.UseAuthentication();
     app.UseAuthorization();                                                         // Linha inserida
 
-    app.MapControllerRoute(                                                         // Linha inserida
+    app.MapControllerRoute(                                                         
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
-. Crie a pasta "ViewModels".
+. Crie a pasta "ViewModels" na raiz do projeto.
 
 . Crie a classe "ResultViewModel.cs" dentro da pasta "ViewModels" como abaixo:
 
@@ -197,6 +194,25 @@ Tutorial Projeto InvestTools - Criando as APIs
         public string? nome { get; set; }
 
     }
+
+. Crie a pasta "Extensions" na raiz do projeto e crie a classe "ModelStateExtension.cs" abaixo:
+
+    using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+    namespace investTools.Web.Extensions;
+
+    public static class ModelStateExtension
+    {
+        public static List<string> GetErrors(this ModelStateDictionary modelState)
+        {
+            var result = new List<string>();
+            foreach (var item in modelState.Values)
+                result.AddRange(item.Errors.Select(error => error.ErrorMessage));
+
+            return result;
+        }
+    }
+
 
 . Crie a pasta "Controllers.Api.Pessoa" e dentro dela a classe "InvestidorAPIController.cs" como abaixo:
 
