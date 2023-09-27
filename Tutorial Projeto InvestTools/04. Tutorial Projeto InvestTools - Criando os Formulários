@@ -252,6 +252,13 @@ Tutorial Projeto InvestTools - Criando os Formulários
         <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
 
+        <!-- Page level plugins -->
+        <script src="~/vendor/chart.js/Chart.min.js"></script>
+
+        <!-- Page level custom scripts -->
+        <script src="~/js/demo/chart-area-demo.js"></script>
+        <script src="~/js/demo/chart-pie-demo.js"></script>
+
         @await RenderSectionAsync("Scripts", required: false)
     </body>
 
@@ -488,3 +495,7 @@ Tutorial Projeto InvestTools - Criando os Formulários
     . Adequar o novo "_Layout" para fazer uso do menu de login do Identity
 
 
+    https://learn.microsoft.com/pt-br/aspnet/core/fundamentals/tools/dotnet-aspnet-codegenerator?view=aspnetcore-7.0
+
+    https://www.macoratti.net/17/12/aspcore_ctrlcmd1.htm
+    https://www.macoratti.net/17/12/aspcore_ctrlcmd2.htm
