@@ -1,0 +1,75 @@
+Tutorial Projeto InvestTools - Adequação ao Identity
+----------------------------------------------------
+
+    . Baseado no video:
+
+        https://www.youtube.com/watch?v=RnxwwohOwaM&t=14s
+
+    . Execute o comando abaixo na pasta raiz do projeto:
+
+        dotnet add package Microsoft.AspNetCore.Identity --version 6.0.12
+
+        dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 6.0.12
+
+        dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design --version 6.0.11
+
+        dotnet tool install --global dotnet-aspnet-codegenerator --version 6.0.11
+
+
+        #dotnet add package Microsoft.AspNetCore.Identity.UI --version 6.0.12
+
+        #dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.12
+
+    . Acesse a classe "AppDbContext.cs" e altere a linha abaixo:
+
+        using Microsoft.AspNetCore.Identity.EntityFrameworkCore;                    // Linha inserida
+
+        ...
+        public class AppDbContext: IdentityDbContext                                // DbContext       // Linha aterada, substitução da interfae "DbContext" pela "IdentityDbContext"
+        ...
+
+    . Faça a alteração abaixo na classe "Program.cs":
+
+        ...
+        using Microsoft.AspNetCore.Identity;                                        // Linha inserida
+        ...
+
+        builder.Services.AddDbContext<AppDbContext>( options => {                           
+            options.UseSqlite( 
+                builder.Configuration["ConnectionStrings:DefaultConnection"]);
+        });
+     
+        builder.Services.AddDefaultIdentity<IdentityUser, IdentityRole>()           // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+            .AddEntityFrameworkStores<AppDbContext>();                              // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+        ...
+        app.UseAuthentication();                                    
+        app.UseAuthorization();                                                     // Linha inserida
+
+    . Na raiz do projeto execute os comandos abaixo:
+
+        dotnet clean
+
+        dotnet build
+
+        dotnet ef migrations add IdentityMigration
+        #dotnet ef migrations add IdentityMigration --project [Project Infrastruture] -s [Project UI] --verbose
+
+        dotnet ef database update
+
+    . Acesse o banco e verifique se as tabelas do "Identity" foram criadas.
+
+        . Modelo de dados gerado:
+
+            +----------------------+        +------------------+    +-----------------------+          
+            |   AspNetRoleClaims   |--------|   AspNetRoles    |    |   AspNetUserLogins    |
+            +----------------------+        +------------------+    +-----------------------+          
+                                                    |                         |
+                                                    |               +-----------------------+       +-----------------------+
+                                                    |               |   AspNetUsers         |-------|   AspNetUserTokens    |
+                                                    |               +-----------------------+       +-----------------------+
+                                                    |                         |         |
+                                            +------------------+              |         |           +-----------------------+
+                                            |  AspNetUserRoles |--------------+         +-----------|    AspNetUserClaims   |
+                                            +------------------+                                    +-----------------------+
+
+12.40

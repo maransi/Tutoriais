@@ -1,0 +1,9 @@
+Tutorial InvestTools - Scaffolding
+----------------------------------
+
+    # ASP .NET Core - Scaffolding : criando Controllers e Views via linha de comando
+    https://www.macoratti.net/17/12/aspcore_ctrlcmd2.htm
+    https://learn.microsoft.com/pt-br/aspnet/core/mvc/controllers/areas?view=aspnetcore-7.0
+    https://www.mattmillican.com/posts/aspnetcore-controller-scaffolding/
+    https://www.learnhowtoprogram.com/c-and-net/building-an-api/scaffolding-api-controllers
+
