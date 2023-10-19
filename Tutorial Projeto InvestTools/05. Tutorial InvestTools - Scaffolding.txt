@@ -1,9 +1,94 @@
 Tutorial InvestTools - Scaffolding
 ----------------------------------
 
-    # ASP .NET Core - Scaffolding : criando Controllers e Views via linha de comando
-    https://www.macoratti.net/17/12/aspcore_ctrlcmd2.htm
-    https://learn.microsoft.com/pt-br/aspnet/core/mvc/controllers/areas?view=aspnetcore-7.0
-    https://www.mattmillican.com/posts/aspnetcore-controller-scaffolding/
-    https://www.learnhowtoprogram.com/c-and-net/building-an-api/scaffolding-api-controllers
+    . Baseado no vídeo abaixo:
 
+        # ASP .NET Core - Scaffolding : criando Controllers e Views via linha de comando
+        https://www.macoratti.net/17/12/aspcore_ctrlcmd2.htm
+
+    . Execute os comandos abaixo na pasta do projeto ".Web":
+
+        cd ./InvestTools.Web/
+
+        dotnet add package Microsoft.VisualStudio.Web.CodeGenerators.Mvc --version 6.0.10
+
+        dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design --version 6.0.10
+
+        dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.12
+
+        dotnet clean
+
+        dotnet restore
+
+        dotnet build
+
+        dotnet aspnet-codegenerator --help
+
+    . Execute o comando abaixo na raiz do projeto
+
+        dotnet aspnet-codegenerator controller -name InvestidorController -m Investidor -dc ApplicationDbContext --relativeFolderPath Controllers --useDefaultLayout
+
+    . Altere as "Views" criadas abaixo com a identificação do "Layout":
+
+        ./Views/Investidor/Create.cshtml
+        ./Views/Investidor/Delete.cshtml
+        ./Views/Investidor/Details.cshtml
+        ./Views/Investidor/Edit.cshtml
+        ./Views/Investidor/Index.cshtml
+
+        . Linhas Inseridas:
+
+            ...
+            @{
+                ViewData["Title"] = "Create";
+                Layout = "~/Views/Shared/_Layout.cshtml";      // Linha inserida
+            }
+            ...
+
+    . Insira as linhas abaixo no menu do sistema "_SidebarMenu.cshtml":
+
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+            ...
+
+            <!-- Nav Item - Tables -->
+            <li class="nav-item active">
+                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Tables">
+                    <i class="fas fa-fw fa-table"></i>
+                    <span>Tables</span></a>
+            </li>
+
+
+
+            <!-- Inicio da Inserção -->
+
+            <!-- Nav Item - Pages Collapse Menu ** Cadastro ** -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseCadastro" aria-expanded="true"
+                    aria-controls="collapseCadastro">
+                    <i class="fas fa-fw fa-cog"></i>
+                    <span>Cadastros</span>
+                </a>
+                <div id="collapseCadastro" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <h6 class="collapse-header">Cadastros Gerais</h6>
+                        <a class="collapse-item" asp-area="" asp-controller="Investidor" asp-action="Index">Investidores (ASP.NET MVC)</a>
+                    </div>
+                </div>
+            </li>
+
+            <!-- Fim da Inserção -->
+
+
+
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+        </ul>
+
+    . Execute a aplicação, veja se o menu de cadastro está aparecendo e se está funcionando o CRUD do cadastro de Investidores.
