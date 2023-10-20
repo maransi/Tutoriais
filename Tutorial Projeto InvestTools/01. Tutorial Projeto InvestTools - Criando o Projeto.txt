@@ -1,6 +1,51 @@
 Tutorial Projeto InvestTools - Criando o projeto
 ------------------------------------------------
 
+. Play Lists:
+
+    #Identity
+    https://www.youtube.com/watch?v=y0Ai-2f0oXQ&list=PLJ4k1IC8GhW0bOvBC4Z4hTvn1fVKGE7or
+
+    #C# Generics
+    https://www.youtube.com/watch?v=xlq2hGoeA0g&list=PLJ4k1IC8GhW0zYgGxzd1Mszo5UUPTFB8y
+
+    #Programação Paralela
+    https://www.youtube.com/watch?v=7K9hxhLqz2A&list=PLJ4k1IC8GhW1Wj-dGT5UTLvZuRzBCHf6b
+
+    #LINQ - Fundamentos
+    https://www.youtube.com/watch?v=Mi2_wpcawGw&list=PLJ4k1IC8GhW0yky43O7TeNwRvaVrHdOmJ
+
+    #NET 6 - LINQ novos recursos
+    https://www.youtube.com/watch?v=E7j72kx0Ryo&list=PLJ4k1IC8GhW2Ebz7tArjJf80TdxJdyNMQ
+
+    #Fast Report
+    https://www.youtube.com/watch?v=4K2h9jb65Bg&list=PLJ4k1IC8GhW3cMUhddOMIrZwtkOQiG55a
+
+    #Microservices
+    https://www.youtube.com/watch?v=ZHiz0nQerYs&list=PLJ4k1IC8GhW24-nppbX0n0OE3DBGhsYEs
+
+    #Loja virtual ASP.NET Core com Microservice
+    https://www.youtube.com/watch?v=jap8tXIAMi4&list=PLJ4k1IC8GhW1UtPi9nwwW9l4TwRLR9Nxg
+
+    #Kubernetes
+    https://www.youtube.com/watch?v=fXYKWH70Uoo&list=PLJ4k1IC8GhW3vTpsfKl1gw2f5TlPugkVW
+
+    #Docker - Ambiente .Net
+    https://www.youtube.com/watch?v=VbEhMVcWOFs&list=PLJ4k1IC8GhW1ImrDakh7_iFkllFULG4-h
+
+    #Minimal APIs
+    https://www.youtube.com/watch?v=Ha9-Udmvim4&list=PLJ4k1IC8GhW0GuisO9DvYTkyf99BI9ZZr
+
+    #Design Patterns
+    https://www.youtube.com/watch?v=1Z8oiIA_L28&list=PLJ4k1IC8GhW1L7fOWe238fetknEfBmG1I
+
+    #Design Patterns Criacionais Gof
+    https://www.youtube.com/watch?v=JZ8JmIr7uJ0&list=PLJ4k1IC8GhW0uku4PsG_R3krP7QbSzfYr
+
+    #ASP .NET Core
+    https://www.youtube.com/watch?v=wBVOIkGgGYU&list=PLJ4k1IC8GhW2Nu9ZVqmujPMVFwLOcYOqj
+
+
 . Configurando o ambiente:
 
     . Instale o "DB Browser for SQLite" para realizar as consultas no banco de dados
