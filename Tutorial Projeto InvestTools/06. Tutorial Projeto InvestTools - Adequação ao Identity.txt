@@ -7,13 +7,13 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
     . Execute o comando abaixo na pasta raiz do projeto:
 
-        dotnet add package Microsoft.AspNetCore.Identity --version 6.0.12
+        #dotnet add package Microsoft.AspNetCore.Identity --version 6.0.12
 
         dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 6.0.12
 
-        #dotnet add package Microsoft.AspNetCore.Identity.UI --version 6.0.12
+        dotnet add package Microsoft.AspNetCore.Identity.UI --version 6.0.12
 
-    . Acesse a classe "AppDbContext.cs" e altere a linha abaixo:
+    . Acesse a classe "ApplicationDbContext.cs" e altere a linha abaixo:
 
         using Microsoft.AspNetCore.Identity.EntityFrameworkCore;                    // Linha inserida
 
@@ -25,6 +25,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         ...
         using Microsoft.AspNetCore.Identity;                                        // Linha inserida
+        using Microsoft.Extensions.DependencyInjection;                             // Linha inserida
         ...
 
         builder.Services.AddDbContext<AppDbContext>( options => {                           
@@ -32,8 +33,8 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                 builder.Configuration["ConnectionStrings:DefaultConnection"]);
         });
      
-        builder.Services.AddDefaultIdentity<IdentityUser, IdentityRole>()           // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
-            .AddEntityFrameworkStores<AppDbContext>();                              // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+        builder.Services.AddDefaultIdentity<IdentityUser>()           // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+            .AddEntityFrameworkStores<ApplicationDbContext>();                              // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
         ...
         app.UseAuthentication();                                    
         app.UseAuthorization();                                                     // Linha inserida
@@ -65,4 +66,157 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                                             |  AspNetUserRoles |--------------+         +-----------|    AspNetUserClaims   |
                                             +------------------+                                    +-----------------------+
 
-12.40
+    . Acesse a classe "InvestidorController" e insira a linha abaixo:
+
+        ...
+        using Microsoft.AspNetCore.Authorization;       // Linha inseriada
+        ...
+
+        namespace investTools.Web.Controllers
+        {
+            [Authorize]                                     // Linha inseriada
+            public class InvestidorController : Controller
+            {
+                ...
+            }
+        }
+
+    . Levante a aplicação e tente acessar o cadastro de investidores.
+
+        . Ocorrerá um erro devido não estar logado na aplicação. O ASP.Net tenta desviar para a página de Login para fazer a 
+            autenticação, porém não temos uma página de Login ainda.
+
+    . Crie dentro da pasta "ViewModels" a classe "RegisterViewModel" como abaixo, esta classe se comportará como um "DTO":
+
+        using System.ComponentModel.DataAnnotations;
+
+        namespace investTools.Web.ViewModels;
+
+        public class RegisterViewModel
+        {
+            [Required]
+            [EmailAddress]
+            public string Email { get; set; }
+
+            [Required]
+            [DataType(DataType.Password)]
+            public string Password { get; set; }
+
+            [DataType(DataType.Password)]
+            [Display(Name = "Confirme a senha")]
+            [Compare("Password", ErrorMessage = "As senhas não conferem")]
+            public string ConfirmPassword { get; set; }
+        }
+        
+    . Crie dentro da pasta "ViewModels" a classe "LoginViewModel" como abaixo:
+
+        using System.ComponentModel.DataAnnotations;
+
+        namespace investTools.Web.ViewModels;
+
+        public class LoginViewModel
+        {
+            [Required(ErrorMessage = "O email é obrigatório")]
+            [EmailAddress(ErrorMessage = "Email inválido")]
+            public string Email { get; set; }
+
+            [Required(ErrorMessage = "A senha é obrigatória")]
+            [DataType(DataType.Password)]
+            public string Password { get; set; }
+
+            [Display(Name = "Lembrar-me")]
+            public bool RememberMe{ get; set; }
+        }
+
+    . Crie o "Controller" "AccountController" abaixo na pasta "Controllers":
+
+        using investTools.Web.ViewModels;
+        using Microsoft.AspNetCore.Identity;
+        using Microsoft.AspNetCore.Mvc;
+
+        namespace investTools.Web.Controllers;
+
+        public class AccountController : Controller
+        {
+            private readonly UserManager<IdentityUser> userManager;
+            private readonly SignInManager<IdentityUser> signInManager;
+
+            public AccountController(UserManager<IdentityUser> userManager,
+                                                SignInManager<IdentityUser> signInManager)
+            {
+                this.userManager = userManager;
+                this.signInManager = signInManager;
+            }
+
+            [HttpGet]
+            public IActionResult Register()
+            {
+                return View();
+            }
+
+            [HttpPost]
+            public async Task<IActionResult> Register(RegisterViewModel model)
+            {
+                if (ModelState.IsValid)
+                {
+                    // Copia os dados do RegisterViewModel para o IdentityUser
+                    var user = new IdentityUser
+                    {
+                        UserName = model.Email,
+                        Email = model.Email
+                    };
+
+                    // Copia os dados do usuário na tabela AspNetUsers
+                    var result = await userManager.CreateAsync(user, model.Password);
+
+                    // Se o usuário foi criado com sucesso, faz o login do usuário
+                    // usando o serviço SignInManager e redireciona para o Método /action Index
+                    if (result.Succeeded)
+                    {
+                        await signInManager.SignInAsync(user, isPersistent: false);
+
+                        return RedirectToAction("Index", "home");
+
+                    }
+
+                    // Se houver erros então inclui no ModelState
+                    // que será exibido pela tag helper summary na validação
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+
+                return View(model);
+            }
+
+            [HttpGet]
+            public IActionResult Login()
+            {
+                return View();
+            }
+
+            [HttpPost]
+            public async Task<IActionResult> Login(LoginViewModel model)
+            {
+                if (ModelState.IsValid)
+                {
+                    var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("index", "home");
+                    }
+
+                    ModelState.AddModelError(string.Empty, "Login Inválido");
+                }
+
+                return View(model);
+            }
+        }
+
+    . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Register.cshtml".
+
+        @model RegisterViewModel
+
+23.00
