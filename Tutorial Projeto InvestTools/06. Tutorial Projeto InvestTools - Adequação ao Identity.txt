@@ -219,4 +219,12 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         @model RegisterViewModel
 
+https://code-maze.com/user-registration-aspnet-core-identity/
+https://code-maze.com/asp-net-core-identity-series/
+
+https://www.tutorialspoint.com/asp.net_core/asp.net_core_user_registration.htm
+https://www.tutorialspoint.com/asp.net_core/asp.net_core_create_a_user.htm
+https://www.tutorialspoint.com/asp.net_core/asp.net_core_log_in_and_log_out.htm
+
+
 23.00
