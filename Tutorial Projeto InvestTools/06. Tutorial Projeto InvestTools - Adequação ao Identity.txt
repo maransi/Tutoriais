@@ -35,6 +35,31 @@ Tutorial Projeto InvestTools - Adequação ao Identity
      
         builder.Services.AddDefaultIdentity<IdentityUser>()                         // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
             .AddEntityFrameworkStores<ApplicationDbContext>();                      // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+
+        builder.Services.ConfigureApplicationCookie(options =>                      // Linha inserida
+        {                                                                           // Linha inserida
+            // Cookie settings
+            options.Cookie.HttpOnly = true;                                         // Linha inserida
+            options.Cookie.Name = "InvestTools.Cookies";                            // Linha inserida
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(5);                       // Linha inserida
+
+            options.LoginPath = "/Account/Login";                                   // Linha inserida
+            options.LogoutPath = "/Account/Logout";                                 // Linha inserida
+            options.AccessDeniedPath = "/Account/AccessDenied";                     // Linha inserida
+            options.SlidingExpiration = true;                                       // Linha inserida
+        });
+
+        builder.Services.Configure<IdentityOptions>( options => 
+        {
+            options.Password.RequiredLength = 6;                                    // Linha inserida
+            options.Password.RequiredUniqueChars = 3;                               // Linha inserida
+            options.Password.RequireNonAlphanumeric = false;                        // Linha inserida
+            options.Password.RequireDigit = false;                                  // Linha inserida
+            options.Password.RequireUppercase = false;                              // Linha inserida
+        });
+
+        var app = builder.Build();
+
         ...
         app.UseAuthentication();                                    
         app.UseAuthorization();                                                     // Linha inserida
@@ -245,7 +270,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
         @model investTools.Web.ViewModels.RegisterViewModel
 
         @{
-            ViewData["Title"] = "Novo Usuário";
+            ViewData["Title"] = "Privacy Policy";
             Layout = "~/Views/Shared/_Layout.cshtml";
         }
 
@@ -262,7 +287,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                                     <div class="text-center">
                                         <h1 class="h4 text-gray-900 mb-4">Nova Conta!</h1>
                                     </div>
-                                        <form class="user" 
+                                    <form class="user" 
                                             method="post" 
                                             name="register" 
                                             id="register"
@@ -331,7 +356,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                                         <a class="small" href="forgot-password.html">Esqueceu a Senha?</a>
                                     </div>
                                     <div class="text-center">
-                                        <a class="small" href="login.html">Já tem uma conta? Faça o Login!</a>
+                                        <a class="small" asp-controller="account" asp-action="login">Já tem uma conta? Login!</a>
                                     </div>
                                 </div>
                             </div>
@@ -342,14 +367,13 @@ Tutorial Projeto InvestTools - Adequação ao Identity
             </div>
         </body>
 
-
     . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Login.cshtml".
 
         @model investTools.Web.ViewModels.LoginViewModel;
 
         @{
             ViewData["Title"] = "Login";
-            Layout = "~/Views/Shared/_Layout2.cshtml";
+            Layout = "~/Views/Shared/_Layout.cshtml";
         }
 
         <body class="bg-gradient-primary">
@@ -476,6 +500,34 @@ Tutorial Projeto InvestTools - Adequação ao Identity
             </ul>
         }
 
+    . Insira a linha abaixo na "Razor View" "/View/Shared/_Layout.cshtml"
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    
+                    <partial name="_LoginPartial.cshtml" />                 @* Linha Inserida *@
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <form class="form-inline">
+                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                    </form>
+
+                    ...
+                </nav>
+            
+                ...
+            </div>
+        </div>
+
+
     . Crie a pasta "Areas/Identity/Pages/Account" na raiz do projeto e copie a Razor Page "Views/Account/Login.cshtml" para a 
         nova pasta.
 
@@ -503,6 +555,74 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             . Observe o comportamento quando não estiver autenticado, pois deverá desviar para a tela de Login.
 
+    . Insira as linhas abaixo na "Razor View" "/View/Shared/_Layout.cshtml":
+
+            ...
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    
+                    <partial name="_LoginPartial.cshtml" /> 
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <form class="form-inline">
+                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                    </form>
+
+
+
+
+
+                    <!-- Trecho a ser Incluido -->
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+
+
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <img class="img-profile rounded-circle"
+                                    src="~/img/undraw_profile.svg">
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Profile
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Settings
+                                </a>
+                                <a class="dropdown-item" href="#">
+                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Activity Log
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <!-- Fim da Inserção -->
+
+
+
+
+                </nav>
+                <!-- End of Topbar -->
+            </div>
+
 https://code-maze.com/user-registration-aspnet-core-identity/
 https://code-maze.com/asp-net-core-identity-series/
 
@@ -510,5 +630,6 @@ https://www.tutorialspoint.com/asp.net_core/asp.net_core_user_registration.htm
 https://www.tutorialspoint.com/asp.net_core/asp.net_core_create_a_user.htm
 https://www.tutorialspoint.com/asp.net_core/asp.net_core_log_in_and_log_out.htm
 
+https://www.freecodespot.com/blog/asp-net-core-identity/#III_Login_and_Registration_using_Identity_in_ASPNET_Core_31
 
 23.00
