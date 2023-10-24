@@ -33,11 +33,20 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                 builder.Configuration["ConnectionStrings:DefaultConnection"]);
         });
      
-        builder.Services.AddDefaultIdentity<IdentityUser>()           // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
-            .AddEntityFrameworkStores<ApplicationDbContext>();                              // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+        builder.Services.AddDefaultIdentity<IdentityUser>()                         // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+            .AddEntityFrameworkStores<ApplicationDbContext>();                      // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
         ...
         app.UseAuthentication();                                    
         app.UseAuthorization();                                                     // Linha inserida
+
+        app.MapControllerRoute(                                                         // Linha inserida
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.MapRazorPages();                                                        // Linha inserida
+                    
+        app.Run();
+
 
     . Na raiz do projeto execute os comandos abaixo:
 
@@ -65,6 +74,10 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                                             +------------------+              |         |           +-----------------------+
                                             |  AspNetUserRoles |--------------+         +-----------|    AspNetUserClaims   |
                                             +------------------+                                    +-----------------------+
+
+    . Execute o comando abaixo na pasta raiz do projeto:
+
+        dotnet-aspnet-codegenerator identity --dbContext AppDbContext --files "Account.Login;Account.Logout;Account.Register"
 
     . Acesse a classe "InvestidorController" e insira a linha abaixo:
 
@@ -94,6 +107,9 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         public class RegisterViewModel
         {
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+
             [Required]
             [EmailAddress]
             public string Email { get; set; }
@@ -213,11 +229,279 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
                 return View(model);
             }
+
+            [HttpPost]
+            public async Task<IActionResult> Logout()
+            {
+                await signInManager.SignOutAsync();
+
+                return RedirectToAction("Index", "Home");
+            }
+
         }
 
     . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Register.cshtml".
 
-        @model RegisterViewModel
+        @model investTools.Web.ViewModels.RegisterViewModel
+
+        @{
+            ViewData["Title"] = "Novo Usuário";
+            Layout = "~/Views/Shared/_Layout.cshtml";
+        }
+
+        <body class="bg-gradient-primary">
+
+            <div class="container">
+
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Nova Conta!</h1>
+                                    </div>
+                                        <form class="user" 
+                                            method="post" 
+                                            name="register" 
+                                            id="register"
+                                            asp-controller="account"
+                                            asp-action="register">
+                                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <!-- <input type="text" class="form-control form-control-user" id="exampleFirstName"
+                                                    placeholder="First Name"> -->
+                                                <input asp-for="FirstName" 
+                                                        class="form-control form-control-user" 
+                                                        id="exampleFirstName"
+                                                        placeholder="Primeiro Nome"/>
+                                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <!-- <input type="text" class="form-control form-control-user" id="exampleLastName"
+                                                    placeholder="Last Name"> -->
+                                                <input asp-for="LastName" 
+                                                        class="form-control form-control-user" 
+                                                        id="exampleLastName"
+                                                        placeholder="Último Nome" />
+                                                <span asp-validation-for="LastName" class="text-danger"></span>
+                                            </div>
+                                        </div> 
+                                        <div class="form-group">
+                                            <!-- <input type="email" class="form-control form-control-user" id="exampleInputEmail"
+                                            placeholder="Email Address"> -->
+                                            <input asp-for="Email" 
+                                                    class="form-control form-control-user" 
+                                                    id="exampleInputEmail"
+                                                    placeholder="Endereço de Email" />
+                                            <span asp-validation-for="Email" 
+                                                    class="text-danger">
+                                            </span>                                    
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <input asp-for="Password" 
+                                                        class="form-control form-control-user"
+                                                        id="exampleInputPassword" 
+                                                        placeholder="Senha" />
+                                                <span asp-validation-for="Password" class="text-danger" ></span>
+                                                <!-- <input type="password" class="form-control form-control-user"
+                                                    id="exampleInputPassword" placeholder="Password"> -->
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input asp-for="ConfirmPassword" 
+                                                        class="form-control form-control-user"
+                                                        id="exampleRepeatPassword" 
+                                                        placeholder="Repeta a Senha" />
+                                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                                <!-- <input type="password" class="form-control form-control-user"
+                                                    id="exampleRepeatPassword" placeholder="Repeat Password"> -->
+                                            </div>
+                                        </div>
+                                        <a  class="btn btn-primary btn-user btn-block" 
+                                            onClick="document.getElementById('register').submit();">
+                                            Registrar Conta
+                                        </a>
+                                    </form>
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" href="forgot-password.html">Esqueceu a Senha?</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" href="login.html">Já tem uma conta? Faça o Login!</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </body>
+
+
+    . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Login.cshtml".
+
+        @model investTools.Web.ViewModels.LoginViewModel;
+
+        @{
+            ViewData["Title"] = "Login";
+            Layout = "~/Views/Shared/_Layout2.cshtml";
+        }
+
+        <body class="bg-gradient-primary">
+
+            <div class="container">
+
+                <!-- Outer Row -->
+                <div class="row justify-content-center">
+
+                    <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                        <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                            <div class="card-body p-0">
+                                <!-- Nested Row within Card Body -->
+                                <div class="row col-lg-12">
+                                    <div class="col-lg-12">
+                                        <div class="p-5">
+                                            <div class="text-center">
+                                                <h1 class="h4 text-gray-900 mb-4">Seja Bem Vindo</h1>
+                                            </div>
+                                            <form method="post" 
+                                                    id="login" 
+                                                    class="user" 
+                                                    asp-controller="account" 
+                                                    asp-action="login">
+                                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                <div class="form-group">
+                                                    <!-- <input type="email" class="form-control form-control-user"
+                                                        id="exampleInputEmail" aria-describedby="emailHelp"
+                                                        placeholder="Enter Email Address..."> -->
+                                                    
+                                                    <input type="email"
+                                                            asp-for="Email" 
+                                                            class="form-control form-control-user"
+                                                            id="exampleInputEmail" 
+                                                            aria-describedby="emailHelp"
+                                                            placeholder="Entre com o Email..." />
+                                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <!-- <input type="password" class="form-control form-control-user"
+                                                        id="exampleInputPassword" placeholder="Password"> -->
+
+                                                    <input type="password" 
+                                                            asp-for="Password" 
+                                                            class="form-control form-control-user"
+                                                            id="exampleInputPassword" 
+                                                            placeholder="Senha..." />
+                                                    <span asp-validation-for="Password" class="text-danger"></span>
+
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-checkbox small">
+                                                        <!-- <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                        <label class="custom-control-label" for="customCheck">Remember Me</label> -->
+
+                                                        <input type="checkbox" 
+                                                                class="custom-control-input" 
+                                                                id="customCheck" 
+                                                                asp-for="RememberMe" >
+                                                        <label class="custom-control-label" for="customCheck">Lembrar Senha</label>
+                                                    </div>
+                                                </div>
+                                                <a class="btn btn-primary btn-user btn-block"
+                                                    onClick="document.getElementById('login').submit();">
+                                                    Login
+                                                </a>
+                                            </form>
+                                            <hr>
+                                            <div class="text-center">
+                                                <a class="small" href="forgot-password.html">Esqueceu a Senha?</a>
+                                            </div>
+                                            <div class="text-center">
+                                                <a class="small" 
+                                                    asp-controller="account"
+                                                    asp-action="register">Nova Conta!</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </body>
+
+    . Crie dentro da pasta "View/Shared" a Razor View "_LoginPartial.cshtml" abaixo:
+
+        @using Microsoft.AspNetCore.Identity
+
+        @inject SignInManager<IdentityUser> SignInManager
+        @inject UserManager<IdentityUser> UserManager
+
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <ul class="nav-item">
+                <form method="post"
+                        asp-controller="account"
+                        asp-action="logout">
+                    <button type="submit"
+                            style="width:auto"
+                            class="nav-link btn btn-link py-0">
+                        Logout @User.Identity.Name        
+                    </button>
+                </form>
+            </ul>
+        }
+        else
+        {
+            <ul class="nav navbar-nav navbar-right">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Account"
+                    asp-action="Login">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Account"
+                    asp-action="Register">Register</a>
+                </li>
+            </ul>
+        }
+
+    . Crie a pasta "Areas/Identity/Pages/Account" na raiz do projeto e copie a Razor Page "Views/Account/Login.cshtml" para a 
+        nova pasta.
+
+    . Altere a Razor Page "Areas/Identity/Pages/Account/Login.cshtml" como abaixo:
+
+        @page                                                   @* Linha Inserida *@
+        @model investTools.Web.ViewModels.LoginViewModel;
+
+        @{
+            ViewData["Title"] = "Login";
+            Layout = "~/Views/Shared/_Layout2.cshtml";
+        }
+
+        <body class="bg-gradient-primary">
+            ...
+        </body>
+
+    . Execute o projeto e faça os testes abaixo:
+
+        . Teste as telas de Login e Register
+
+        . Teste as funcionalidades do sistema
+
+        . Teste a funcionalidade do cadastro de Investidores, autenticado e não autenticado. 
+
+            . Observe o comportamento quando não estiver autenticado, pois deverá desviar para a tela de Login.
 
 https://code-maze.com/user-registration-aspnet-core-identity/
 https://code-maze.com/asp-net-core-identity-series/
