@@ -267,652 +267,6 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
     . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Register.cshtml".
 
-        @model investTools.Web.ViewModels.RegisterViewModel
-
-        @{
-            ViewData["Title"] = "Privacy Policy";
-            Layout = "~/Views/Shared/_Layout.cshtml";
-        }
-
-        <body class="bg-gradient-primary">
-
-            <div class="container">
-
-                <div class="card o-hidden border-0 shadow-lg my-5">
-                    <div class="card-body p-0">
-                        <!-- Nested Row within Card Body -->
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="p-5">
-                                    <div class="text-center">
-                                        <h1 class="h4 text-gray-900 mb-4">Nova Conta!</h1>
-                                    </div>
-                                    <form class="user" 
-                                            method="post" 
-                                            name="register" 
-                                            id="register"
-                                            asp-controller="account"
-                                            asp-action="register">
-                                        <div asp-validation-summary="All" class="text-danger"></div>
-
-                                        <div class="form-group row">
-                                            <div class="col-sm-6 mb-3 mb-sm-0">
-                                                <!-- <input type="text" class="form-control form-control-user" id="exampleFirstName"
-                                                    placeholder="First Name"> -->
-                                                <input asp-for="FirstName" 
-                                                        class="form-control form-control-user" 
-                                                        id="exampleFirstName"
-                                                        placeholder="Primeiro Nome"/>
-                                                <span asp-validation-for="FirstName" class="text-danger"></span>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <!-- <input type="text" class="form-control form-control-user" id="exampleLastName"
-                                                    placeholder="Last Name"> -->
-                                                <input asp-for="LastName" 
-                                                        class="form-control form-control-user" 
-                                                        id="exampleLastName"
-                                                        placeholder="Último Nome" />
-                                                <span asp-validation-for="LastName" class="text-danger"></span>
-                                            </div>
-                                        </div> 
-                                        <div class="form-group">
-                                            <!-- <input type="email" class="form-control form-control-user" id="exampleInputEmail"
-                                            placeholder="Email Address"> -->
-                                            <input asp-for="Email" 
-                                                    class="form-control form-control-user" 
-                                                    id="exampleInputEmail"
-                                                    placeholder="Endereço de Email" />
-                                            <span asp-validation-for="Email" 
-                                                    class="text-danger">
-                                            </span>                                    
-                                        </div>
-                                        <div class="form-group row">
-                                            <div class="col-sm-6 mb-3 mb-sm-0">
-                                                <input asp-for="Password" 
-                                                        class="form-control form-control-user"
-                                                        id="exampleInputPassword" 
-                                                        placeholder="Senha" />
-                                                <span asp-validation-for="Password" class="text-danger" ></span>
-                                                <!-- <input type="password" class="form-control form-control-user"
-                                                    id="exampleInputPassword" placeholder="Password"> -->
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <input asp-for="ConfirmPassword" 
-                                                        class="form-control form-control-user"
-                                                        id="exampleRepeatPassword" 
-                                                        placeholder="Repeta a Senha" />
-                                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                                                <!-- <input type="password" class="form-control form-control-user"
-                                                    id="exampleRepeatPassword" placeholder="Repeat Password"> -->
-                                            </div>
-                                        </div>
-                                        <a  class="btn btn-primary btn-user btn-block" 
-                                            onClick="document.getElementById('register').submit();">
-                                            Registrar Conta
-                                        </a>
-                                    </form>
-                                    <hr>
-                                    <div class="text-center">
-                                        <a class="small" href="forgot-password.html">Esqueceu a Senha?</a>
-                                    </div>
-                                    <div class="text-center">
-                                        <a class="small" asp-controller="account" asp-action="login">Já tem uma conta? Login!</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </body>
-
-    . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Login.cshtml".
-
-        @model investTools.Web.ViewModels.LoginViewModel;
-
-        @{
-            ViewData["Title"] = "Login";
-            Layout = "~/Views/Shared/_Layout.cshtml";
-        }
-
-        <body class="bg-gradient-primary">
-
-            <div class="container">
-
-                <!-- Outer Row -->
-                <div class="row justify-content-center">
-
-                    <div class="col-xl-10 col-lg-12 col-md-9 ">
-
-                        <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
-                            <div class="card-body p-0">
-                                <!-- Nested Row within Card Body -->
-                                <div class="row col-lg-12">
-                                    <div class="col-lg-12">
-                                        <div class="p-5">
-                                            <div class="text-center">
-                                                <h1 class="h4 text-gray-900 mb-4">Seja Bem Vindo</h1>
-                                            </div>
-                                            <form method="post" 
-                                                    id="login" 
-                                                    class="user" 
-                                                    asp-controller="account" 
-                                                    asp-action="login">
-                                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                                <div class="form-group">
-                                                    <!-- <input type="email" class="form-control form-control-user"
-                                                        id="exampleInputEmail" aria-describedby="emailHelp"
-                                                        placeholder="Enter Email Address..."> -->
-                                                    
-                                                    <input type="email"
-                                                            asp-for="Email" 
-                                                            class="form-control form-control-user"
-                                                            id="exampleInputEmail" 
-                                                            aria-describedby="emailHelp"
-                                                            placeholder="Entre com o Email..." />
-                                                    <span asp-validation-for="Email" class="text-danger"></span>
-                                                </div>
-                                                <div class="form-group">
-                                                    <!-- <input type="password" class="form-control form-control-user"
-                                                        id="exampleInputPassword" placeholder="Password"> -->
-
-                                                    <input type="password" 
-                                                            asp-for="Password" 
-                                                            class="form-control form-control-user"
-                                                            id="exampleInputPassword" 
-                                                            placeholder="Senha..." />
-                                                    <span asp-validation-for="Password" class="text-danger"></span>
-
-                                                </div>
-                                                <div class="form-group">
-                                                    <div class="custom-control custom-checkbox small">
-                                                        <!-- <input type="checkbox" class="custom-control-input" id="customCheck">
-                                                        <label class="custom-control-label" for="customCheck">Remember Me</label> -->
-
-                                                        <input type="checkbox" 
-                                                                class="custom-control-input" 
-                                                                id="customCheck" 
-                                                                asp-for="RememberMe" >
-                                                        <label class="custom-control-label" for="customCheck">Lembrar Senha</label>
-                                                    </div>
-                                                </div>
-                                                <a class="btn btn-primary btn-user btn-block"
-                                                    onClick="document.getElementById('login').submit();">
-                                                    Login
-                                                </a>
-                                            </form>
-                                            <hr>
-                                            <div class="text-center">
-                                                <a class="small" href="forgot-password.html">Esqueceu a Senha?</a>
-                                            </div>
-                                            <div class="text-center">
-                                                <a class="small" 
-                                                    asp-controller="account"
-                                                    asp-action="register">Nova Conta!</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </body>
-
-    . Crie dentro da pasta "View/Shared" a Razor View "_LoginPartial.cshtml" abaixo:
-
-        @using Microsoft.AspNetCore.Identity
-
-        @inject SignInManager<IdentityUser> SignInManager
-        @inject UserManager<IdentityUser> UserManager
-
-        @if (SignInManager.IsSignedIn(User))
-        {
-            <ul class="nav-item">
-                <form method="post"
-                        asp-controller="account"
-                        asp-action="logout">
-                    <button type="submit"
-                            style="width:auto"
-                            class="nav-link btn btn-link py-0">
-                        Logout @User.Identity.Name        
-                    </button>
-                </form>
-            </ul>
-        }
-        else
-        {
-            <ul class="nav navbar-nav navbar-right">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Account"
-                    asp-action="Login">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Account"
-                    asp-action="Register">Register</a>
-                </li>
-            </ul>
-        }
-
-    . Insira a linha abaixo na "Razor View" "/View/Shared/_Layout.cshtml"
-
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
-
-            <!-- Main Content -->
-            <div id="content">
-
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    
-                    <partial name="_LoginPartial.cshtml" />                 @* Linha Inserida *@
-
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <form class="form-inline">
-                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                            <i class="fa fa-bars"></i>
-                        </button>
-                    </form>
-
-                    ...
-                </nav>
-            
-                ...
-            </div>
-        </div>
-
-
-    . Crie a pasta "Areas/Identity/Pages/Account" na raiz do projeto e copie a Razor Page "Views/Account/Login.cshtml" para a 
-        nova pasta.
-
-    . Altere a Razor Page "Areas/Identity/Pages/Account/Login.cshtml" como abaixo:
-
-        @page                                                   @* Linha Inserida *@
-        @model investTools.Web.ViewModels.LoginViewModel;
-
-        @{
-            ViewData["Title"] = "Login";
-            Layout = "~/Views/Shared/_Layout2.cshtml";
-        }
-
-        <body class="bg-gradient-primary">
-            ...
-        </body>
-
-    . Execute o projeto e faça os testes abaixo:
-
-        . Teste as telas de Login e Register
-
-        . Teste as funcionalidades do sistema
-
-        . Teste a funcionalidade do cadastro de Investidores, autenticado e não autenticado. 
-
-            . Observe o comportamento quando não estiver autenticado, pois deverá desviar para a tela de Login.
-
-    . Altere o conteúdo da "Razor View" "/View/Shared/_LoginPartial.cshtml" pelo abaixo:
-
-        @using Microsoft.AspNetCore.Identity
-
-        @inject SignInManager<IdentityUser> SignInManager
-        @inject UserManager<IdentityUser> UserManager
-
-        <ul class="navbar-nav ml-auto">
-
-
-            <li class="nav-item dropdown no-arrow">
-                @if (SignInManager.IsSignedIn(User))
-                {
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <span class="mr-2 d-none d-lg-inline text-gray-600 small">@User.Identity.Name</span>
-                        <img class="img-profile rounded-circle"
-                            src="~/img/undraw_profile.svg">
-                    </a>
-
-                    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                        aria-labelledby="userDropdown">
-                        <a class="dropdown-item" href="#">
-                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                            Profile
-                        </a>
-                        <a class="dropdown-item" href="#">
-                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                            Settings
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" 
-                            data-toggle="modal" 
-                            data-target="#logoutModal">
-                            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                            Logout
-                        </a>
-                    </div>
-
-                }
-                else
-                {
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <!-- <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span> -->
-                        <img class="img-profile rounded-circle"
-                            src="~/img/undraw_profile.svg">
-                    </a>
-
-                    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                        aria-labelledby="userDropdown">
-                        <a class="dropdown-item" 
-                            asp-controller="Account" 
-                            asp-action="Login">
-                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                            Login
-                        </a>
-                        <a class="dropdown-item" 
-                            asp-controller="Account" 
-                            asp-action="Register">
-                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                            Nova Conta
-                        </a>
-                    </div>
-                }
-
-            </li>
-        </ul>
-
-
-    . Insira as linhas abaixo na "Razor View" "/View/Shared/_Layout.cshtml":
-
-            ...
-            <!-- Main Content -->
-            <div id="content">
-
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    
-
-                    <!-- Apague a linha abaixo -->
-                    <!-- <partial name="_LoginPartial.cshtml" /> -->
-
-
-
-
-                    <!-- Sidebar Toggle (Topbar) -->
-                    <form class="form-inline">
-                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                            <i class="fa fa-bars"></i>
-                        </button>
-                    </form>
-
-
-
-
-                    <!-- Insira a Linha abaixo -->
-
-                    <!-- Topbar Navbar -->
-                    <partial name="_LoginPartial.cshtml"/>
-                    <!-- End of Topbar -->
-
-                    <!-- Fim da Inserção -->
-
-
-
-
-                </nav>
-                <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
-
-                    @RenderBody()
-
-                </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
-            ...
-
-    . Crie a "Razor View" "/View/Shared/_ConfirmationLogoutPartial.cshtml" com o conteúdo abaixo:
-
-        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Confirma Logout?</h5>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">Selecione o Logout para Finalizar a sua Sessão</div>
-                    <div class="modal-footer">
-                        <form id="logout" 
-                                method="post"
-                                asp-controller="Account" 
-                                asp-action="Logout">
-                            <button class="btn btn-secondary" 
-                                    type="button" 
-                                    data-dismiss="modal">Cancel</button>
-                            <a class="btn btn-primary" 
-                                onClick="document.getElementById('logout').submit();">Logout</a>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    . Altere a "Razor View" "/View/Shared/_Layout.cshtml" com o conteúdo abaixo:
-
-        <!-- Scroll to Top Button-->
-        <a class="scroll-to-top rounded" href="#page-top">
-            <i class="fas fa-angle-up"></i>
-        </a>
-
-
-        <!-- Linha Alterada -->
-        <!-- Logout Modal-->
-        <partial name="_ConfirmationLogoutPartial.cshtml" />    ----+
-                                                                    | 
-                                                                    |   Substitui
-                                                                    |
-        <!-- Apague o conteúdo da "Logout Modal" -->        <-------+
-
-        <!-- Logout Modal-->
-        <!--
-        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Confirma Logout?</h5>
-                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">Selecione o Logout para Finalizar a sua Sessão</div>
-                    <div class="modal-footer">
-                        <form id="logout" 
-                                method="post"
-                                asp-controller="Account" 
-                                asp-action="Logout">
-                            <button class="btn btn-secondary" 
-                                    type="button" 
-                                    data-dismiss="modal">Cancel</button>
-                            <a class="btn btn-primary" 
-                                onClick="document.getElementById('logout').submit();">Logout</a>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        -->
-
-        <!-- Fim da Eliminação -->
-
-    . Altere o conteúdo da "Razor View" "Login.cshtml" pelo conteúdo abaixo:
-
-        @model investTools.Web.ViewModels.LoginViewModel;
-
-        <!DOCTYPE html>
-        <html lang="en">
-
-        <head>
-
-            <meta charset="utf-8">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-            <meta name="description" content="">
-            <meta name="author" content="">
-
-            <title>@ViewData["Title"] - Controle de Investimentos</title>
-
-            <!-- Custom fonts for this template -->
-            <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-            <link
-                href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-                rel="stylesheet">
-
-            <!-- Custom styles for this page -->
-            <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
-
-            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-            <!-- Custom styles for this template -->
-            <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
-        </head>
-
-        <body id="page-top">
-            <!-- Page Wrapper -->
-            <div id="wrapper">
-
-                <!-- Content Wrapper -->
-                <div id="content-wrapper" class="d-flex flex-column">
-
-                    <!-- Main Content -->
-                    <div id="content">
-
-                        <div class="container-fluid">
-
-                            <body class="bg-gradient-primary">
-
-                                <div class="container">
-
-                                    <!-- Outer Row -->
-                                    <div class="row justify-content-center">
-
-                                        <div class="col-xl-10 col-lg-12 col-md-9 ">
-
-                                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
-                                                <div class="card-body p-0">
-                                                    <!-- Nested Row within Card Body -->
-                                                    <div class="row col-lg-12">
-                                                        <div class="col-lg-12">
-                                                            <div class="p-5">
-                                                                <div class="text-center">
-                                                                    <h1 class="h4 text-gray-900 mb-4">Seja Bem Vindo</h1>
-                                                                </div>
-                                                                <form method="post" id="login" class="user" asp-controller="account"
-                                                                    asp-action="login">
-                                                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                                                    <div class="form-group">
-                                                                        <!-- <input type="email" class="form-control form-control-user"
-                                                                                    id="exampleInputEmail" aria-describedby="emailHelp"
-                                                                                    placeholder="Enter Email Address..."> -->
-
-                                                                        <input type="email" asp-for="Email" class="form-control form-control-user"
-                                                                            id="exampleInputEmail" aria-describedby="emailHelp"
-                                                                            placeholder="Entre com o Email..." />
-                                                                        <span asp-validation-for="Email" class="text-danger"></span>
-                                                                    </div>
-                                                                    <div class="form-group">
-                                                                        <!-- <input type="password" class="form-control form-control-user"
-                                                                                    id="exampleInputPassword" placeholder="Password"> -->
-
-                                                                        <input type="password" asp-for="Password"
-                                                                            class="form-control form-control-user" id="exampleInputPassword"
-                                                                            placeholder="Senha..." />
-                                                                        <span asp-validation-for="Password" class="text-danger"></span>
-
-                                                                    </div>
-                                                                    <div class="form-group">
-                                                                        <div class="custom-control custom-checkbox small">
-                                                                            <!-- <input type="checkbox" class="custom-control-input" id="customCheck">
-                                                                                    <label class="custom-control-label" for="customCheck">Remember Me</label> -->
-
-                                                                            <input type="checkbox" class="custom-control-input" id="customCheck"
-                                                                                asp-for="RememberMe">
-                                                                            <label class="custom-control-label" for="customCheck">Lembrar
-                                                                                Senha</label>
-                                                                        </div>
-                                                                    </div>
-                                                                    <a class="btn btn-primary btn-user btn-block"
-                                                                        onClick="document.getElementById('login').submit();">
-                                                                        Login
-                                                                    </a>
-                                                                </form>
-                                                                <hr>
-                                                                <div class="text-center">
-                                                                    <a class="small" href="forgot-password.html">Esqueceu a Senha?</a>
-                                                                </div>
-                                                                <div class="text-center">
-                                                                    <a class="small" asp-controller="account" asp-action="register">Nova Conta!</a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                            </body>
-                        </div>
-                        <!-- /.container-fluid -->
-
-                    </div>
-                    <!-- End of Main Content -->
-                </div>
-                <!-- End of Content Wrapper -->
-
-            </div>
-            <!-- End of Page Wrapper -->
-
-            <!-- Bootstrap core JavaScript-->
-            <script src="~/vendor/jquery/jquery.min.js"></script>
-            <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-
-            <!-- Core plugin JavaScript-->
-            <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
-
-            <!-- Custom scripts for all pages-->
-            <script src="~/js/sb-admin-2.min.js"></script>
-
-            <!-- Page level plugins -->
-            <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
-            <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
-
-            <!-- Page level custom scripts -->
-            <script src="~/js/demo/datatables-demo.js"></script>
-
-            <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
-            <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
-            <script src="~/js/site.js" asp-append-version="true"></script>
-        </body>
-
-        </html>
-
-    . Altere o conteúdo da "Razor View" "RegisterViewModel.cshtml" pelo conteúdo abaixo:
-
         @model investTools.Web.ViewModels.RegisterViewModel;
 
         <!DOCTYPE html>
@@ -1081,6 +435,363 @@ Tutorial Projeto InvestTools - Adequação ao Identity
         </body>
 
         </html>
+
+    . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Login.cshtml".
+
+        @model investTools.Web.ViewModels.LoginViewModel;
+
+        <!DOCTYPE html>
+        <html lang="en">
+
+        <head>
+
+            <meta charset="utf-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+            <meta name="description" content="">
+            <meta name="author" content="">
+
+            <title>@ViewData["Title"] - Controle de Investimentos</title>
+
+            <!-- Custom fonts for this template -->
+            <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+            <link
+                href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                rel="stylesheet">
+
+            <!-- Custom styles for this page -->
+            <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+            <!-- Custom styles for this template -->
+            <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+        </head>
+
+        <body id="page-top">
+            <!-- Page Wrapper -->
+            <div id="wrapper">
+
+                <!-- Content Wrapper -->
+                <div id="content-wrapper" class="d-flex flex-column">
+
+                    <!-- Main Content -->
+                    <div id="content">
+
+                        <div class="container-fluid">
+
+                            <body class="bg-gradient-primary">
+
+                                <div class="container">
+
+                                    <!-- Outer Row -->
+                                    <div class="row justify-content-center">
+
+                                        <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                                                <div class="card-body p-0">
+                                                    <!-- Nested Row within Card Body -->
+                                                    <div class="row col-lg-12">
+                                                        <div class="col-lg-12">
+                                                            <div class="p-5">
+                                                                <div class="text-center">
+                                                                    <h1 class="h4 text-gray-900 mb-4">Seja Bem Vindo</h1>
+                                                                </div>
+                                                                <form method="post" id="login" class="user" asp-controller="account"
+                                                                    asp-action="login">
+                                                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                                    <div class="form-group">
+                                                                        <!-- <input type="email" class="form-control form-control-user"
+                                                                                    id="exampleInputEmail" aria-describedby="emailHelp"
+                                                                                    placeholder="Enter Email Address..."> -->
+
+                                                                        <input type="email" asp-for="Email" class="form-control form-control-user"
+                                                                            id="exampleInputEmail" aria-describedby="emailHelp"
+                                                                            placeholder="Entre com o Email..." />
+                                                                        <span asp-validation-for="Email" class="text-danger"></span>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <!-- <input type="password" class="form-control form-control-user"
+                                                                                    id="exampleInputPassword" placeholder="Password"> -->
+
+                                                                        <input type="password" asp-for="Password"
+                                                                            class="form-control form-control-user" id="exampleInputPassword"
+                                                                            placeholder="Senha..." />
+                                                                        <span asp-validation-for="Password" class="text-danger"></span>
+
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <div class="custom-control custom-checkbox small">
+                                                                            <!-- <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                                                    <label class="custom-control-label" for="customCheck">Remember Me</label> -->
+
+                                                                            <input type="checkbox" class="custom-control-input" id="customCheck"
+                                                                                asp-for="RememberMe">
+                                                                            <label class="custom-control-label" for="customCheck">Lembrar
+                                                                                Senha</label>
+                                                                        </div>
+                                                                    </div>
+                                                                    <a class="btn btn-primary btn-user btn-block"
+                                                                        onClick="document.getElementById('login').submit();">
+                                                                        Login
+                                                                    </a>
+                                                                </form>
+                                                                <hr>
+                                                                <div class="text-center">
+                                                                    <a class="small" href="forgot-password.html">Esqueceu a Senha?</a>
+                                                                </div>
+                                                                <div class="text-center">
+                                                                    <a class="small" asp-controller="account" asp-action="register">Nova Conta!</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </body>
+                        </div>
+                        <!-- /.container-fluid -->
+
+                    </div>
+                    <!-- End of Main Content -->
+                </div>
+                <!-- End of Content Wrapper -->
+
+            </div>
+            <!-- End of Page Wrapper -->
+
+            <!-- Bootstrap core JavaScript-->
+            <script src="~/vendor/jquery/jquery.min.js"></script>
+            <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+            <!-- Core plugin JavaScript-->
+            <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+            <!-- Custom scripts for all pages-->
+            <script src="~/js/sb-admin-2.min.js"></script>
+
+            <!-- Page level plugins -->
+            <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+            <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+            <!-- Page level custom scripts -->
+            <script src="~/js/demo/datatables-demo.js"></script>
+
+            <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
+            <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+            <script src="~/js/site.js" asp-append-version="true"></script>
+        </body>
+
+        </html>
+
+    . Crie dentro da pasta "View/Shared" a Razor View "_LoginPartial.cshtml" abaixo:
+
+        @using Microsoft.AspNetCore.Identity
+
+        @inject SignInManager<IdentityUser> SignInManager
+        @inject UserManager<IdentityUser> UserManager
+
+        <ul class="navbar-nav ml-auto">
+
+
+            <li class="nav-item dropdown no-arrow">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="mr-2 d-none d-lg-inline text-gray-600 small">@User.Identity.Name</span>
+                        <img class="img-profile rounded-circle"
+                            src="~/img/undraw_profile.svg">
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                        aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Profile
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Settings
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" 
+                            data-toggle="modal" 
+                            data-target="#logoutModal">
+                            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Logout
+                        </a>
+                    </div>
+
+                }
+                else
+                {
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <!-- <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span> -->
+                        <img class="img-profile rounded-circle"
+                            src="~/img/undraw_profile.svg">
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                        aria-labelledby="userDropdown">
+                        <a class="dropdown-item" 
+                            asp-controller="Account" 
+                            asp-action="Login">
+                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Login
+                        </a>
+                        <a class="dropdown-item" 
+                            asp-controller="Account" 
+                            asp-action="Register">
+                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Nova Conta
+                        </a>
+                    </div>
+                }
+
+            </li>
+        </ul>
+
+    . Insira a linha abaixo na "Razor View" "/View/Shared/_Layout.cshtml"
+
+        ...
+        <div id="wrapper">
+
+            <!-- Sidebar -->
+            <partial name="_SidebarMenu" />
+            <!-- End of Sidebar -->
+
+
+
+            <!-- Content Wrapper -->
+            <div id="content-wrapper" class="d-flex flex-column">
+
+                <!-- Main Content -->
+                <div id="content">
+
+                    <!-- Topbar -->
+                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                        
+                        <!-- Sidebar Toggle (Topbar) -->
+                        <form class="form-inline">
+                            <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                        </form>
+
+
+
+
+                        <!-- Linha Inserida -->
+
+                        <!-- Topbar Navbar -->
+                        <partial name="_LoginPartial.cshtml"/>
+                        <!-- End of Topbar -->
+
+                        <!-- Fim da Inserção -->
+
+
+
+        ...
+
+    . Execute o projeto e faça os testes abaixo:
+
+        . Teste as telas de Login e Register
+
+        . Teste as funcionalidades do sistema
+
+        . Teste a funcionalidade do cadastro de Investidores, autenticado e não autenticado. 
+
+            . Observe o comportamento quando não estiver autenticado, pois deverá desviar para a tela de Login.
+
+
+    . Crie a "Razor View" "/View/Shared/_ConfirmationLogoutPartial.cshtml" com o conteúdo abaixo:
+
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Confirma Logout?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Selecione o Logout para Finalizar a sua Sessão</div>
+                    <div class="modal-footer">
+                        <form id="logout" 
+                                method="post"
+                                asp-controller="Account" 
+                                asp-action="Logout">
+                            <button class="btn btn-secondary" 
+                                    type="button" 
+                                    data-dismiss="modal">Cancel</button>
+                            <a class="btn btn-primary" 
+                                onClick="document.getElementById('logout').submit();">Logout</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    . Altere a "Razor View" "/View/Shared/_Layout.cshtml" com o conteúdo abaixo:
+
+        <!-- Scroll to Top Button-->
+        <a class="scroll-to-top rounded" href="#page-top">
+            <i class="fas fa-angle-up"></i>
+        </a>
+
+
+        <!-- Linha Alterada -->
+        <!-- Logout Modal-->
+        <partial name="_ConfirmationLogoutPartial.cshtml" />    ----+
+                                                                    | 
+                                                                    |   Substitui
+                                                                    |
+        <!-- Apague o conteúdo da "Logout Modal" -->        <-------+
+
+        <!-- Logout Modal-->
+        <!--
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Confirma Logout?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Selecione o Logout para Finalizar a sua Sessão</div>
+                    <div class="modal-footer">
+                        <form id="logout" 
+                                method="post"
+                                asp-controller="Account" 
+                                asp-action="Logout">
+                            <button class="btn btn-secondary" 
+                                    type="button" 
+                                    data-dismiss="modal">Cancel</button>
+                            <a class="btn btn-primary" 
+                                onClick="document.getElementById('logout').submit();">Logout</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        -->
+
+        <!-- Fim da Eliminação -->
+
 
     . Insira a linha abaixo na classe "HomeController.cshtml":
 
