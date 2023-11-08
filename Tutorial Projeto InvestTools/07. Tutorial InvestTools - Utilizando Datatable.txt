@@ -4,3 +4,18 @@ Tutorial InvestTools - Utilizando Datatable
 https://www.youtube.com/watch?v=nZPgzFR2t58
 https://www.youtube.com/watch?v=Df7hInMlXV4&list=PLfyWdpsiUiPCcjd8kaWj_ZobZ5_kAb9iX&index=2
 https://www.youtube.com/watch?v=sAOwE60OOOg
+
+
+https://www.macoratti.net/18/03/mvc5_jqrydtb1.htm
+https://www.c-sharpcorner.com/article/asp-net-mvc-jquery-server-side-datatable-example/
+https://kafle.io/tutorials/asp-dot-net/using-jquery-datatable-grid-in-asp-net-5
+
+
+# Site para gerar massa de dados
+https://www.mockaroo.com/
+
+# Razor Page
+https://codewithmukesh.com/blog/jquery-datatable-in-aspnet-core/
+
+# Observar como foi feito a montagem do botão (View/Edit/Delete) da linha do grid
+https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
