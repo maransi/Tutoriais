@@ -812,6 +812,9 @@ Tutorial Projeto InvestTools - Adequação ao Identity
     
 
 
+https://code-maze.com/password-reset-aspnet-core-identity/
+https://www.yogihosting.com/aspnet-core-identity-password-reset/
+https://dotnettutorials.net/lesson/reset-user-password-in-asp-net-identity-using-forget-password/
 
 
 https://www.youtube.com/watch?v=0W0yAz7fu04
@@ -822,7 +825,7 @@ https://www.youtube.com/watch?v=4IgC2Q5-yDE&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4
 
 
 
-
+https://programmingcsharp.com/implement-identity-on-existing-asp-project/
 
 
 
