@@ -5,7 +5,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         https://www.youtube.com/watch?v=RnxwwohOwaM&t=14s
 
-    . Execute o comando abaixo na pasta raiz do projeto:
+    . Execute o comando abaixo na pasta raiz do projeto "InvestTools.Web":
 
         #dotnet add package Microsoft.AspNetCore.Identity --version 6.0.12
 
@@ -375,7 +375,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                                                                     <input asp-for="ConfirmPassword" 
                                                                             class="form-control form-control-user"
                                                                             id="exampleRepeatPassword" 
-                                                                            placeholder="Repeta a Senha" />
+                                                                            placeholder="Repita a Senha" />
                                                                     <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                                                                     <!-- <input type="password" class="form-control form-control-user"
                                                                         id="exampleRepeatPassword" placeholder="Repeat Password"> -->
@@ -388,7 +388,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                                                         </form>
                                                         <hr>
                                                         <div class="text-center">
-                                                            <a class="small" href="forgot-password.html">Esqueceu sua Senha?</a>
+                                                            <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha?</a>
                                                         </div>
                                                         <div class="text-center">
                                                             <a class="small" asp-controller="account" asp-action="login">Já tem uma conta? Login!</a>
@@ -540,7 +540,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                                                                 </form>
                                                                 <hr>
                                                                 <div class="text-center">
-                                                                    <a class="small" href="forgot-password.html">Esqueceu a Senha?</a>
+                                                                    <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha?</a>
                                                                 </div>
                                                                 <div class="text-center">
                                                                     <a class="small" asp-controller="account" asp-action="register">Nova Conta!</a>
@@ -809,10 +809,532 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         . Verifique se todas as operações de links sendo acessadas somente quando o usuário estiver autenticado.
 
-    
+    . Criando o serviço de "emails":
 
+        . Certifique-se que a conta de email do "Google", responsável pelo envio dos emails (from), está configurada com 
+            autenticação em 2 fatores e com a senha de "app" que utilizaremos esteja registrada na sua conta.
+
+            . Importante: para criar uma senha de app, você precisa ter a verificação em duas etapas ativada na sua Conta do Google.
+
+            . Se você usar a verificação em duas etapas e receber um erro de "senha incorreta" ao fazer login, tente usar uma senha de app.
+
+            . Acesse "Gerenciar Sua Conta do Google"
+
+            . Selecione "Segurança".
+
+            . Selecione Verificação em duas etapas.
+
+            . Na parte de baixo da página, selecione Senhas de app.
+            
+            . Insira um nome que ajude você a lembrar onde usará a senha de app.
+
+            . Clique em Gerar.
+
+            . Para inserir a senha de app, siga as instruções na tela. Essa senha é o código de 16 caracteres que é gerado no seu dispositivo.
+            
+            . Selecione Concluído.
+
+            . Se você configurou a verificação em duas etapas, mas não encontra a opção para adicionar uma senha de app, pode ser porque:
+
+                . Sua Conta do Google tem a verificação em duas etapas configurada apenas para chaves de segurança;
+
+                . Você fez login em uma conta do trabalho, da escola ou de outra organização;
+
+                . A Proteção Avançada está ativada para sua conta.
+            
+                . Dica: normalmente, é necessário digitar a senha de app uma vez por app ou dispositivo.
+
+        . Execute o comando abaixo na pasta raiz do projeto "InvestTools.Web":
+
+            # Pacote responsável pelo envio dos emails
+            dotnet add package NETCore.MailKit --version 2.1.0
+
+        . Crie a pasta "Services.Email" na raiz do projeto "InvestTools.Web"
+
+        . Crie a classe "EmailConfiguration" abaixo na pasta "Services.Email":
+
+            using System;
+            using System.Collections.Generic;
+            using System.Text;
+
+            namespace investTools.Web.Services.Email;
+
+            public class EmailConfiguration
+            {
+                public string From { get; set; }
+                public string SmtpServer { get; set; }
+                public int Port { get; set; }
+                public string UserName { get; set; }
+                public string Password { get; set; }
+            }
+
+        . Insira as linhas abaixo no arquivo "appsettings.json":
+
+            {
+                "EmailConfiguration": {
+                    "From": "4por4.marco@gmail.com",
+                    "SmtpServer": "smtp.gmail.com",
+                    "Port": 465,
+                    "Username": "4por4.marco@gmail.com",
+                    "Password": "[Senha de App]"
+                },
+                ...
+            }
+
+        . Insira as linhas abaixo na classe "Program.cs":
+
+            ...
+            var builder = WebApplication.CreateBuilder(args);
+
+            var emailConfig = builder.Configuration             // Linha inserida
+                    .GetSection("EmailConfiguration")
+                    .Get<EmailConfiguration>();
+                    
+            builder.Services.AddSingleton(emailConfig);         // Linha inserida
+            ...
+
+        . Crie a Classe "Message" na pasta "Services.Email"
+
+            using Microsoft.AspNetCore.Http;
+            using MimeKit;
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Text;
+
+            namespace investTools.Web.Services.Email;
+
+            public class Message
+            {
+                public List<MailboxAddress> To { get; set; }
+                public string Subject { get; set; }
+                public string Content { get; set; }
+
+                public IFormFileCollection Attachments { get; set; }
+
+                public Message(IEnumerable<string> to, string subject, string content, IFormFileCollection attachments)
+                {
+                    To = new List<MailboxAddress>();
+
+                    To.AddRange(to.Select(x => new MailboxAddress("email", x)));
+                    Subject = subject;
+                    Content = content;
+                    Attachments = attachments;
+                }
+            }
+
+        . Crie a interface abaixo "IEmailSender" na pasta "Services.Email":
+
+            using System;
+            using System.Collections.Generic;
+            using System.Text;
+            using System.Threading.Tasks;
+
+            namespace investTools.Web.Services.Email;
+
+            public interface IEmailSender
+            {
+                void SendEmail(Message message);
+                Task SendEmailAsync(Message message);
+            }
+
+        . Crie a classe abaixo "EmailSender"  na pasta "Services.Email":
+
+            using MailKit.Net.Smtp;
+            using MimeKit;
+            using System;
+            using System.IO;
+            using System.Linq;
+            using System.Threading.Tasks;
+
+            namespace investTools.Web.Services.Email;
+
+            public class EmailSender : IEmailSender
+            {
+                private readonly EmailConfiguration _emailConfig;
+
+                public EmailSender(EmailConfiguration emailConfig)
+                {
+                    _emailConfig = emailConfig;
+                }
+
+                public void SendEmail(Message message)
+                {
+                    var emailMessage = CreateEmailMessage(message);
+
+                    Send(emailMessage);
+                }
+
+                public async Task SendEmailAsync(Message message)
+                {
+                    var mailMessage = CreateEmailMessage(message);
+
+                    await SendAsync(mailMessage);
+                }
+
+                private MimeMessage CreateEmailMessage(Message message)
+                {
+                    var emailMessage = new MimeMessage();
+                    emailMessage.From.Add(new MailboxAddress("email", _emailConfig.From));
+                    emailMessage.To.AddRange(message.To);
+                    emailMessage.Subject = message.Subject;
+
+                    var bodyBuilder = new BodyBuilder { HtmlBody = string.Format("<h2 style='color:red;'>{0}</h2>", message.Content) };
+
+                    if (message.Attachments != null && message.Attachments.Any())
+                    {
+                        byte[] fileBytes;
+                        foreach (var attachment in message.Attachments)
+                        {
+                            using (var ms = new MemoryStream())
+                            {
+                                attachment.CopyTo(ms);
+                                fileBytes = ms.ToArray();
+                            }
+
+                            bodyBuilder.Attachments.Add(attachment.FileName, fileBytes, ContentType.Parse(attachment.ContentType));
+                        }
+                    }
+
+                    emailMessage.Body = bodyBuilder.ToMessageBody();
+                    return emailMessage;
+                }
+
+                private void Send(MimeMessage mailMessage)
+                {
+                    using (var client = new SmtpClient())
+                    {
+                        try
+                        {
+                            client.Connect(_emailConfig.SmtpServer, _emailConfig.Port, true);
+                            client.AuthenticationMechanisms.Remove("XOAUTH2");
+                            client.Authenticate(_emailConfig.UserName, _emailConfig.Password);
+
+                            client.Send(mailMessage);
+                        }
+                        catch
+                        {
+                            //log an error message or throw an exception, or both.
+                            throw;
+                        }
+                        finally
+                        {
+                            client.Disconnect(true);
+                            client.Dispose();
+                        }
+                    }
+                }
+
+                private async Task SendAsync(MimeMessage mailMessage)
+                {
+                    using (var client = new SmtpClient())
+                    {
+                        try
+                        {
+                            await client.ConnectAsync(_emailConfig.SmtpServer, _emailConfig.Port, true);
+                            client.AuthenticationMechanisms.Remove("XOAUTH2");
+                            await client.AuthenticateAsync(_emailConfig.UserName, _emailConfig.Password);
+
+                            await client.SendAsync(mailMessage);
+                        }
+                        catch
+                        {
+                            //log an error message or throw an exception, or both.
+                            throw;
+                        }
+                        finally
+                        {
+                            await client.DisconnectAsync(true);
+                            client.Dispose();
+                        }
+                    }
+                }
+            }
+
+        . Insira a linha abaixo na classe "Program.cs":
+
+            ...
+            using investTools.Web.Services.Email;                                                       // Linha inserida
+
+            var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddScoped<IEmailSender, EmailSender>();                    // Linha inserida
+            builder.Services.AddScoped<IInvestidorRepository, InvestidorRepository>();      
+            ...
+
+    . Criando o formulário de "Forgot Password" 
+
+        . Crie a classe abaixo "ForgotPasswordMode" na pasta "ViewModels":
+
+            using System.ComponentModel.DataAnnotations;
+
+            namespace investTools.Web.ViewModels
+            {
+                public class ForgotPasswordModel
+                {
+                    [Required]
+                    [EmailAddress]
+                    public string Email { get; set; }
+                }
+            }
+
+        . Insira as linhas abaixo na classe "AccountController":
+
+            [HttpGet]
+            public IActionResult ForgotPassword()
+            {
+                return View();
+            }
+
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
+            {
+                return View(forgotPasswordModel);
+            }
+
+            public IActionResult ForgotPasswordConfirmation()
+            {
+                return View();
+            }
+
+        . Insira a "View" "ForgotPassword.cshtml" abaixo na pasta "View/Account":
+
+            @model investTools.Web.ViewModels.ForgotPasswordModel
+
+            <h1>ForgotPassword</h1>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <form asp-action="ForgotPassword">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group">
+                            <label asp-for="Email" class="control-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" value="Submit" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @section Scripts {
+                <script src="~/lib/jquery-validation/dist/jquery.validate.minjs"></script>
+                <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+            }
+    
+        . Insira a "View" "ForgotPasswordConfirmation.cshtml" abaixo na pasta "View/Account":
+
+            <h1>ForgotPasswordConfirmation</h1>
+
+            <p>
+                The link has been sent, please check your email to reset your password.
+            </p>
+
+        . Execute o projeto e verifique se a chamada da página de "Esqueceu a Senha" está funcionando nos formulários de 
+            "Login" e "Register"
+
+        . Altere a classe "AcountController" como abaixo:
+
+            using investTools.Web.Services.Email;           // Linha inserida
+            ...
+
+            namespace investTools.Web.Controllers;
+
+            public class AccountController : Controller
+            {
+                private readonly UserManager<IdentityUser> userManager;
+                private readonly SignInManager<IdentityUser> signInManager;
+                private readonly IEmailSender emailSender;                  // Linha inserida
+
+                public AccountController(UserManager<IdentityUser> userManager,
+                                                    SignInManager<IdentityUser> signInManager,
+                                                    IEmailSender emailSender)                   // Linha inserida
+                {
+                    this.userManager = userManager;
+                    this.signInManager = signInManager;
+                    this.emailSender = emailSender;                         // Linha inserida
+                }
+
+                ...
+
+                [HttpPost]
+                [ValidateAntiForgeryToken]
+                public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
+                {
+                    // Linha eliminada
+                    // return View(forgotPasswordModel);        
+
+                    // Linhas abaixo inseridas
+                    if (!ModelState.IsValid)
+                        return View(forgotPasswordModel);
+
+                    var user = await _userManager.FindByEmailAsync(forgotPasswordModel.Email);
+                    if (user == null)
+                        return RedirectToAction(nameof(ForgotPasswordConfirmation));
+
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                    // Linha com erro temporariamente, nos passos abaixo vem o acerto qdo fizermos o "Reset Password"
+                    var callback = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme); 
+
+                    var message = new Message(new string[] { user.Email }, "Reset password token", callback, null);
+                    await _emailSender.SendEmailAsync(message);
+
+                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                }
+
+                ...
+            }
+
+        . Insira a linha abaixo na classe "Program.cs":
+
+            ...
+            builder.Services.AddDefaultIdentity<IdentityUser>()                         
+                .AddEntityFrameworkStores<ApplicationDbContext>()                      
+                .AddDefaultTokenProviders();                            // Linha inserida
+
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>       // Linha inserida
+                                    opt.TokenLifespan = TimeSpan.FromHours(2));         // Linha inserida
+            ...
+
+    . Criando o formulário "Reset Password" 
+
+        . Crie a classe "ViewModel" "ResetPasswordModel" abaixo na pasta "ViewModels"
+        
+            using System;
+            using System.Collections.Generic;
+            using System.ComponentModel.DataAnnotations;
+            using System.Linq;
+            using System.Threading.Tasks;
+
+            namespace investTools.Web.ViewModels;
+
+            public class ResetPasswordModel
+            {
+                [Required]
+                [DataType(DataType.Password)]
+                public string Password { get; set; }
+
+                [DataType(DataType.Password)]
+                [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+                public string ConfirmPassword { get; set; }
+
+                public string Email { get; set; }
+                public string Token { get; set; }
+            }
+
+        . Insira os metodos abaixo na classe "AcccountController":
+
+            using investTools.Web.ViewModels;   // Linha inserida
+
+            namespace investTools.Web.Controllers;
+
+            public class AccountController : Controller
+            {
+                ...
+
+                [HttpGet]
+                public IActionResult ResetPassword(string token, string email)                              // Metodo inserido
+                {
+                    var model = new ResetPasswordModel { Token = token, Email = email };
+                    return View(model);
+                }
+
+                [HttpPost]
+                [ValidateAntiForgeryToken]
+                public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)       // Metodo inserido
+                {
+                    if (!ModelState.IsValid)
+                        return View(resetPasswordModel);
+
+                    var user = await userManager.FindByEmailAsync(resetPasswordModel.Email);
+                    if (user == null)
+                        RedirectToAction(nameof(ResetPasswordConfirmation));
+
+                    var resetPassResult = await userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+                    if (!resetPassResult.Succeeded)
+                    {
+                        foreach (var error in resetPassResult.Errors)
+                        {
+                            ModelState.TryAddModelError(error.Code, error.Description);
+                        }
+
+                        return View();
+                    }
+
+                    return RedirectToAction(nameof(ResetPasswordConfirmation));
+                }
+
+                [HttpGet]
+                public IActionResult ResetPasswordConfirmation()                                            // Metodo inserido
+                {
+                    return View();
+                }
+            }
+
+        . Insira a "View" "ResetPassword.cshtml" abaixo na pasta "View/Account":
+
+            @model investTools.Web.ViewModels.ResetPasswordModel
+
+            <h1>ResetPassword</h1>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <form asp-action="ResetPassword">
+                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <div class="form-group">
+                            <label asp-for="Password" class="control-label"></label>
+                            <input asp-for="Password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="ConfirmPassword" class="control-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                        <input type="hidden" asp-for="Email" class="form-control" />
+                        <input type="hidden" asp-for="Token" class="form-control" />
+                        <div class="form-group">
+                            <input type="submit" value="Create" class="btn btn-primary" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        . Insira a "View" "ResetPasswordConfirmation.cshtml" abaixo na pasta "View/Account":
+
+            <h1>ResetPasswordConfirmation</h1>
+
+            <p>
+                Your password has been reset. Please <a asp-action="Login">click here to log in</a>.
+            </p>
+
+
+2. Alterar as msgs de inglês para português
+
+3. Configurar o bootstrap na viewmodel ResetPassword
+
+4. Fazer o emailconfirmation
+
+    https://code-maze.com/email-confirmation-aspnet-core-identity/
+    https://github.com/CodeMazeBlog/identity-aspnetcore/tree/email-confirmation-identity
+
+
+
+
+
+
+https://tutorials.eu/how-to-send-emails-in-asp-net-web-applications/
+
+https://code-maze.com/aspnetcore-send-email/
+https://github.com/CodeMazeBlog/email-attachments-aspnet-core/blob/master/EmailApp/EmailService/EmailConfiguration.cs
 
 https://code-maze.com/password-reset-aspnet-core-identity/
+https://github.com/CodeMazeBlog/identity-aspnetcore/blob/password-reset-identity/IdentityByExamples/IdentityByExamples/Views/Account/ForgotPassword.cshtml
+
 https://www.yogihosting.com/aspnet-core-identity-password-reset/
 https://dotnettutorials.net/lesson/reset-user-password-in-asp-net-identity-using-forget-password/
 
