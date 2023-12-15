@@ -1312,6 +1312,11 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                 Your password has been reset. Please <a asp-action="Login">click here to log in</a>.
             </p>
 
+    . Criando o formulário "Email Confirmation":
+
+
+
+
 
 2. Alterar as msgs de inglês para português
 
@@ -1322,7 +1327,11 @@ Tutorial Projeto InvestTools - Adequação ao Identity
     https://code-maze.com/email-confirmation-aspnet-core-identity/
     https://github.com/CodeMazeBlog/identity-aspnetcore/tree/email-confirmation-identity
 
+5. Fazer o UserLockout
 
+    https://code-maze.com/user-lockout-aspnet-core-identity/
+    https://github.com/CodeMazeBlog/identity-aspnetcore/tree/user-lockout-identity
+    
 
 
 
