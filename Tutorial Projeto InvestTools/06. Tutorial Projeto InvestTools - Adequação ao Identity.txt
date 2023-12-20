@@ -265,9 +265,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         }
 
-    . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Register.cshtml".
-
-        @model investTools.Web.ViewModels.RegisterViewModel;
+    . Crie a página "Razor Page" "_LayoutAuthenticaton.cshtml" na pasta "Views/Shared":
 
         <!DOCTYPE html>
         <html lang="en">
@@ -282,7 +280,67 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             <title>@ViewData["Title"] - Controle de Investimentos</title>
 
-            <!-- Custom fonts for this template -->
+            @await RenderSectionAsync("header", required: false)
+        </head>
+
+        <body id="page-top">
+
+            <!-- Page Wrapper -->
+            <div id="wrapper">
+                <!-- Content Wrapper -->
+                <div id="content-wrapper" class="d-flex flex-column">
+
+                    <!-- Main Content -->
+                    <div id="content">
+                        <!-- Begin Page Content -->
+                        <div class="container-fluid">
+
+                            @RenderBody()
+
+                        </div>
+                        <!-- /.container-fluid -->
+
+                    </div>
+                    <!-- End of Main Content -->
+
+                    <!-- Footer -->
+                    <footer class="sticky-footer bg-white">
+                        <div class="container my-auto">
+                            <div class="copyright text-center my-auto">
+                                <span>Copyright &copy; InvestTools for Web 2023</span>
+                            </div>
+                        </div>
+                    </footer>
+                    <!-- End of Footer -->
+
+                </div>
+                <!-- End of Content Wrapper -->
+
+            </div>
+            <!-- End of Page Wrapper -->
+
+            <!-- Scroll to Top Button-->
+            <a class="scroll-to-top rounded" href="#page-top">
+                <i class="fas fa-angle-up"></i>
+            </a>
+
+            @await RenderSectionAsync("Scripts", required: false)
+        </body>
+
+        </html>
+
+
+
+    . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Register.cshtml".
+
+        @model investTools.Web.ViewModels.RegisterViewModel;
+
+        @{
+            ViewBag.Title = "Novo Conta";
+            Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+        }
+
+        @section header{
             <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
             <link
                 href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
@@ -296,122 +354,103 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             <!-- Custom styles for this template -->
             <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
-        </head>
+        }
 
-        <body id="page-top">
-            <!-- Page Wrapper -->
-            <div id="wrapper">
 
-                <!-- Content Wrapper -->
-                <div id="content-wrapper" class="d-flex flex-column">
+        <body class="bg-gradient-primary">
 
-                    <!-- Main Content -->
-                    <div id="content">
+            <div class="container">
 
-                        <div class="container-fluid">
-                            <body class="bg-gradient-primary">
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Nova Conta!</h1>
+                                    </div>
+                                    <form class="user" 
+                                            method="post" 
+                                            name="register" 
+                                            id="register"
+                                            asp-controller="account"
+                                            asp-action="register">
+                                        <div asp-validation-summary="All" class="text-danger"></div>
 
-                                <div class="container">
-
-                                    <div class="card o-hidden border-0 shadow-lg my-5">
-                                        <div class="card-body p-0">
-                                            <!-- Nested Row within Card Body -->
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="p-5">
-                                                        <div class="text-center">
-                                                            <h1 class="h4 text-gray-900 mb-4">Nova Conta!</h1>
-                                                        </div>
-                                                        <form class="user" 
-                                                                method="post" 
-                                                                name="register" 
-                                                                id="register"
-                                                                asp-controller="account"
-                                                                asp-action="register">
-                                                            <div asp-validation-summary="All" class="text-danger"></div>
-
-                                                            <div class="form-group row">
-                                                                <div class="col-sm-6 mb-3 mb-sm-0">
-                                                                    <!-- <input type="text" class="form-control form-control-user" id="exampleFirstName"
-                                                                        placeholder="First Name"> -->
-                                                                    <input asp-for="FirstName" 
-                                                                            class="form-control form-control-user" 
-                                                                            id="exampleFirstName"
-                                                                            placeholder="Primeiro Nome"/>
-                                                                    <span asp-validation-for="FirstName" class="text-danger"></span>
-                                                                </div>
-                                                                <div class="col-sm-6">
-                                                                    <!-- <input type="text" class="form-control form-control-user" id="exampleLastName"
-                                                                        placeholder="Last Name"> -->
-                                                                    <input asp-for="LastName" 
-                                                                            class="form-control form-control-user" 
-                                                                            id="exampleLastName"
-                                                                            placeholder="Último Nome" />
-                                                                    <span asp-validation-for="LastName" class="text-danger"></span>
-                                                                </div>
-                                                            </div> 
-                                                            <div class="form-group">
-                                                                <!-- <input type="email" class="form-control form-control-user" id="exampleInputEmail"
-                                                                placeholder="Email Address"> -->
-                                                                <input asp-for="Email" 
-                                                                        class="form-control form-control-user" 
-                                                                        id="exampleInputEmail"
-                                                                        placeholder="Endereço de Email" />
-                                                                <span asp-validation-for="Email" 
-                                                                        class="text-danger">
-                                                                </span>                                    
-                                                            </div>
-                                                            <div class="form-group row">
-                                                                <div class="col-sm-6 mb-3 mb-sm-0">
-                                                                    <input asp-for="Password" 
-                                                                            class="form-control form-control-user"
-                                                                            id="exampleInputPassword" 
-                                                                            placeholder="Senha" />
-                                                                    <span asp-validation-for="Password" class="text-danger" ></span>
-                                                                    <!-- <input type="password" class="form-control form-control-user"
-                                                                        id="exampleInputPassword" placeholder="Password"> -->
-                                                                </div>
-                                                                <div class="col-sm-6">
-                                                                    <input asp-for="ConfirmPassword" 
-                                                                            class="form-control form-control-user"
-                                                                            id="exampleRepeatPassword" 
-                                                                            placeholder="Repita a Senha" />
-                                                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                                                                    <!-- <input type="password" class="form-control form-control-user"
-                                                                        id="exampleRepeatPassword" placeholder="Repeat Password"> -->
-                                                                </div>
-                                                            </div>
-                                                            <a  class="btn btn-primary btn-user btn-block" 
-                                                                onClick="document.getElementById('register').submit();">
-                                                                Registrar Conta
-                                                            </a>
-                                                        </form>
-                                                        <hr>
-                                                        <div class="text-center">
-                                                            <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha?</a>
-                                                        </div>
-                                                        <div class="text-center">
-                                                            <a class="small" asp-controller="account" asp-action="login">Já tem uma conta? Login!</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <!-- <input type="text" class="form-control form-control-user" id="exampleFirstName"
+                                                    placeholder="First Name"> -->
+                                                <input asp-for="FirstName" 
+                                                        class="form-control form-control-user" 
+                                                        id="exampleFirstName"
+                                                        placeholder="Primeiro Nome"/>
+                                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <!-- <input type="text" class="form-control form-control-user" id="exampleLastName"
+                                                    placeholder="Last Name"> -->
+                                                <input asp-for="LastName" 
+                                                        class="form-control form-control-user" 
+                                                        id="exampleLastName"
+                                                        placeholder="Último Nome" />
+                                                <span asp-validation-for="LastName" class="text-danger"></span>
+                                            </div>
+                                        </div> 
+                                        <div class="form-group">
+                                            <!-- <input type="email" class="form-control form-control-user" id="exampleInputEmail"
+                                            placeholder="Email Address"> -->
+                                            <input asp-for="Email" 
+                                                    class="form-control form-control-user" 
+                                                    id="exampleInputEmail"
+                                                    placeholder="Endereço de Email" />
+                                            <span asp-validation-for="Email" 
+                                                    class="text-danger">
+                                            </span>                                    
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <input asp-for="Password" 
+                                                        class="form-control form-control-user"
+                                                        id="exampleInputPassword" 
+                                                        placeholder="Senha" />
+                                                <span asp-validation-for="Password" class="text-danger" ></span>
+                                                <!-- <input type="password" class="form-control form-control-user"
+                                                    id="exampleInputPassword" placeholder="Password"> -->
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input asp-for="ConfirmPassword" 
+                                                        class="form-control form-control-user"
+                                                        id="exampleRepeatPassword" 
+                                                        placeholder="Repeta a Senha" />
+                                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                                <!-- <input type="password" class="form-control form-control-user"
+                                                    id="exampleRepeatPassword" placeholder="Repeat Password"> -->
                                             </div>
                                         </div>
+                                        <a  class="btn btn-primary btn-user btn-block" 
+                                            onClick="document.getElementById('register').submit();">
+                                            Registrar Conta
+                                        </a>
+                                    </form>
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha?</a>
                                     </div>
-
+                                    <div class="text-center">
+                                        <a class="small" asp-controller="account" asp-action="login">Já tem uma conta? Login!</a>
+                                    </div>
                                 </div>
-                            </body>
+                            </div>
                         </div>
-                        <!-- /.container-fluid -->
-
                     </div>
-                    <!-- End of Main Content -->
                 </div>
-                <!-- End of Content Wrapper -->
 
             </div>
-            <!-- End of Page Wrapper -->
+        </body>
 
+        @section Scripts{
             <!-- Bootstrap core JavaScript-->
             <script src="~/vendor/jquery/jquery.min.js"></script>
             <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -432,28 +471,18 @@ Tutorial Projeto InvestTools - Adequação ao Identity
             <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
             <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
             <script src="~/js/site.js" asp-append-version="true"></script>
-        </body>
-
-        </html>
+        }
 
     . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Login.cshtml".
 
         @model investTools.Web.ViewModels.LoginViewModel;
 
-        <!DOCTYPE html>
-        <html lang="en">
+        @{
+            ViewBag.Title = "Login";
+            Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+        }
 
-        <head>
-
-            <meta charset="utf-8">
-            <meta http-equiv="X-UA-Compatible" content="IE=edge">
-            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-            <meta name="description" content="">
-            <meta name="author" content="">
-
-            <title>@ViewData["Title"] - Controle de Investimentos</title>
-
-            <!-- Custom fonts for this template -->
+        @section header{
             <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
             <link
                 href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
@@ -467,108 +496,87 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             <!-- Custom styles for this template -->
             <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
-        </head>
+        }
 
-        <body id="page-top">
-            <!-- Page Wrapper -->
-            <div id="wrapper">
+        <body class="bg-gradient-primary">
 
-                <!-- Content Wrapper -->
-                <div id="content-wrapper" class="d-flex flex-column">
+            <div class="container">
 
-                    <!-- Main Content -->
-                    <div id="content">
+                <!-- Outer Row -->
+                <div class="row justify-content-center">
 
-                        <div class="container-fluid">
+                    <div class="col-xl-10 col-lg-12 col-md-9 ">
 
-                            <body class="bg-gradient-primary">
+                        <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                            <div class="card-body p-0">
+                                <!-- Nested Row within Card Body -->
+                                <div class="row col-lg-12">
+                                    <div class="col-lg-12">
+                                        <div class="p-5">
+                                            <div class="text-center">
+                                                <h1 class="h4 text-gray-900 mb-4">Seja Bem Vindo</h1>
+                                            </div>
+                                            <form method="post" id="login" class="user" asp-controller="account"
+                                                asp-action="login">
+                                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                <div class="form-group">
+                                                    <!-- <input type="email" class="form-control form-control-user"
+                                                                id="exampleInputEmail" aria-describedby="emailHelp"
+                                                                placeholder="Enter Email Address..."> -->
 
-                                <div class="container">
+                                                    <input type="email" asp-for="Email" class="form-control form-control-user"
+                                                        id="exampleInputEmail" aria-describedby="emailHelp"
+                                                        placeholder="Entre com o Email..." />
+                                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <!-- <input type="password" class="form-control form-control-user"
+                                                                id="exampleInputPassword" placeholder="Password"> -->
 
-                                    <!-- Outer Row -->
-                                    <div class="row justify-content-center">
+                                                    <input type="password" asp-for="Password"
+                                                        class="form-control form-control-user" id="exampleInputPassword"
+                                                        placeholder="Senha..." />
+                                                    <span asp-validation-for="Password" class="text-danger"></span>
 
-                                        <div class="col-xl-10 col-lg-12 col-md-9 ">
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-checkbox small">
+                                                        <!-- <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                                <label class="custom-control-label" for="customCheck">Remember Me</label> -->
 
-                                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
-                                                <div class="card-body p-0">
-                                                    <!-- Nested Row within Card Body -->
-                                                    <div class="row col-lg-12">
-                                                        <div class="col-lg-12">
-                                                            <div class="p-5">
-                                                                <div class="text-center">
-                                                                    <h1 class="h4 text-gray-900 mb-4">Seja Bem Vindo</h1>
-                                                                </div>
-                                                                <form method="post" id="login" class="user" asp-controller="account"
-                                                                    asp-action="login">
-                                                                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                                                                    <div class="form-group">
-                                                                        <!-- <input type="email" class="form-control form-control-user"
-                                                                                    id="exampleInputEmail" aria-describedby="emailHelp"
-                                                                                    placeholder="Enter Email Address..."> -->
-
-                                                                        <input type="email" asp-for="Email" class="form-control form-control-user"
-                                                                            id="exampleInputEmail" aria-describedby="emailHelp"
-                                                                            placeholder="Entre com o Email..." />
-                                                                        <span asp-validation-for="Email" class="text-danger"></span>
-                                                                    </div>
-                                                                    <div class="form-group">
-                                                                        <!-- <input type="password" class="form-control form-control-user"
-                                                                                    id="exampleInputPassword" placeholder="Password"> -->
-
-                                                                        <input type="password" asp-for="Password"
-                                                                            class="form-control form-control-user" id="exampleInputPassword"
-                                                                            placeholder="Senha..." />
-                                                                        <span asp-validation-for="Password" class="text-danger"></span>
-
-                                                                    </div>
-                                                                    <div class="form-group">
-                                                                        <div class="custom-control custom-checkbox small">
-                                                                            <!-- <input type="checkbox" class="custom-control-input" id="customCheck">
-                                                                                    <label class="custom-control-label" for="customCheck">Remember Me</label> -->
-
-                                                                            <input type="checkbox" class="custom-control-input" id="customCheck"
-                                                                                asp-for="RememberMe">
-                                                                            <label class="custom-control-label" for="customCheck">Lembrar
-                                                                                Senha</label>
-                                                                        </div>
-                                                                    </div>
-                                                                    <a class="btn btn-primary btn-user btn-block"
-                                                                        onClick="document.getElementById('login').submit();">
-                                                                        Login
-                                                                    </a>
-                                                                </form>
-                                                                <hr>
-                                                                <div class="text-center">
-                                                                    <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha?</a>
-                                                                </div>
-                                                                <div class="text-center">
-                                                                    <a class="small" asp-controller="account" asp-action="register">Nova Conta!</a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <input type="checkbox" class="custom-control-input" id="customCheck"
+                                                            asp-for="RememberMe">
+                                                        <label class="custom-control-label" for="customCheck">Lembrar
+                                                            Senha</label>
                                                     </div>
                                                 </div>
+                                                <a class="btn btn-primary btn-user btn-block"
+                                                    onClick="document.getElementById('login').submit();">
+                                                    Login
+                                                </a>
+                                            </form>
+                                            <hr>
+                                            <div class="text-center">
+                                                <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha?</a>
                                             </div>
-
+                                            <div class="text-center">
+                                                <a class="small" asp-controller="account" asp-action="register">Nova Conta!</a>
+                                            </div>
                                         </div>
-
                                     </div>
-
                                 </div>
-
-                            </body>
+                            </div>
                         </div>
-                        <!-- /.container-fluid -->
 
                     </div>
-                    <!-- End of Main Content -->
+
                 </div>
-                <!-- End of Content Wrapper -->
 
             </div>
-            <!-- End of Page Wrapper -->
 
+        </body>
+
+        @section Scripts{
             <!-- Bootstrap core JavaScript-->
             <script src="~/vendor/jquery/jquery.min.js"></script>
             <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -579,19 +587,11 @@ Tutorial Projeto InvestTools - Adequação ao Identity
             <!-- Custom scripts for all pages-->
             <script src="~/js/sb-admin-2.min.js"></script>
 
-            <!-- Page level plugins -->
-            <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
-            <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
-
-            <!-- Page level custom scripts -->
-            <script src="~/js/demo/datatables-demo.js"></script>
-
             <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
             <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
             <script src="~/js/site.js" asp-append-version="true"></script>
-        </body>
+        }
 
-        </html>
 
     . Crie dentro da pasta "View/Shared" a Razor View "_LoginPartial.cshtml" abaixo:
 
@@ -1102,36 +1102,132 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             @model investTools.Web.ViewModels.ForgotPasswordModel
 
-            <h1>ForgotPassword</h1>
+            @{
+                ViewBag.Title = "Esqueceu a Senha";
+                Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+            }
 
-            <div class="row">
-                <div class="col-md-4">
-                    <form asp-action="ForgotPassword">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                        <div class="form-group">
-                            <label asp-for="Email" class="control-label"></label>
-                            <input asp-for="Email" class="form-control" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
+            @section header{
+                <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
+
+                <!-- Custom styles for this page -->
+                <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+                <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+                <!-- Custom styles for this template -->
+                <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+            }
+
+
+            <body class="bg-gradient-primary">
+
+                <div class="container">
+
+                    <div class="card o-hidden border-0 shadow-lg my-5">
+                        <div class="card-body p-0">
+                            <!-- Nested Row within Card Body -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="p-5">
+                                        <div class="text-center">
+                                            <h1 class="h4 text-gray-900 mb-4">Esqueceu a Senha</h1>
+                                        </div>
+                                        <form asp-action="ForgotPassword">
+                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                            <div class="form-group">
+                                                <label asp-for="Email" class="control-label"></label>
+                                                <input asp-for="Email" class="form-control" />
+                                                <span asp-validation-for="Email" class="text-danger"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" value="Submit" class="btn btn-primary" />
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <input type="submit" value="Submit" class="btn btn-primary" />
-                        </div>
-                    </form>
+                    </div>
+
                 </div>
-            </div>
+            </body>
 
             @section Scripts {
                 <script src="~/lib/jquery-validation/dist/jquery.validate.minjs"></script>
                 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+                <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+                <!-- Core plugin JavaScript-->
+                <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+                <!-- Custom scripts for all pages-->
+                <script src="~/js/sb-admin-2.min.js"></script>
+
+                <!-- Page level plugins -->
+                <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+
+                <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
+                <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+                <script src="~/js/site.js" asp-append-version="true"></script>
             }
     
         . Insira a "View" "ForgotPasswordConfirmation.cshtml" abaixo na pasta "View/Account":
 
-            <h1>ForgotPasswordConfirmation</h1>
+            @{
+                ViewBag.Title = "Esqueceu a Senha";
+                Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+            }
 
-            <p>
-                The link has been sent, please check your email to reset your password.
-            </p>
+            @section header{
+                <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
+
+                <!-- Custom styles for this page -->
+                <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+                <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+                <!-- Custom styles for this template -->
+                <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+            }
+
+            <body class="bg-gradient-primary">
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row col-lg-12">
+                                        <div class="col-lg-12">
+                                            <div class="p-5">
+                                                <h1>Confirmação de Reinicialização de Senha</h1>
+
+                                                <p>
+                                                    Enviamos um "Link" para o seu Email. Favor verificá-lo para reiniciar a sua senha.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
 
         . Execute o projeto e verifique se a chamada da página de "Esqueceu a Senha" está funcionando nos formulários de 
             "Login" e "Register"
@@ -1279,51 +1375,163 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             @model investTools.Web.ViewModels.ResetPasswordModel
 
-            <h1>ResetPassword</h1>
+            @{
+                ViewBag.Title = "Renovação de Senha";
+                Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+            }
 
-            <div class="row">
-                <div class="col-md-4">
-                    <form asp-action="ResetPassword">
-                        <div asp-validation-summary="All" class="text-danger"></div>
-                        <div class="form-group">
-                            <label asp-for="Password" class="control-label"></label>
-                            <input asp-for="Password" class="form-control" />
-                            <span asp-validation-for="Password" class="text-danger"></span>
+            @section header{
+                <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
+
+                <!-- Custom styles for this page -->
+                <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+                <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+                <!-- Custom styles for this template -->
+                <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+            }
+
+            <body class="bg-gradient-primary">
+
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row col-lg-12">
+                                        <div class="col-lg-12">
+                                            <div class="p-5">
+                                                <h1>Renovação de Senha</h1>
+
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <form asp-action="ResetPassword">
+                                                            <div asp-validation-summary="All" class="text-danger"></div>
+                                                            <div class="form-group">
+                                                                <label asp-for="Digite a Nova Senha" class="control-label"></label>
+                                                                <input asp-for="Password" class="form-control" />
+                                                                <span asp-validation-for="Password" class="text-danger"></span>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label asp-for="Digite Novamente" class="control-label"></label>
+                                                                <input asp-for="ConfirmPassword" class="form-control" />
+                                                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                                            </div>
+                                                            <input type="hidden" asp-for="Email" class="form-control" />
+                                                            <input type="hidden" asp-for="Token" class="form-control" />
+                                                            <div class="form-group">
+                                                                <input type="submit" value="Confirmar" class="btn btn-primary" />
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label asp-for="ConfirmPassword" class="control-label"></label>
-                            <input asp-for="ConfirmPassword" class="form-control" />
-                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                        </div>
-                        <input type="hidden" asp-for="Email" class="form-control" />
-                        <input type="hidden" asp-for="Token" class="form-control" />
-                        <div class="form-group">
-                            <input type="submit" value="Create" class="btn btn-primary" />
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+            </body>
+
+            @section Scripts {
+                <script src="~/lib/jquery-validation/dist/jquery.validate.minjs"></script>
+                <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+                <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+                <!-- Core plugin JavaScript-->
+                <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+                <!-- Custom scripts for all pages-->
+                <script src="~/js/sb-admin-2.min.js"></script>
+
+                <!-- Page level plugins -->
+                <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+
+                <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
+                <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+                <script src="~/js/site.js" asp-append-version="true"></script>
+            }
 
         . Insira a "View" "ResetPasswordConfirmation.cshtml" abaixo na pasta "View/Account":
 
-            <h1>ResetPasswordConfirmation</h1>
+            @{
+                ViewBag.Title = "Renovação de Senha";
+                Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+            }
 
-            <p>
-                Your password has been reset. Please <a asp-action="Login">click here to log in</a>.
-            </p>
+            @section header{
+                <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
+
+                <!-- Custom styles for this page -->
+                <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+                <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+                <!-- Custom styles for this template -->
+                <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+            }
+
+            <body class="bg-gradient-primary">
+
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row col-lg-12">
+                                        <div class="col-lg-12">
+                                            <div class="p-5">
+
+                                                <h1>Confirmação do Reinicio de Senha</h1>
+
+                                                <p>
+                                                    Sua Senha foi Reiniciada. Favor Acionar o Link ao Lado <a asp-action="Login">Click aqui para Fazer o Login</a>.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
 
 
-2. Alterar as msgs de inglês para português
 
-3. Configurar o bootstrap na viewmodel ResetPassword
 
-4. Fazer o emailconfirmation
+1. Fazer o emailconfirmation
 
     https://code-maze.com/email-confirmation-aspnet-core-identity/
     https://github.com/CodeMazeBlog/identity-aspnetcore/tree/email-confirmation-identity
 
 
+2. Fazer o UserLockout
 
+    https://code-maze.com/user-lockout-aspnet-core-identity/
+    https://github.com/CodeMazeBlog/identity-aspnetcore/tree/user-lockout-identity
 
 
 
