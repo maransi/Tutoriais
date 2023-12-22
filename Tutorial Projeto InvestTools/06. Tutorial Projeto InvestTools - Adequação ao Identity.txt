@@ -1586,168 +1586,187 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                 return View(model);
             }
 
-    . Altere o método "Register" abaixo da classe "AccountController":
+        . Altere o método "Register" abaixo da classe "AccountController":
 
-        ...
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            if (ModelState.IsValid)
+            ...
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Register(RegisterViewModel model)
             {
-                // Copia os dados do RegisterViewModel para o IdentityUser
-                var user = new IdentityUser
+                if (ModelState.IsValid)
                 {
-                    UserName = model.Email,
-                    Email = model.Email
-                };
-
-                // Copia os dados do usuário na tabela AspNetUsers
-                var result = await userManager.CreateAsync(user, model.Password);
-
-                // Se o usuário foi criado com sucesso, faz o login do usuário
-                // usando o serviço SignInManager e redireciona para o Método /action Index
-                if (result.Succeeded)
-                {
-                    // Linha Eliminada
-                    // await signInManager.SignInAsync(user, isPersistent: false);
-
-
-
-
-                    // Linha inserida
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);   
-
-                    // Linha inserida
-                    var confirmationLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
-
-                    // Linha inserida
-                    var message = new Message(new string[] { user.Email }, "Confirmation email link", confirmationLink, null);
-
-                    // Linha inserida
-                    await _emailSender.SendEmailAsync(message);
-
-
-
-                    // Linha eliminada
-                    // return RedirectToAction("Index", "home");
-
-                    // Linha inserida
-                    return RedirectToAction(nameof(SuccessRegistration));
-
-                }
-
-                // Se houver erros então inclui no ModelState
-                // que será exibido pela tag helper summary na validação
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
-
-            return View(model);
-        }
-
-    . Insira os métodos abaixo na classe "AccountController.cs":
-
-        [HttpGet]
-        public async Task<IActionResult> ConfirmEmail(string token, string email)
-        {
-            var user = await userManager.FindByEmailAsync(email);
-
-            if (user == null)
-                return View("Error");
-
-            var result = await userManager.ConfirmEmailAsync(user, token);
-
-            return View(result.Succeeded ? nameof(ConfirmEmail) : "Error");
-        }
-
-        [HttpGet]
-        public IActionResult SuccessRegistration()
-        {
-            return View();
-        }
-
-    . Insira a "Razor Page" "ConfirmEmail.cshtml" abaixo na pasta "View/Account"
-
-        <h1>Confirmação de Conta</h1>
-
-        <div>
-            <p>
-                Por Favor, Acesse seu Email e Confirme a sua Conta
-            </p>
-        </div>
-
-    . Insira a "Razor Page" "SuccessRegistration.cshtml" abaixo na pasta "View/Account"
-
-        <h1>Registro Realizado com Sucesso</h1>
-
-        <p>
-            Obrigado por Confirmar a sua Conta. <a asp-action="Login">Click aqui para Fazer o Login</a>.
-        </p>
-
-    . Insira o metodo "Error" na classe "AccountController.cs":
-
-        [HttpGet]
-        public IActionResult Error()
-        {
-            return View();
-        }
-
-    . Insira a "Razor Page" "Error.cshtml" abaixo na pasta "View/Account":
-
-        <h1 class="text-danger">Error.</h1>
-        <h2 class="text-danger">An error occurred while processing your request.</h2>
-
-    . Execute o projeto e verifique se os procedimentos de confirmação de email estão sendo atendidos.
-
-    . A confirmação do Email terá que obrigatoriamente ser feita em 2 horas, a partir do envio do email, devido o 
-        token expirar. Vamos realizar novas configurações para aumentar esse tempo.
-
-        . Crie a pasta "Services.CustomTokenPrividers"
-
-        . Crie a classe "EmailConfirmationTokenProvider.cs" abaixo dentro da pasta "Services.CustomTokenPrividers":
-
-            using Microsoft.AspNetCore.DataProtection;
-            using Microsoft.AspNetCore.Identity;
-            using Microsoft.Extensions.Logging;
-            using Microsoft.Extensions.Options;
-
-            namespace Services.CustomTokenProviders
-            {
-                public class EmailConfirmationTokenProvider<TUser> : DataProtectorTokenProvider<TUser> where TUser : class
-                {
-                    public EmailConfirmationTokenProvider(IDataProtectionProvider dataProtectionProvider, 
-                        IOptions<EmailConfirmationTokenProviderOptions> options, 
-                        ILogger<DataProtectorTokenProvider<TUser>> logger) 
-                        : base(dataProtectionProvider, options, logger)
+                    // Copia os dados do RegisterViewModel para o IdentityUser
+                    var user = new IdentityUser
                     {
+                        UserName = model.Email,
+                        Email = model.Email
+                    };
+
+                    // Copia os dados do usuário na tabela AspNetUsers
+                    var result = await userManager.CreateAsync(user, model.Password);
+
+                    // Se o usuário foi criado com sucesso, faz o login do usuário
+                    // usando o serviço SignInManager e redireciona para o Método /action Index
+                    if (result.Succeeded)
+                    {
+                        // Linha Eliminada
+                        // await signInManager.SignInAsync(user, isPersistent: false);
+
+
+
+
+                        // Linha inserida
+                        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);   
+
+                        // Linha inserida
+                        var confirmationLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
+
+                        // Linha inserida
+                        var message = new Message(new string[] { user.Email }, "Link para Confirmação da sua Conta", confirmationLink, null);
+
+                        // Linha inserida
+                        await _emailSender.SendEmailAsync(message);
+
+
+
+                        // Linha eliminada
+                        // return RedirectToAction("Index", "home");
+
+                        // Linha inserida
+                        return RedirectToAction(nameof(SuccessRegistration));
+
+                    }
+
+                    // Se houver erros então inclui no ModelState
+                    // que será exibido pela tag helper summary na validação
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
                     }
                 }
 
-                public class EmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
-                {
-
-                }
+                return View(model);
             }
 
+        . Insira os métodos abaixo na classe "AccountController.cs":
+
+            [HttpGet]
+            public async Task<IActionResult> ConfirmEmail(string token, string email)
+            {
+                var user = await userManager.FindByEmailAsync(email);
+
+                if (user == null)
+                    return View("Error");
+
+                var result = await userManager.ConfirmEmailAsync(user, token);
+
+                return View(result.Succeeded ? nameof(ConfirmEmail) : "Error");
+            }
+
+            [HttpGet]
+            public IActionResult SuccessRegistration()
+            {
+                return View();
+            }
+
+        . Insira a "Razor Page" "ConfirmEmail.cshtml" abaixo na pasta "View/Account"
+
+            <h1>Confirmação de Conta</h1>
+
+            <div>
+                <p>
+                    Obrigado por Confirmar a sua Conta. <a asp-action="Login">Click aqui para Fazer o Login</a>.
+                </p>
+            </div>
+
+        . Insira a "Razor Page" "SuccessRegistration.cshtml" abaixo na pasta "View/Account"
+
+            <h1>Registro Realizado com Sucesso</h1>
+
+            <p>
+                Enviamos um "Link" para o seu Email. Favor verificá-lo antes de iniciar as atividades.
+            </p>
+
+        . Insira o metodo "Error" na classe "AccountController.cs":
+
+            [HttpGet]
+            public IActionResult Error()
+            {
+                return View();
+            }
+
+        . Insira a "Razor Page" "Error.cshtml" abaixo na pasta "View/Account":
+
+            <h1 class="text-danger">Error.</h1>
+            <h2 class="text-danger">An error occurred while processing your request.</h2>
+
+        . Execute o projeto e verifique se os procedimentos de confirmação de email estão sendo atendidos.
+
+        . A confirmação do Email terá que obrigatoriamente ser feita em 2 horas, a partir do envio do email, devido o 
+            token expirar. Vamos realizar novas configurações para aumentar esse tempo.
+
+            . Crie a pasta "Services.CustomTokenPrividers"
+
+            . Crie a classe "EmailConfirmationTokenProvider.cs" abaixo dentro da pasta "Services.CustomTokenPrividers":
+
+                using Microsoft.AspNetCore.DataProtection;
+                using Microsoft.AspNetCore.Identity;
+                using Microsoft.Extensions.Logging;
+                using Microsoft.Extensions.Options;
+
+                namespace Services.CustomTokenProviders
+                {
+                    public class EmailConfirmationTokenProvider<TUser> : DataProtectorTokenProvider<TUser> where TUser : class
+                    {
+                        public EmailConfirmationTokenProvider(IDataProtectionProvider dataProtectionProvider, 
+                            IOptions<EmailConfirmationTokenProviderOptions> options, 
+                            ILogger<DataProtectorTokenProvider<TUser>> logger) 
+                            : base(dataProtectionProvider, options, logger)
+                        {
+                        }
+                    }
+
+                    public class EmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
+                    {
+
+                    }
+                }
+
+            . Insira as linhas abaixo na classe "Program.cs":
+
+                ...
+                using Services.CustomTokenProviders;                             // Linha inserida
+                ...
+
+                builder.Services.AddDefaultIdentity<IdentityUser>()            
+                    .AddEntityFrameworkStores<ApplicationDbContext>()         
+                    .AddDefaultTokenProviders()
+                    .AddTokenProvider<EmailConfirmationTokenProvider<IdentityUser>>("emailconfirmation");   // Linha inserida
+
+                builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+                opt.TokenLifespan = TimeSpan.FromHours(2));
+
+                builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>                    // Linha inserida
+                    opt.TokenLifespan = TimeSpan.FromDays(14));
+
+                ...
+                builder.Services.Configure<IdentityOptions>( options => 
+                {
+                    options.Password.RequiredLength = 6;                                    
+                    options.Password.RequiredUniqueChars = 3;                               
+                    options.Password.RequireNonAlphanumeric = false;                       
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireUppercase = false;
+
+                    options.SignIn.RequireConfirmedEmail = true;
+
+                    options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";                    // Linha inserida
+                });
+                ...
+
+    . Criando o formulário "User Lockout":
+
         . Insira as linhas abaixo na classe "Program.cs":
-
-            ...
-            using Services.CustomTokenProviders;                             // Linha inserida
-            ...
-
-            builder.Services.AddDefaultIdentity<IdentityUser>()            
-                .AddEntityFrameworkStores<ApplicationDbContext>()         
-                .AddDefaultTokenProviders()
-                .AddTokenProvider<EmailConfirmationTokenProvider<IdentityUser>>("emailconfirmation");   // Linha inserida
-
-            builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
-            opt.TokenLifespan = TimeSpan.FromHours(2));
-
-            builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>                    // Linha inserida
-                opt.TokenLifespan = TimeSpan.FromDays(3));
 
             ...
             builder.Services.Configure<IdentityOptions>( options => 
@@ -1760,9 +1779,133 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
                 options.SignIn.RequireConfirmedEmail = true;
 
-                options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";                    // Linha inserida
+                options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";    
+
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);   // Linha inserida
+                options.Lockout.MaxFailedAccessAttempts = 3;                        // Linha inserida
+                options.Lockout.AllowedForNewUsers = true;                          // Linha inserida
             });
             ...
+
+        . Altere o método "Login" da classe "AccountController":
+
+            ...
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Login(LoginViewModel model)
+            {
+                if (ModelState.IsValid)
+                {
+
+
+
+
+                    // Linha alterada (Ultimo parâmetro passou a ser "True")
+                    var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, true);  
+
+
+
+
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("index", "home");
+                    }
+
+
+
+
+                    // If Inserido
+                    if (result.IsLockedOut)
+                    {
+                        var forgotPassLink = Url.Action(nameof(ForgotPassword),"Account", new { }, Request.Scheme);
+
+                        var content = string.Format("Your account is locked out, to reset your password, please click this link: {0}", forgotPassLink);
+
+                        var message = new Message(new string[] { model.Email }, "Locked out account information", content, null);
+
+                        await emailSender.SendEmailAsync(message);
+
+                        ModelState.AddModelError("", "The account is locked out");
+                        
+                        return View();
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Invalid Login Attempt");
+                        return View();
+                    }
+
+
+
+
+
+
+                    var emailConfirmed = await userManager.IsEmailConfirmedAsync( new IdentityUser
+                    {
+                        UserName = model.Email,
+                        Email = model.Email
+                    });
+
+                    if (! emailConfirmed )
+                    {
+                        ModelState.AddModelError(string.Empty, "Conta não Confirmada, Favor Verificar seu Email");
+
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, "Login Inválido");
+                    }
+                }
+
+                return View(model);
+            }
+            ...
+
+        . Insira as linhas abaixo no método "ResetPassword" da classe "AccountController":
+
+            https://andyp.dev/posts/lock-unlock-user-accounts-in-asp-net-core-identity
+
+
+            ...
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)
+            {
+                if (!ModelState.IsValid)
+                    return View(resetPasswordModel);
+
+                var user = await userManager.FindByEmailAsync(resetPasswordModel.Email);
+                if (user == null)
+                    RedirectToAction(nameof(ResetPasswordConfirmation));
+
+                var resetPassResult = await userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+
+
+
+
+                // LInha inserida
+                var setLockoutEndDateTask = await userManager.SetLockoutEndDateAsync(user, null ); // DateTime.Now - TimeSpan.FromMinutes(1));
+
+
+
+
+
+                if (!resetPassResult.Succeeded)
+                {
+                    foreach (var error in resetPassResult.Errors)
+                    {
+                        ModelState.TryAddModelError(error.Code, error.Description);
+                    }
+
+                    return View();
+                }
+
+                // var result = await userManager.ConfirmEmailAsync(user, token);
+
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
 
 
 1. Fazer o UserLockout
