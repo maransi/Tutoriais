@@ -270,7 +270,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         }
 
-    . Crie a página "Razor Page" "_LayoutAuthenticaton.cshtml" na pasta "Views/Shared":
+    . Crie a página "Razor Page" "_LayoutAuthentication.cshtml" na pasta "Views/Shared":
 
         <!DOCTYPE html>
         <html lang="en">
@@ -1069,7 +1069,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
     . Criando o formulário de "Forgot Password" 
 
-        . Crie a classe abaixo "ForgotPasswordMode" na pasta "ViewModels":
+        . Crie a classe abaixo "ForgotPasswordModel" na pasta "ViewModels":
 
             using System.ComponentModel.DataAnnotations;
 
@@ -1234,6 +1234,94 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                 </div>
             </body>
 
+        . Altere os links abaixo na classe "Login.cshtml":
+
+            <!DOCTYPE html>
+            <html lang="en">
+
+            <head>
+                ...
+            </head>
+
+            <body class="bg-gradient-primary">
+
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class="col-xl-10 col-lg-12 col-md-9">
+
+                            <div class="card o-hidden border-0 shadow-lg my-5">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row">
+                                        <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                                        <div class="col-lg-6">
+                                            <div class="p-5">
+                                                <div class="text-center">
+                                                    <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                                </div>
+                                                <form class="user">
+                                                ...
+                                                </form>
+
+
+
+
+                                                <hr>
+                                                <div class="text-center">
+
+                                                    <!-- Link alterado -->
+                                                    <a class="small" asp-area="" asp-controller="Account" asp-action="ForgotPassword">Esqueceu a Senha</a>
+
+                                                </div>
+                                                <div class="text-center">
+
+                                                    <!-- Link alterado -->
+                                                    <a class="small" asp-area="" asp-controller="Account" asp-action="Register">Nova Conta</a>
+
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- Bootstrap core JavaScript-->
+                <script src="~/vendor/jquery/jquery.min.js"></script>
+                <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+                <!-- Core plugin JavaScript-->
+                <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+                <!-- Custom scripts for all pages-->
+                <script src="~/js/sb-admin-2.min.js"></script>
+
+            </body>
+
+            </html>
+
+        . Altere os links abaixo na classe "Register.cshtml":
+
+            <hr>
+            <div class="text-center">
+
+                <!-- Link alterado -->
+                <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha? Login!</a>
+            </div>
+            <div class="text-center">
+                <a class="small" asp-controller="account" asp-action="login">Já tem uma conta? Login!</a>
+            </div>
+
+
         . Execute o projeto e verifique se a chamada da página de "Esqueceu a Senha" está funcionando nos formulários de 
             "Login" e "Register"
 
@@ -1272,11 +1360,11 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                     if (!ModelState.IsValid)
                         return View(forgotPasswordModel);
 
-                    var user = await _userManager.FindByEmailAsync(forgotPasswordModel.Email);
+                    var user = await userManager.FindByEmailAsync(forgotPasswordModel.Email);
                     if (user == null)
                         return RedirectToAction(nameof(ForgotPasswordConfirmation));
 
-                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
                     // Linha com erro temporariamente, nos passos abaixo vem o acerto qdo fizermos o "Reset Password"
                     var callback = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme); 
@@ -1426,12 +1514,12 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                                                         <form asp-action="ResetPassword">
                                                             <div asp-validation-summary="All" class="text-danger"></div>
                                                             <div class="form-group">
-                                                                <label asp-for="Digite a Nova Senha" class="control-label"></label>
+                                                                <label asp-for="Password" class="control-label"></label>
                                                                 <input asp-for="Password" class="form-control" />
                                                                 <span asp-validation-for="Password" class="text-danger"></span>
                                                             </div>
                                                             <div class="form-group">
-                                                                <label asp-for="Digite Novamente" class="control-label"></label>
+                                                                <label asp-for="ConfirmPassword" class="control-label"></label>
                                                                 <input asp-for="ConfirmPassword" class="form-control" />
                                                                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                                                             </div>
@@ -1526,6 +1614,17 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                     </div>
                 </div>
             </body>
+
+        . Execute o projeto e verifique se o funcionamento do "Reset Password":
+
+            . Acione o link do "Esqueceu a Senha"
+
+            . Após informar a conta/email no formulário de "Esqueceu a Senha", acesse o email para verificar se foi o link de 
+                "Reset"
+
+            . Faça o teste da alteração da senha pelo link do passo anterior.
+
+            . Após a alteração da senha, faça o login com a nova senha.
 
     . Criando o formulário "Email Confirmation":
 
@@ -1635,7 +1734,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                         var message = new Message(new string[] { user.Email }, "Link para Confirmação da sua Conta", confirmationLink, null);
 
                         // Linha inserida
-                        await _emailSender.SendEmailAsync(message);
+                        await emailSender.SendEmailAsync(message);
 
 
 
@@ -1712,6 +1811,16 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         . Execute o projeto e verifique se os procedimentos de confirmação de email estão sendo atendidos.
 
+            . Cadastre um novo email no gmail, ou outro servidor de emails.
+
+            . Cadastre uma nova conta dentro do sistema para o email do passo anterior.
+
+            . Acesse a conta de email criada e verifique se o link de confirmação de email enviado com sucesso
+
+            . Clique no link do passo anterior.
+
+            . Faça login no sitema com a nova conta para ver se o acesso ao "Dashboard" ficará disponível.
+
         . A confirmação do Email terá que obrigatoriamente ser feita em 2 horas, a partir do envio do email, devido o 
             token expirar. Vamos realizar novas configurações para aumentar esse tempo.
 
@@ -1724,7 +1833,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                 using Microsoft.Extensions.Logging;
                 using Microsoft.Extensions.Options;
 
-                namespace Services.CustomTokenProviders
+                namespace investTools.Web.Services.CustomTokenProviders
                 {
                     public class EmailConfirmationTokenProvider<TUser> : DataProtectorTokenProvider<TUser> where TUser : class
                     {
@@ -1745,7 +1854,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
             . Insira as linhas abaixo na classe "Program.cs":
 
                 ...
-                using Services.CustomTokenProviders;                             // Linha inserida
+                using investTools.Web.Services.CustomTokenProviders;                             // Linha inserida
                 ...
 
                 builder.Services.AddDefaultIdentity<IdentityUser>()            
@@ -1820,6 +1929,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                         return View();
                     }
 
+                    // Linha alterada, ultimo parâmetro passou ficar com o valor "True"
                     var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, true);
 
 
@@ -1859,7 +1969,7 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
         . Insira as linhas abaixo no método "ResetPassword" da classe "AccountController":
 
-            https://andyp.dev/posts/lock-unlock-user-accounts-in-asp-net-core-identity
+            # https://andyp.dev/posts/lock-unlock-user-accounts-in-asp-net-core-identity
 
 
             ...
@@ -1901,7 +2011,13 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                 return RedirectToAction(nameof(ResetPasswordConfirmation));
             }
 
+        . Levante a aplicação e faça o teste de "Lockout Password":
 
+            . Faça várias tentativas de login com email errado até bloqueá-lo.
+
+            . Acesse o email da conta bloqueada e acione o link de desbloqueio enviado.
+
+            . Faça o desbloquei e tente acessar o sistema com a conta desbloqueada.
 
 1. Fazer o UserLockout
 
