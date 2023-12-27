@@ -1,0 +1,108 @@
+Tutorial Dockerizando Aplicações ASP.NET
+========================================
+
+. No caso do Linux execute os comandos abaixo no prompt no terminal:
+
+    . A URL abaixo tem os passos atualizado para instalação do Docker:
+
+        https://docs.docker.com/engine/install/ubuntu/
+
+	. Instalação nas distribuições Ubuntu
+
+        # Add Docker's official GPG key:
+        sudo apt-get update
+        sudo apt-get install ca-certificates curl gnupg
+        sudo install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+        # Add the repository to Apt sources:
+        echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+
+        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        sudo docker --version
+
+        sudo groupadd docker
+        sudo gpasswd -a <usuario> docker
+        sudo chown "$USER":"$USER" /var/run/docker.sock -R
+        sudo service docker restart
+
+        docker --version
+
+. Criação do projeto no Visual Studio:
+
+    . Ao acessar o Visual Studio, escolha a opção "Criar um Projeto".
+
+    . Na tela seguinte, escolha: 
+
+        "Aplicativo ASP.NET Core Web"
+
+        Próximo
+
+    . Na tela de configuração informe:
+
+        Project Name:                                       DockerASP_NET
+        Localization:                                       [ Local do projeto ]
+        Solution Name:                                      DockerASP_NET
+        Place solution and project in the same directory:   False
+
+
+
+        Próximo
+
+    . Na tela de "Informações Adicionais", escolha:
+
+        Framework:                          .NET 7.0 
+        Authentication Type:                None
+        Configure HTTPS:                    True
+        Enable Docker:                      True
+        Docker OS:                          Linux
+        Do not use top-level statements:    False
+
+        Criar o projeto
+
+    . Caso o projeto já exista:
+
+        . Clique com o botão direito sobre o nó do projeto e escolha "Add > Docker Suport..."
+
+        . Escolha a opção "Linux" na próxima tela.
+
+    . Ao termino teremos um arquivo na raiz do projeto com o nome "Dockerfile", com o seguinte conteúdo:
+
+
+        #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+        FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+        WORKDIR /app
+        EXPOSE 80
+        EXPOSE 443
+
+        FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+        WORKDIR /src
+        COPY ["DockerASP_NET_7/DockerASP_NET_7.csproj", "DockerASP_NET_7/"]
+        RUN dotnet restore "DockerASP_NET_7/DockerASP_NET_7.csproj"
+        COPY . .
+        WORKDIR "/src/DockerASP_NET_7"
+        RUN dotnet build "DockerASP_NET_7.csproj" -c Release -o /app/build
+
+        FROM build AS publish
+        RUN dotnet publish "DockerASP_NET_7.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+        FROM base AS final
+        WORKDIR /app
+        COPY --from=publish /app/publish .
+        ENTRYPOINT ["dotnet", "DockerASP_NET_7.dll"]
+
+    . Para criar uma imagem do projeto para o Docker siga os passos abaixo:
+
+        . No prompt de comando, dentro da pasta raiz da solução digite o comando abaixo:
+
+            docker build -t docker-aspnet-yb -f  DockerASP_NET_7/Dockerfile .
+
+
+https://www.youtube.com/watch?v=raklAKmyJpI
+3.20
