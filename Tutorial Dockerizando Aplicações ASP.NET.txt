@@ -1,37 +1,45 @@
 Tutorial Dockerizando Aplicações ASP.NET
 ========================================
 
+. Baseado no video:
+    
+    https://www.youtube.com/watch?v=raklAKmyJpI
+
+. No Windows, basta baixar o instalador no link abaixo:
+
+    https://docs.docker.com/desktop/install/windows-install/
+
 . No caso do Linux execute os comandos abaixo no prompt no terminal:
 
     . A URL abaixo tem os passos atualizado para instalação do Docker:
 
         https://docs.docker.com/engine/install/ubuntu/
 
-	. Instalação nas distribuições Ubuntu
+        . Instalação nas distribuições Ubuntu
 
-        # Add Docker's official GPG key:
-        sudo apt-get update
-        sudo apt-get install ca-certificates curl gnupg
-        sudo install -m 0755 -d /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        sudo chmod a+r /etc/apt/keyrings/docker.gpg
+            # Add Docker's official GPG key:
+            sudo apt-get update
+            sudo apt-get install ca-certificates curl gnupg
+            sudo install -m 0755 -d /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-        # Add the repository to Apt sources:
-        echo \
-        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        sudo apt-get update
+            # Add the repository to Apt sources:
+            echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+            sudo apt-get update
 
-        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-        sudo docker --version
+            sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            sudo docker --version
 
-        sudo groupadd docker
-        sudo gpasswd -a <usuario> docker
-        sudo chown "$USER":"$USER" /var/run/docker.sock -R
-        sudo service docker restart
+            sudo groupadd docker
+            sudo gpasswd -a <usuario> docker
+            sudo chown "$USER":"$USER" /var/run/docker.sock -R
+            sudo service docker restart
 
-        docker --version
+            docker --version
 
 . Criação do projeto no Visual Studio:
 
@@ -101,8 +109,102 @@ Tutorial Dockerizando Aplicações ASP.NET
 
         . No prompt de comando, dentro da pasta raiz da solução digite o comando abaixo:
 
-            docker build -t docker-aspnet-yb -f  DockerASP_NET_7/Dockerfile .
+            docker build -t docker-aspnet-visualstudio -f  DockerASP_NET_7/Dockerfile .
 
+    . Para criar um container da imagem para o Docker siga os passos abaixo:
 
-https://www.youtube.com/watch?v=raklAKmyJpI
-3.20
+        . No prompt de comando, dentro da pasta raiz da solução digite o comando abaixo:
+
+            docker run -d -p 5000:80 --name docker-demo-visualstudio docker-aspnet-visualstudio
+
+    . Acesse o navegador e execute a URL abaixo:
+
+        http://localhost:5000/
+
+. Criação do projeto no VSCode:
+
+    . Instale as extensões do VSCode
+
+        C# 
+        C# Extensions (JosKreativ)
+        C# XML Documentation Comments
+        C# Snippets
+        Docker
+        vscode-icons (Opcional)
+
+    . Crie uma solução com um projeto ASP.NET Core MVC
+
+        mkdir DockerASP_NET
+
+        cd .\DockerASP_NET\
+
+        dotnet new sln -n "DockerASP_NET"
+
+        dotnet new mvc -o DockerASP_NET.Web -n DockerASP_NET.Web -f net7.0
+        dotnet sln add ./DockerASP_NET.Web/
+
+        dotnet clean
+        dotnet restore
+        dotnet build
+        
+        dotnet run --project .\DockerASP_NET.Web\
+
+    . Dentro do VSCode, abrir a pasta da solução do projeto
+
+    . Pressione "Ctrl + P" e escolha a opção ">Docker: Add Docker Files to Workspace"
+
+        . Informe as configurações abaixo:
+
+            ASP.NET Core
+
+            Linux
+
+            80
+
+            No
+
+    . Para criar uma imagem do projeto para o Docker siga os passos abaixo:
+
+        . No prompt de comando, dentro da pasta raiz da solução digite o comando abaixo:
+
+            docker build -t docker-aspnet-vscode -f  DockerASP_NET.Web/Dockerfile .
+
+    . Para criar um container da imagem para o Docker siga os passos abaixo:
+
+        . No prompt de comando, dentro da pasta raiz da solução digite o comando abaixo:
+
+            docker run -d -p 5000:80 --name docker-demo-vscode docker-aspnet-vscode
+
+        . As demais vezes que for executar o container, digite o comando abaixo:
+
+            docker start  docker-demo-vscode
+
+    . Acesse o navegador e execute a URL abaixo:
+
+        http://localhost:5000/
+
+    . Publicando a imagem do nosso projeto no "Hub Docker":
+
+        . No prompt do sistema operacional faça o login no docker:
+
+            docker login -u [docker-username]
+
+        . Publicação da imagem
+
+            docker tag docker-aspnet-vscode [docker-username]/docker-aspnet-vscode-app
+
+            docker push [docker-username]/docker-aspnet-vscode-app
+
+        . Testando a imagem publicada
+
+            . Apague a imagem da sua máquina:
+
+                docker container rm docker-aspnet-vscode
+
+                docker image rm docker-demo-vscode
+
+            . Baixando a imagem do "Docker Hub":
+
+                docker pull [docker-username]/docker-aspnet-vscode-app:latest
+
+                docker run -d -p 5000:80 --name docker-demo-vscode [docker-username]/docker-aspnet-vscode-app
