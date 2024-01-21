@@ -1,3 +1,27 @@
+# Minicurso Docker - Conteinerizando uma aplicação ASP.NET Core MVC
 https://www.youtube.com/watch?v=rqBWvco0i_Y
+
+# Criando imagem e container Docker com ASP.NET Core
 https://www.youtube.com/watch?v=raklAKmyJpI
+
+# Docker - Curso para Programadores C#.NET
 https://www.youtube.com/watch?v=1JfSJk9T6TQ
+
+
+
+
+
+
+# Criando Ambiente de desenvolvimento Windows C# .NET + WSL Ubuntu + Docker
+https://www.youtube.com/watch?v=lQChkJCR__0&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=21&t=60s
+
+
+
+# Docker - ASP .NET Core, EF Core com SQL Server - I
+https://www.youtube.com/watch?v=VbEhMVcWOFs&list=PL7yxJa4Na-iqS50DXxIUhCC9ClB7oOL5V&index=4&t=13s
+
+# Docker - ASP .NET Core, EF Core com SQL Server - II
+https://www.youtube.com/watch?v=cYfh_Axbugc&list=PL7yxJa4Na-iqS50DXxIUhCC9ClB7oOL5V&index=3
+
+# Docker - ASP .NET Core, EF Core com SQL Server - III
+https://www.youtube.com/watch?v=lFJEPGCFtTA&list=PL7yxJa4Na-iqS50DXxIUhCC9ClB7oOL5V&index=2
