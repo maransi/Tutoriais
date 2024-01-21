@@ -10,10 +10,14 @@ https://www.youtube.com/watch?v=1JfSJk9T6TQ
 
 
 
+# Comando de instalação do WSL
+https://learn.microsoft.com/pt-br/windows/wsl/install#install-wsl-command
 
 
 # Criando Ambiente de desenvolvimento Windows C# .NET + WSL Ubuntu + Docker
 https://www.youtube.com/watch?v=lQChkJCR__0&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=21&t=60s
+
+
 
 
 
