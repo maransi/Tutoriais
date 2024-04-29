@@ -208,3 +208,12 @@ Tutorial Dockerizando Aplicações ASP.NET
                 docker pull [docker-username]/docker-aspnet-vscode-app:latest
 
                 docker run -d -p 5000:80 --name docker-demo-vscode [docker-username]/docker-aspnet-vscode-app
+
+
+
+
+
+
+
+https://learn.microsoft.com/pt-br/windows/wsl/basic-commands
+https://github.com/codeedu/wsl2-docker-quickstart?tab=readme-ov-file#o-que-%C3%A9-o-wsl2
