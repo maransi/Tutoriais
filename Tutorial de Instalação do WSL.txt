@@ -1,0 +1,173 @@
+Tutorial de Instalação do WSL
+=============================
+
+. Instalação do WSL
+
+    . Acessar as "Configurações do Windows", localizar "Ativar ou Desativar Recursos do Windows" e na tela que abrir ative:
+
+        . Plataforma de Máquina Virtual
+
+        . Subsistema do Windows para Linux
+
+    . Abrir o Powershell como adminstrador e executar os comando abaixo:
+
+        # Listar as distribuições disponíveis para instalação
+        wsl --list -o
+
+        # Instalar o wsl, sendo o "-d <Distribuição> opcional. Se for usado inclua uma das opções apresentadas na linha anterior"
+        wsl --install -d <Distribuição>
+
+        # O comando acima pode ser feito pela "Play Store" do Windows. Basta localizar a distribuição do Linux que deseja instalar.
+
+    . Após a instalação, reinicie a máquina
+
+        . Quando a máquina ligar, localize no menu do windows a opção "Ubuntu <A versão instalada>"
+
+        . Execute o icone da distribuição instalada:
+
+            . Aguarde alguns minutos para terminar a instalação.
+
+            . Informe o usuário e senha do novo ambiente.
+
+    . Caso foi instalado mais de uma distribuição do Linux no WSL e se deseje que uma delas seja a versão padrão de entrada, execute 
+        o comando abaixo:
+
+        # Substituindo <DistributionName> pelo nome da distribuição do Linux que você gostaria de usar. 
+        wsl -s <DistributionName> 
+        
+        ou 
+        
+        wsl --set-default <DistributionName> 
+
+    . Como consultar as distribuições instaladas:
+
+        . No Powershell execute o comando abaixo:
+
+            wsl -l -v
+
+    . Instalação do "Windows Terminal":
+
+        . Acesse a Play Store do Windows e instale a app abaixo:
+
+            Windows Terminal Preview
+
+        . ShortKeys
+
+            F11                     Maximiza a tela e deixa tela inteira
+            Ctrl + Shift + D        Duplica a guia do terminal atual
+            Ctrl + Tab              Navega entre as guias/terminal
+            Ctrl + Shift + W        Fecha a guia atual
+
+        . Nas Configurações do Terminal:
+
+            . Abra o Terminal e vá para a janela Configurações da interface do usuário.
+
+            . Selecione Inicialização 
+            
+                . Acesse "Inicialização" / "Perfil Padrão" e escolha a distribuição Linux que se deseja
+
+                . Acesse "Inicialização" / "Aplicativo Terminal Padrão" e escolha "Prévia do Terminal Windows".
+
+                . Acesse "Inicialização" / "Parametros de Inicialização" e escolha:
+
+                    Modo de inicialização:          Maximizado,
+                    Centralização na Inicialização: True
+
+    . Limitando o uso dos recursos da máquina:
+
+        Crie um arquivo chamado .wslconfig na raiz da sua pasta de usuário (C:\Users\<seu_usuario>) e defina estas configurações:
+
+        [wsl2]
+        memory=8GB
+        processors=4
+        swap=2GB
+
+. Instalando o Chrome no WSL
+
+    cd
+    
+    mkdir Downloads
+
+    sudo apt update && sudo apt -y upgrade && sudo apt -y autoremove
+
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+
+    sudo dpkg -i google-chrome-stable_current_amd64.deb
+
+    google-chrome
+
+. Instalação do VSCode:
+
+    . Inicie o VSCode no Windows e instale as extensões:
+
+        WSL
+
+        Docker
+
+    . Acesse o "wsl"
+
+        . No prompt do linux execute a chamado do VSCode como abaixo:
+
+            code .
+
+        . Verifique se no rodapé está saindo a msg ">< WSL: Ubuntu-..."
+
+        . Acione o terminal e veja se o prompt posicionado e a pasta de dentro do ambiente do wsl
+
+. Instalação do Docker
+
+    . No prompt do linux execute o comandos abaixo:
+
+        # Add Docker's official GPG key:
+        sudo apt-get update
+        sudo apt-get install ca-certificates curl
+        sudo install -m 0755 -d /etc/apt/keyrings
+        sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+        # Add the repository to Apt sources:
+        echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+
+        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+        # Teste da instalação do docker
+        sudo docker run hello-world
+
+        # Criar o grupo do docker
+        sudo groupadd docker
+
+        # Adicionar o usuário corrente ao grupo do docker
+        sudo usermod -aG docker $USER
+
+        # Ativar as mudanças feitas no grupo
+        newgrp docker
+
+        # Para testar novamente a instalação
+        docker ps -a
+
+
+
+        # If you initially ran Docker CLI commands using sudo before adding your user to the docker group, 
+        # you may see the following error:
+
+        # WARNING: Error loading config file: /home/user/.docker/config.json -
+        #  stat /home/user/.docker/config.json: permission denied
+
+        # This error indicates that the permission settings for the ~/.docker/ directory are incorrect, 
+        # due to having used the sudo command earlier.
+
+        # To fix this problem, either remove the ~/.docker/ directory (it's recreated automatically, 
+        # but any custom settings are lost), or change its ownership and permissions using the following commands:
+
+        sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
+        sudo chmod g+rwx "$HOME/.docker" -R
+
+. Alguns comandos do wsl
+
+    . Os comandos abaixo devem ser executados somente no prompt do "Powershell":
+
+        wsl -l -v
