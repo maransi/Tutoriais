@@ -75,17 +75,21 @@ Tutorial de Instalação do WSL
 
     . Limitando o uso dos recursos da máquina:
 
-        Crie um arquivo chamado .wslconfig na raiz da sua pasta de usuário (C:\Users\<seu_usuario>) e defina estas configurações:
+        . Crie um arquivo chamado .wslconfig na raiz da sua pasta de usuário (C:\Users\<seu_usuario>) e defina estas configurações:
 
-        [wsl2]
-        memory=8GB
-        processors=4
-        swap=2GB
+            [wsl2]
+            memory=8GB
+            processors=4
+            swap=2GB
+
+        . Acesse o Powershell e execute o comando abaixo para fazer uso das configurações acima:
+
+            wsl --shutdown
 
 . Instalando o Chrome no WSL
 
     cd
-    
+
     mkdir Downloads
 
     sudo apt update && sudo apt -y upgrade && sudo apt -y autoremove
