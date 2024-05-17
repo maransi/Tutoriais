@@ -122,6 +122,16 @@ Tutorial de Instalação do WSL
 
         sudo chsh -s /usr/bin/fish
 
+    . Para retornar ao bash padrão use o comando abaixo:
+
+        sudo chsh -s /bin/bash
+
+    . Insira as linhas abaixo no arquivo  "~/.config/fish/functions/history.fish"
+
+        function history
+            builtin history --show-time='%F %T ' | cat -n
+        end
+
 . Instalação do VSCode:
 
     . Inicie o VSCode no Windows e instale as extensões:
