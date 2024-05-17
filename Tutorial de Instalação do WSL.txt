@@ -100,6 +100,28 @@ Tutorial de Instalação do WSL
 
     google-chrome
 
+. Alterando a senha do root:
+
+    sudo passwd root
+
+. Instalando o Fish Shell
+
+    . Adicione o Fish Shell Repositório
+
+        sudo apt-add-repository ppa:fish-shell/release-3
+
+    . Atualize os pacotes do repositório
+
+        sudo apt-get update && sudo apt-get upgrade
+
+    . Instale o Fish Shell
+
+        sudo apt-get install fish
+
+    . Defina o Fish Shell como o shell padrão
+
+        sudo chsh -s /usr/bin/fish
+
 . Instalação do VSCode:
 
     . Inicie o VSCode no Windows e instale as extensões:
