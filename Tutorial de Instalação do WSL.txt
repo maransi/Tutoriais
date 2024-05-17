@@ -170,8 +170,3 @@ Tutorial de Instalação do WSL
         sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
         sudo chmod g+rwx "$HOME/.docker" -R
 
-. Alguns comandos do wsl
-
-    . Os comandos abaixo devem ser executados somente no prompt do "Powershell":
-
-        wsl -l -v
