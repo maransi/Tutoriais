@@ -113,6 +113,8 @@ Tutorial WSL ( Windows Subsystem Linux )
             processors=4
             swap=2GB
 
+            # Para mais opções de configurações acesse o link "https://learn.microsoft.com/pt-br/windows/wsl/wsl-config#example-wslconfig-file"
+
         . Acesse o Powershell e execute o comando abaixo para fazer uso das configurações acima:
 
             wsl --shutdown
@@ -188,6 +190,13 @@ Tutorial WSL ( Windows Subsystem Linux )
         WSL
 
         Docker
+
+        C# Dev Kit
+
+        IntelliCode for C# Dev Kit
+
+https://www.youtube.com/watch?v=hlCNP3lcHQU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=3     4.29
+
 
     . Acesse o "wsl"
 
