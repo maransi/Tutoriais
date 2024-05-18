@@ -1,5 +1,5 @@
-Tutorial de Instalação do WSL
-=============================
+Tutorial WSL ( Windows Subsystem Linux )
+========================================
 
 . Instalação do WSL
 
@@ -73,6 +73,37 @@ Tutorial de Instalação do WSL
                     Modo de inicialização:          Maximizado,
                     Centralização na Inicialização: True
 
+        . Comandos básicos do terminal:
+
+            . Acesse o Powershell para executar os comandos abaixo:
+
+                # Entrar na distro padrão via terminal
+                wsl
+
+                # Desligar instância WSL
+                wsl --shutdown
+
+                # Verificar o status do WSL
+                wsl --status
+                
+                # Execute como um usuário específico
+                wsl --user Username
+
+                # Listar distribuições do Linux instaladas
+                wsl --list --verbose
+
+                # Use esse comando para alterar a distribuição que vai abrir por padrão quando rodar somente o comando WSL
+                wsl --set-default nomeDistro
+
+                # Atualizar o WSL
+                wsl --update
+
+                # Desinstalar uma distribuição linux
+                wsl --unregister nomeDistro
+
+
+
+
     . Limitando o uso dos recursos da máquina:
 
         . Crie um arquivo chamado .wslconfig na raiz da sua pasta de usuário (C:\Users\<seu_usuario>) e defina estas configurações:
@@ -85,6 +116,8 @@ Tutorial de Instalação do WSL
         . Acesse o Powershell e execute o comando abaixo para fazer uso das configurações acima:
 
             wsl --shutdown
+
+
 
 . Instalando o Chrome no WSL
 
@@ -131,6 +164,22 @@ Tutorial de Instalação do WSL
         function history
             builtin history --show-time='%F %T ' | cat -n
         end
+
+. Instalação "dotnet"
+
+	wget https://dot.net/v1/dotnet-install.sh
+	chmod +x dotnet-install.sh
+	./dotnet-install.sh -c 3.1
+	./dotnet-install.sh -c 5.0
+	./dotnet-install.sh -c 6.0
+	./dotnet-install.sh -c 8.0
+	dotnet --version
+	echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
+	source ~/.bashrc
+	dotnet --version
+	dotnet --list-runtimes
+	dotnet --list-sdks
+
 
 . Instalação do VSCode:
 
