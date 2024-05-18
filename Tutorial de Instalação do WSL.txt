@@ -175,9 +175,16 @@ Tutorial WSL ( Windows Subsystem Linux )
 	./dotnet-install.sh -c 5.0
 	./dotnet-install.sh -c 6.0
 	./dotnet-install.sh -c 8.0
-	dotnet --version
-	echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
+	
+    # Se o bash shell for o padrão do linux execute as duas linha abaixo
+    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
 	source ~/.bashrc
+
+    # Caso for o Fish Shell, insira na primeira linha do arquivo "~/.config/fish/config.fish" a linha abaixo
+    set -x PATH $PATH /home/$USER/.dotnet /home/$USER/.dotnet/tools
+
+
+	dotnet --version
 	dotnet --version
 	dotnet --list-runtimes
 	dotnet --list-sdks
