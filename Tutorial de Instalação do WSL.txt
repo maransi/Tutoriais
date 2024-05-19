@@ -184,7 +184,7 @@ Tutorial WSL ( Windows Subsystem Linux )
     set -x PATH $PATH /home/$USER/.dotnet /home/$USER/.dotnet/tools
 
 
-	dotnet --version
+	dotnet --info
 	dotnet --version
 	dotnet --list-runtimes
 	dotnet --list-sdks
