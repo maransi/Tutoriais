@@ -139,6 +139,84 @@ Tutorial WSL ( Windows Subsystem Linux )
 
     sudo passwd root
 
+. Instalando o zsh Shell
+
+    . Execute o comando abaixo no prompt do linux para instalar o "zsh":
+        sudo apt install zsh
+
+    . Execute o complemento "Oh-My-ZSH" executando o comando abaixo no prompt do linux:
+
+        # Instalar o complemento Oh-My-ZSH. Ao termino da instalação, o prompt do shell já passa o controle para o zsh
+        curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh; zsh
+
+        # OBSERVAÇÃO: Se já estiver instalado o "oh-my-zsh" simplesmente apague a pasta dele para reinstalá-lo e execute o comando acima
+        rm -rf ~/.oh-my-zsh
+
+
+    . Definindo ZSH como padrão. Após instalação, feche e abra o terminal:
+    
+        sudo usermod --shell $(which zsh) $USER
+
+    . Instalação do plugins ZSH Highlight. Após a conclusão da instalação, feche e abra o terminal para ver o resultado.
+        
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 
+
+        . Abra o arquivo ~/.zshrc, localize o paragrafo "plugins" e adicione o plugin "zsh-syntax-highlighting"
+
+            plugins=(
+                git
+                zsh-syntax-highlighting
+            )
+
+    . Instalação do plugins ZSH Suggestions. Após instalação, feche e abra novamente o terminal:
+
+        git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
+
+        . Abra o arquivo ~/.zshrc, localize o paragrafo "plugins" e adicione o plugin "zsh-syntax-highlighting"
+
+            plugins=(
+                git
+                zsh-syntax-highlighting
+                zsh-autosuggestions
+            )
+
+    . Instalação do Buscador com ctrl+t FZF. Após instalação, feche e abra novamente o terminal:
+
+        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install
+
+    . Acesse o site abaixo para baixar novas fontes. Adicionar uma fonte nova:
+    
+        # Baixe a fonte "Hack Nerd Font"
+        https://www.nerdfonts.com/#downloads
+
+
+    . Alteração da fonte do terminal:
+    
+        . Criar o diretório para a fonte e descompacte aqui:
+    
+            mkdir ~/.fonts 
+            cd ~/.fonts
+            unzip ~./Downloads/Hack.zip 
+
+        . Acesse as configurações do terminal e altere a fonte da interface "Hack NF"
+
+        . Altere o Tema do terminal para Powerlevel9k:
+
+            git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
+
+        . Altere o arquivo .zshrc para adicionar o novo tema,  conforme abaixo:
+    
+            . Altere o item abaixo com o novo tema:
+                
+                ZSH_THEME="powerlevel9k/powerlevel9k"
+
+            . Logo abaixo deste item, insira o item abaixo:
+
+                POWERLEVEL9K_MODE="nerdfont-complete"
+
+        . Feche e abra o terminal
+
+
 . Instalando o Fish Shell
 
     . Adicione o Fish Shell Repositório
