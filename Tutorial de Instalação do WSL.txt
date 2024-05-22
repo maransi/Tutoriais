@@ -143,9 +143,9 @@ Tutorial WSL ( Windows Subsystem Linux )
 
     . Execute o comando abaixo no prompt do linux para instalar o "zsh":
 
-        sudo apt-get update && sudo apt-get upgrade
+        sudo apt-get update && sudo apt-get upgrade -y
 
-        sudo apt install zsh
+        sudo apt install zsh -y
 
     . Execute o complemento "Oh-My-ZSH" executando o comando abaixo no prompt do linux:
 
@@ -189,6 +189,7 @@ Tutorial WSL ( Windows Subsystem Linux )
 
     . Instalação do Buscador com ctrl+t FZF. Após instalação, feche e abra novamente o terminal:
 
+        # Responda Yes em todas as perguntas
         git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install
 
         . Feche e abra o terminal
