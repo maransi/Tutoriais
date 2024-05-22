@@ -1920,8 +1920,10 @@ Tutorial Projeto InvestTools - Adequação ao Identity
                 if (ModelState.IsValid)
                 {
 
+                    // Linha inserida
                     var currentUser = userManager.FindByNameAsync(model.Email);
 
+                    // If inserido
                     if ( !currentUser.Result.EmailConfirmed )
                     {
                         ModelState.AddModelError(string.Empty, "Conta não Confirmada, Favor Verificar seu Email");
