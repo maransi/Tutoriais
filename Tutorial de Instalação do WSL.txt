@@ -289,6 +289,10 @@ Tutorial WSL ( Windows Subsystem Linux )
     echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
 	source ~/.bashrc
 
+    # Se o zsh shell for o padrão do linux execute as duas linha abaixo
+    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.zshrc
+	source ~/.zshrc
+
     # Caso for o Fish Shell, insira na primeira linha do arquivo "~/.config/fish/config.fish" a linha abaixo
     set -x PATH $PATH /home/$USER/.dotnet /home/$USER/.dotnet/tools
 
