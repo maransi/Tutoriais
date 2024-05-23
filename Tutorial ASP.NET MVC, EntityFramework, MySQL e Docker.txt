@@ -1,6 +1,14 @@
 Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
 -----------------------------------------------------
 
+Baseado nos artigos:
+
+https://www.macoratti.net/19/01/aspn_lnxsite1.htm
+https://www.macoratti.net/19/01/aspn_lnxsite2.htm
+https://www.macoratti.net/19/01/intro_docker11.htm
+https://www.macoratti.net/19/01/intro_docker12.htm
+https://www.macoratti.net/19/01/intro_docker13.htm
+
 1. Instalando o Docker
 
     . No caso do windows, acesse a URL abaixo e baixe o instalador:
@@ -136,7 +144,6 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
         . Digite "Format on save" e habilite a configuração
 
         . Digite "Final" e habilite a configuração "Files: Insert final newline" e habilite a configuração
-
 
 5. Crie uma pasta para o projeto MVC
 
