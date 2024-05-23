@@ -9,6 +9,11 @@ https://www.macoratti.net/19/01/intro_docker11.htm
 https://www.macoratti.net/19/01/intro_docker12.htm
 https://www.macoratti.net/19/01/intro_docker13.htm
 
+https://www.macoratti.net/19/01/intro_docker7.htm
+
+# Analisar o artigo a partir do link abaixo
+https://www.macoratti.net/19/01/intro_docker1.htm   
+
 1. Instalando o Docker
 
     . No caso do windows, acesse a URL abaixo e baixe o instalador:
