@@ -343,10 +343,12 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
 14. Acesse o arquivo "appsettings.json" e insira a linha abaixo:
 
     // IMPORTANTE: O IP 172.17.0.2 pode ser adquirido pelo comando "docker exec mysql hostname -I"
+    //              ou
+    //             Execute "docker container inspect <ID ou nome do container>" e localize a informação que encontra-se em "IPAddress"
     {
         ...,
         "ConnectionStrings": {
-                    "DotNetCoreMySQLAppConnection": "server=172.17.0.2; port=3306; database=desenv; user=root; password=root; Persist Security Info=false; Connect Timeout=300"
+                    "DotNetCoreMySQLAppConnection": "server=172.17.0.2; port=3306; database=desenv; user=root; password=root; Persist Security Info=false; Connect Timeout=300; SSL Mode=None"
         }
     }
 
@@ -420,7 +422,7 @@ Trabalhando com Dockerfile com imagens
 
     dotnet publish --configuration Realease --output dist
 
-3. Criar um arquivo Dockerfile na pasta raiz do projeto
+3. Criar um arquivo "Dockerfile" na pasta raiz do projeto
 
     FROM mcr.microsoft.com/dotnet/sdk:5.0
     LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
@@ -543,7 +545,7 @@ Trabalhando com volumes
 
     docker container run -d --name mysql -v /home/marco/mysql-docker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
 
-
+// PAREI AQUI
 
 Trabalhando com redes ( Trabalhando com host e um container "mysql")
 ---------------------------------------------------------------------
