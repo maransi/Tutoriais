@@ -14,6 +14,9 @@ https://www.macoratti.net/19/01/intro_docker7.htm
 # Analisar o artigo a partir do link abaixo
 https://www.macoratti.net/19/01/intro_docker1.htm   
 
+# Docker Compose com Mysql e .Net
+https://macoratti.net/21/06/docker_apimysql2.htm
+
 1. Instalando o Docker
 
     . No caso do windows, acesse a URL abaixo e baixe o instalador:
