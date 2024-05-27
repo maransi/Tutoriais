@@ -153,15 +153,25 @@ https://macoratti.net/21/06/docker_apimysql2.htm
 
         . Digite "Final" e habilite a configuração "Files: Insert final newline" e habilite a configuração
 
-5. Crie uma pasta para o projeto MVC
 
-    mkdir ~/workspace-dotnet/mvc1
+5. Crie a pasta da "Solution":
+
+    mkdir ~/workspace-dotnet/mvcDocker
+
+6. Dentro da pasta criada acima cria a "Solution":
+
+    cd ~/workspace-dotnet/mvcDocker
+
+    dotnet new sln -n mvcDocker
 
 6. Dentro da pasta criada acima crie um projeto dotnet MVC:
 
-    cd ~/workspace-dotnet/mvc1
 
-    dotnet new mvc -f net5.0
+    dotnet new mvc -o ./src/mvc1 -n mvc1 -f net5.0
+
+    dotnet sln mvcDocker.sln add ./src/mvc1/mvc1.csproj
+
+    cd ~/workspace-dotnet/mvcDocker/src/mvc1
 
     dotnet add package Microsoft.EntityFrameworkCore --version 5.0.1
     dotnet add package Microsoft.EntityFrameworkCore.Design --version 5.0.1
@@ -431,23 +441,52 @@ Trabalhando com Dockerfile com imagens
 
 
 
-2. Publicação da aplicação - Acesse a pasta raiz do projeto ASP.NET e execute o comando abaixo:
+// 2. Publicação da aplicação - Acesse a pasta raiz do projeto ASP.NET e execute o comando abaixo:
+//
+//    rm dist/ -R
+//
+//    dotnet publish --configuration Realease --output dist
 
-    rm dist/ -R
+3. Criar um arquivo "Dockerfile" com conteúdo abaixo na pasta raiz do projeto "mvc1"
 
-    dotnet publish --configuration Realease --output dist
+https://collabnix.com/getting-started-with-docker-multi-stage-builds/
+https://hovermind.com/kubernetes/understanding-dockerfile.html
+https://www.cherryservers.com/blog/docker-multistage-build
+https://www.youtube.com/watch?v=vIfS9bZVBaw
+https://www.youtube.com/watch?v=zP4lInIwfXg
 
-3. Criar um arquivo "Dockerfile" na pasta raiz do projeto
 
-    FROM mcr.microsoft.com/dotnet/sdk:5.0
+//    FROM mcr.microsoft.com/dotnet/sdk:5.0
+//    LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
+//    COPY dist app/
+//    WORKDIR /app
+//    EXPOSE 5000
+//    ENV ASPNETCORE_URLS=http://*:5000
+//    ENTRYPOINT ["dotnet","mvc1.dll"]
+
+    FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
     LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
-    COPY dist app/
     WORKDIR /app
     EXPOSE 5000
     ENV ASPNETCORE_URLS=http://*:5000
-    ENTRYPOINT ["dotnet","mvc1.dll"]
 
-4. Execute o comando abaixo na pasta raiz do projeto
+    FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+    WORKDIR "/src/mvc1"
+    COPY ["mvc1.csproj", "."]
+    RUN dotnet restore "./mvc1.csproj"
+    COPY . .
+    # WORKDIR "/src/mvc1"
+    RUN dotnet build "./mvc1.csproj" -c Release -o /app/build
+
+    FROM build AS publish
+    RUN dotnet publish "./mvc1.csproj" -c Release -o /app/publish
+
+    FROM base AS final
+    WORKDIR /app
+    COPY --from=publish /app/publish .
+    ENTRYPOINT ["dotnet", "mvc1.dll"]
+
+4. Execute o comando abaixo na pasta raiz do projeto "mvc1"
 
     docker build -t aspnetcoremvc/app:1.0 .
 
