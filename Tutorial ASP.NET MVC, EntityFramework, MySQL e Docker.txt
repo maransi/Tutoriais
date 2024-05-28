@@ -601,6 +601,121 @@ Trabalhando com volumes
 
 // PAREI AQUI
 
+
+Trabalhando com Docker Compose
+------------------------------
+
+1. Altere o arquivo "Dockerfile" da aplicação como abaixo:
+
+    FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
+    LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
+    WORKDIR /app
+    EXPOSE 5000
+    ENV ASPNETCORE_URLS=http://*:5000
+
+    FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+    WORKDIR "/src/mvc1"
+    COPY ["./src/mvc1/mvc1.csproj", "."]
+    RUN dotnet restore "mvc1.csproj"
+    COPY . .
+    # WORKDIR "/src/mvc1"
+    RUN dotnet build "./src/mvc1/mvc1.csproj" -c Release -o /app/build
+
+    FROM build AS publish
+    RUN dotnet publish "./src/mvc1/mvc1.csproj" -c Release -o /app/publish
+
+    FROM base AS final
+    WORKDIR /app
+    COPY --from=publish /app/publish .
+    ENTRYPOINT ["dotnet", "mvc1.dll"]
+
+2. Crie o arquivo "docker-compose.yml" com o conteúdo abaixo:
+
+    version: '3.4'
+    services:
+    mvcdocker:
+        image: ${DOCKER_REGISTRY-}mvcdocker
+        container_name: mvcdocker
+        build:
+        context: .
+        dockerfile: ./src/mvc1/Dockerfile
+        depends_on: 
+        - database
+        ports:
+        - "5000:5000"
+        restart: always
+        environment: 
+        - DBHOST=database
+        - ASPNETCORE_ENVIRONMENT=Development
+    database:
+        image: mysql:8.0.22             # Vamos mudar para a versão 8 do banco
+        container_name: mysqldb
+        ports:
+        - "3306:3306"
+        expose: 
+        - 3306
+        volumes:
+        - db-volume:/var/lib/mysql
+        restart: always
+        environment: 
+        MYSQL_ROOT_PASSWORD: hw8vup5e
+        MYSQL_USER: mac
+        MYSQL_PASSWORD: hw8vup5e
+        MYSQL_DATABASE: productsdb      
+    volumes:
+    db-volume:
+
+3. Se precisar alterar o endereço IP do banco na conexão, que fica nos arquivos: appsetings.*.json, basta executar o comando abaixo:
+
+    # Na saida localize o valor do item "IPAddress", ou "Gateway" ------------------------------+
+    docker container inspect mysqldb |grep -i "IPAddress\|Gateway"                              |
+                                                                                                |
+    "MacAddress": "02:42:ac:13:00:02",                                                          |
+    "NetworkID": "ca2fadce16e20af3390b7f5ce7e242d2a8daff24692383741877a54ccdd06f99",            |
+    "EndpointID": "1d2eac1aa2a3ab3773d71001cbc1e0db8408993a7246c2eb6689321ca3e1f49e",           |
+    "Gateway": "172.19.0.1",    <---------------------------------------------------------------|
+    "IPAddress": "172.19.0.2",  <---------------------------------------------------------------+
+    "IPPrefixLen": 16,                                      |
+    "IPv6Gateway": "",                                      |
+    "GlobalIPv6Address": "",                                |
+    "GlobalIPv6PrefixLen": 0,                               |
+                                                            |
+    #"appsetings.*.json"                                    |
+    {                                                       |
+        "Logging": {                                        |
+            "LogLevel": {                                   |
+                "Default": "Information",                   |
+                "Microsoft": "Warning",                     |
+                "Microsoft.Hosting.Lifetime": "Information" |
+            }                                               |   Coloque um dos dois endereços aqui
+        },                                                  |   
+            "ConnectionStrings": {                          V
+                "DotNetCoreMySQLAppConnection": "server=172.19.0.2; port=3306; database=productsdb; user=mac; password=hw8vup5e; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+        }
+    }
+
+4. Execute os comandos abaixo:
+
+    docker compose build
+
+    docker compose up -d
+
+5. Verifique no log dos containeres se conseguiram levantar com sucesso. Também podemos verificar isso através da extensão "Docker" do VSCode.
+
+    docker container logs -f mysqldb  
+
+5. Acesse o link abaixo no navegador
+
+    http://localhost:5000
+
+
+
+
+
+
+
+
+
 Trabalhando com redes ( Trabalhando com host e um container "mysql")
 ---------------------------------------------------------------------
 
