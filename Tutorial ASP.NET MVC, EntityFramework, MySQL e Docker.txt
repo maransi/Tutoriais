@@ -474,7 +474,7 @@ Trabalhando com volumes
 
     docker container rm -f $(docker ps -aq)
 
-    docker volume rm produtosdata
+    docker volume prune -a 
 
     docker image rm $(docker images -a -q)
 
@@ -555,9 +555,9 @@ Trabalhando com Dockerfile com imagens
 
     docker image rm $(docker images -a -q)
     
-    docker volume prune
+    docker volume prune -a
 
-3. Criar um arquivo "Dockerfile" com conteúdo abaixo na pasta raiz do projeto "./src/mvc1"
+2. Criar um arquivo "Dockerfile" com conteúdo abaixo na pasta raiz do projeto "./src/mvc1"
 
 https://collabnix.com/getting-started-with-docker-multi-stage-builds/
 https://hovermind.com/kubernetes/understanding-dockerfile.html
@@ -594,30 +594,11 @@ https://www.youtube.com/watch?v=zP4lInIwfXg
     COPY --from=publish /app/publish .
     ENTRYPOINT ["dotnet", "mvc1.dll"]
 
-6. Crie o container do mysql:
+3. Crie o container do mysql:
 
+    dockerdocker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
 
-
-
-
-#   Testar a geração do container do MySQL na rede Host e tentar usa-lo não pelo endereço IP, mas pelo localhost
-
-
-
-
-    docker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
-    
-    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
-    #
-    #   mysql -u root -p
-    #
-    # Informe a senha "root"
-    #
-    #       create database desenv;
-    #
-    docker container exec -it mysql bash
-
-7. Altere o endereço IP do "server" dentro do arquivo "appsettings.Development.json"
+4. Altere o endereço IP do "server" dentro do arquivo "appsettings.Development.json"
 
     docker inspect mysqldb| grep -i IpAddress
 
@@ -628,7 +609,7 @@ https://www.youtube.com/watch?v=zP4lInIwfXg
     #appsettings.Development.json                   V
     "DotNetCoreMySQLAppConnection": "server=172.17.0.2; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
 
-4. Execute o comando abaixo na pasta raiz do projeto "./src/mvc1"
+5. Execute o comando abaixo na pasta raiz do projeto "./src/mvc1"
 
     cd src/mvc1
 
@@ -645,6 +626,43 @@ https://www.youtube.com/watch?v=zP4lInIwfXg
 8. Acesse o navegador e execute a URL abaixo:
 
     http://localhost:5000
+
+9. Utilizando os containeres na mesma rede do Host
+
+    . IMPORTANTE: Durante a criação dos containeres, se não identificarmos a rede que o container será lançado, o docker criará ele na rede padrão "Bridge".
+                    Caso venhamos alterar a rede dos containeres para "Host", eles permanecerão na mesma rede da máquina que está executando os containeres.
+                    Nesse caso, podemos deixar o parâmetro "server" da conexão ao MySQL como "localhost" e não precisaremos colocar o IP fixo do container do banco
+
+                    . Altere o parâmetro "server" para "localhost"
+                                                    |
+                                                    +-------------------+
+                                                                        |
+                        #appsettings.Development.json                   V
+                        "DotNetCoreMySQLAppConnection": "server=localhost; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+
+
+                    . Executando os containeres na rede host:
+
+                        docker container rm -f mysqldb
+
+                        docker container rm -f mvcprodutos
+
+                        docker run -d --name mysqldb --network Host -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+                                                    -------------
+                                                            |
+                                                            V
+                                                    Identificação da rede
+                                                            |
+                                                            +---------------------------+
+                                                                                        |
+                                                                                        V
+                        docker container create -p 5000:5000 --name mvcprodutos --network Host aspnetcoremvc/app:1.0 
+
+                        docker container start mvcprodutos
+
+                    . Execute a URL abaixo:
+                    
+                        http://localhost:5000
 
 
 
