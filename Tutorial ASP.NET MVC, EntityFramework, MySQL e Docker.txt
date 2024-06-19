@@ -474,7 +474,7 @@ Trabalhando com volumes
 
     docker container rm -f $(docker ps -aq)
 
-    docker volume prune
+    docker volume rm produtosdata
 
     docker image rm $(docker images -a -q)
 
@@ -484,31 +484,31 @@ Trabalhando com volumes
 
     docker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
 
+3. Atualização da migration para o novo container MySQL:
+
+    cd ./src/mvc1
+
     dotnet ef database update --context AppDbContext
 
-    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
-    #
-    #   mysql -u root -p
-    #
-    # Informe a senha "root"
-    #
-    #
-    #   create database desenv;
-    #   use desenv;
-    #   create table Produtos( id int, name varchar(30));
-    #   select * from Produtos;
-    #
-    docker exec mysqldb bash     
+    # Para verificar se o UPDATE foi feito com sucesso
+    
+    mysql -u root -p -h 127.0.0.1 -A
 
-    ou 
+    # Execute os comandos abaixo:
 
-    docker exec -it mysqldb mysql -u root -p
+        mysql> use productsdb;
+        Database changed
 
-    ou 
-
-    docker exec mysqldb hostname -I
-
-    mysql -u root -p -h <IP do container acima>
+        mysql> DESC Produtos;
+        +-----------+----------------+------+-----+---------+----------------+
+        | Field     | Type           | Null | Key | Default | Extra          |
+        +-----------+----------------+------+-----+---------+----------------+
+        | ProdutoId | int(11)        | NO   | PRI | NULL    | auto_increment |
+        | Nome      | longtext       | YES  |     | NULL    |                |
+        | Categoria | longtext       | YES  |     | NULL    |                |
+        | Preco     | decimal(65,30) | NO   |     | NULL    |                |
+        +-----------+----------------+------+-----+---------+----------------+
+        4 rows in set (0.01 sec)
 
 
 3. Apagar o container do mysql e criar outro container mysql apontando para o volume criado no passo 2. Ao final
@@ -519,24 +519,33 @@ Trabalhando com volumes
 
     docker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
 
-    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
-    #
-    #   mysql -u root -p
-    #
-    # Informe a senha "root"
-    #
-    #   use desenv;
-    #   select * from Produtos;
-    #
-    docker container exec -it mysql bash
+    # Para verificar se o volume permaneceu com os dados do container anterior
+    
+    mysql -u root -p -h 127.0.0.1 -A
+
+    # Execute os comandos abaixo:
+
+        mysql> use productsdb;
+        Database changed
+
+        mysql> DESC Produtos;
+        +-----------+----------------+------+-----+---------+----------------+
+        | Field     | Type           | Null | Key | Default | Extra          |
+        +-----------+----------------+------+-----+---------+----------------+
+        | ProdutoId | int(11)        | NO   | PRI | NULL    | auto_increment |
+        | Nome      | longtext       | YES  |     | NULL    |                |
+        | Categoria | longtext       | YES  |     | NULL    |                |
+        | Preco     | decimal(65,30) | NO   |     | NULL    |                |
+        +-----------+----------------+------+-----+---------+----------------+
+        4 rows in set (0.01 sec)
+
 
 4. Podemos substituir um volume por uma pasta fisica ao criar o container
 
-    #docker container run -d --name mysql -v /home/marco/mysql-docker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
-    docker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+    docker container run -d --name mysql -v /home/marco/mysql-docker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
 
 
-
+# PAREI AQUI
 Trabalhando com Dockerfile com imagens
 ------------------------------------
 
