@@ -773,3 +773,16 @@ Trabalhando com redes ( Trabalhando com dois containeres "appmvc" e "mysql" sem 
     http://localhost:5000
 
 
+
+
+
+docker container run -d --name mysqldb -v produtosdata:/var/lib/mysql --network host -e MYSQL_ROOT_PASSWORD=root  mysql:5.7 
+docker container inspect mysqldb |grep -i "IPAddress\|Gateway"
+dotnet ef database update --context AppDbContext
+cd ../..
+docker compose build
+# docker push maransi/mvcdocker
+docker compose push
+mysql -u root -p -h 172.20.0.2 -A
+history
+docker run -d --name mvcdocker --network host -p 5000:5000  maransi/mvcdocker
