@@ -545,7 +545,6 @@ Trabalhando com volumes
     docker container run -d --name mysql -v /home/marco/mysql-docker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
 
 
-# PAREI AQUI
 Trabalhando com Dockerfile com imagens
 ------------------------------------
 
@@ -558,13 +557,6 @@ Trabalhando com Dockerfile com imagens
     docker volume prune -a
 
 2. Criar um arquivo "Dockerfile" com conteúdo abaixo na pasta raiz do projeto "./src/mvc1"
-
-https://collabnix.com/getting-started-with-docker-multi-stage-builds/
-https://hovermind.com/kubernetes/understanding-dockerfile.html
-https://www.cherryservers.com/blog/docker-multistage-build
-https://www.youtube.com/watch?v=vIfS9bZVBaw
-https://www.youtube.com/watch?v=zP4lInIwfXg
-
 
     FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
     LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
@@ -627,6 +619,7 @@ https://www.youtube.com/watch?v=zP4lInIwfXg
 
     http://localhost:5000
 
+
 9. Utilizando os containeres na mesma rede do Host
 
     . IMPORTANTE: Durante a criação dos containeres, se não identificarmos a rede que o container será lançado, o docker criará ele na rede padrão "Bridge".
@@ -648,7 +641,7 @@ https://www.youtube.com/watch?v=zP4lInIwfXg
                         docker container rm -f mvcprodutos
 
                         docker run -d --name mysqldb --network Host -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
-                                                    -------------
+                                                      |-----------|
                                                             |
                                                             V
                                                     Identificação da rede
@@ -674,41 +667,41 @@ Trabalhando com Docker Compose
     version: '3.4'
     services:
 
-    database:
-        image: mysql:5.7
-        container_name: mysqldb
-        ports:
-        - 3306:3306
-        expose: 
-        - 3306
-        restart: always
-        environment: 
-        MYSQL_ROOT_PASSWORD: root
-        MYSQL_USER: marco
-        MYSQL_PASSWORD: brasil2
-        MYSQL_DATABASE: productsdb
-        volumes:
-        - db-volume:/var/lib/mysql
-    #      - ./_MySQL_Init_Script/init.sql:/docker-entrypoint-initdb.d/init.sql
-    #      - ./MySQLConf/my.cnf:/etc/my.cnf
+        database:
+            image: mysql:5.7
+            container_name: mysqldb
+            ports:
+                - 3306:3306
+            expose: 
+                - 3306
+            restart: always
+            environment: 
+                MYSQL_ROOT_PASSWORD: root
+                MYSQL_USER: marco
+                MYSQL_PASSWORD: brasil
+                MYSQL_DATABASE: productsdb
+            volumes:
+                - db-volume:/var/lib/mysql
+            #      - ./_MySQL_Init_Script/init.sql:/docker-entrypoint-initdb.d/init.sql
+            #      - ./MySQLConf/my.cnf:/etc/my.cnf
 
-    mvcdocker:
-        image: ${DOCKER_REGISTRY-}mvcdocker
-        container_name: mvcdocker
-        build:
-        context: ./src/mvc1/
-        dockerfile: Dockerfile
-        depends_on: 
-        - database
-        ports:
-        - "5000:5000"
-        restart: always
-        environment: 
-        - ASPNETCORE_ENVIRONMENT=Development
-    #      - DB_HOST=database
+        mvcdocker:
+            image: ${DOCKER_REGISTRY-}mvcdocker
+            container_name: mvcdocker
+            build:
+                context: ./src/mvc1/
+                dockerfile: Dockerfile
+            depends_on: 
+                - database
+            ports:
+                - "5000:5000"
+            restart: always
+            environment: 
+                - ASPNETCORE_ENVIRONMENT=Development
+          #      - DB_HOST=database
 
     volumes:
-    db-volume:
+        db-volume:
 
 3. Altere  o parâmetro server da string de conexão no "appsettings.Development" pelo nome do serviço do banco do "docker-compose":
 
@@ -736,19 +729,10 @@ Trabalhando com Docker Compose
     http://localhost:5000
 
 
-
-
-
-# PAREI AQUI
 https://www.youtube.com/watch?v=PyQxzZrdGHk     25:20
 
 Trabalhando com redes ( Trabalhando com dois containeres "appmvc" e "mysql" sem o docker compose)
 ----------------------------------------------------------------------------
-
-1. Acesse a pasta raiz do projeto mvc
-
-    cd src/mvc1
-
 
 1. Crie uma rede bridge com o comando abaixo:
 
@@ -772,7 +756,11 @@ Trabalhando com redes ( Trabalhando com dois containeres "appmvc" e "mysql" sem 
                         }                                               ^
                                                                         |
                                                                        Aqui
-4. Reconstrua o container da aplicação:
+4. Acesse a pasta raiz do projeto mvc
+
+    cd src/mvc1
+
+5. Reconstrua o container da aplicação:
 
     docker build -t aspnetcoremvc/app:1.0 .
 
@@ -780,6 +768,8 @@ Trabalhando com redes ( Trabalhando com dois containeres "appmvc" e "mysql" sem 
 
     docker container start mvcprodutos
 
-5. Execute o projeto:
+6. Execute o projeto:
 
     http://localhost:5000
+
+
