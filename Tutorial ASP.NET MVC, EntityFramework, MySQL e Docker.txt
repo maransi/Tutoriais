@@ -440,6 +440,10 @@ https://macoratti.net/21/06/docker_apimysql2.htm
         }
     }
 
+16. Levante o container do MySQL:
+
+    docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
 16. Acesse a linha de comandos na pasta raiz da solution e digito o comando abaixo:
 
     cd src/mvc1
@@ -582,6 +586,15 @@ https://www.youtube.com/watch?v=zP4lInIwfXg
     ENTRYPOINT ["dotnet", "mvc1.dll"]
 
 6. Crie o container do mysql:
+
+
+
+
+
+#   Testar a geração do container do MySQL na rede Host e tentar usa-lo não pelo endereço IP, mas pelo localhost
+
+
+
 
     docker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
     
