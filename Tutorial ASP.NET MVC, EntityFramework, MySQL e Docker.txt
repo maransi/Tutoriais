@@ -775,14 +775,90 @@ Trabalhando com redes ( Trabalhando com dois containeres "appmvc" e "mysql" sem 
 
 
 
+Publicando a imagem do projeto no docker hub
+--------------------------------------------
 
-docker container run -d --name mysqldb -v produtosdata:/var/lib/mysql --network host -e MYSQL_ROOT_PASSWORD=root  mysql:5.7 
-docker container inspect mysqldb |grep -i "IPAddress\|Gateway"
-dotnet ef database update --context AppDbContext
-cd ../..
-docker compose build
-# docker push maransi/mvcdocker
-docker compose push
-mysql -u root -p -h 172.20.0.2 -A
-history
-docker run -d --name mvcdocker --network host -p 5000:5000  maransi/mvcdocker
+1. Faça o login no docker hub:
+
+    # Se não tiver um usuário e senha, faça o registro em https://hub.docker.com/
+    docker login
+
+2. Limpando o ambiente
+
+    docker container rm -f $(docker ps -aq)
+
+    docker image rm $(docker images -aq)
+    
+    docker volume prune -a
+
+3. Altere  o parâmetro server da string de conexão no "appsettings.Development" pelo nome do serviço do banco "localhost"
+
+  "ConnectionStrings": {
+                            "DotNetCoreMySQLAppConnection": "server=localhost; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+                        }                                               ^
+                                                                        |
+                                                                       Aqui
+
+5. Insira as linhas abaixo no arquivo "docker-compose.yml":
+
+    version: '3.4'
+    services:
+
+        database:
+            image: mysql:5.7
+            container_name: mysqldb
+            ports:
+                - 3306:3306
+            expose: 
+                - 3306
+            restart: always
+            environment: 
+                MYSQL_ROOT_PASSWORD: root
+                MYSQL_USER: marco
+                MYSQL_PASSWORD: brasil
+                MYSQL_DATABASE: productsdb
+            volumes:
+                # - db-volume:/var/lib/mysql                                            # LInha apagada
+
+        mvcdocker:
+            image:  maransi/mvcdocker:latest                                            # Linha alterada
+            container_name: mvcdocker
+            build:
+                context: ./src/mvc1/
+                dockerfile: Dockerfile
+            depends_on: 
+                - database
+            ports:
+                - "5000:5000"
+            restart: always
+            environment: 
+                - ASPNETCORE_ENVIRONMENT=Development
+
+
+6. Execute os comandos abaixo para fazer a publicação da imagem do projeto ASP.NET:
+
+    docker compose build
+
+    docker compose push
+
+7. Execute o comando abaixo para levantar o banco de dados MySQL:
+
+   docker run -d --name mysqldb --network host -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
+8. Apague a imagem do projeto que foi criada no passo 6 para forçar o download dela do docker hub:
+
+    docker image rm -f maransi/mvcdocker 
+
+9. Baixe a imagem do seu projeto recém publicado e faça o start dele:
+
+    docker container create -p 5000:5000 --name mvcDocker --network host  maransi/mvcdocker  
+
+    docker container start mvcDocker
+
+    # Se quiser criar num único passo
+    # docker run -d --name mvcDocker --network host -p 5000:5000  maransi/mvcdocker
+
+10. Execute o projeto:
+
+    http://localhost:5000
+
