@@ -862,3 +862,10 @@ Publicando a imagem do projeto no docker hub
 
     http://localhost:5000
 
+
+
+
+https://code.visualstudio.com/docs/containers/quickstart-aspnet-core
+https://code.visualstudio.com/docs/devcontainers/containers
+https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
+https://code.visualstudio.com/docs/editor/tasks
