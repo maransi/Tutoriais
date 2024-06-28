@@ -84,7 +84,6 @@
 
 . Publicando a imagem no "docker hub":
 
-
     . Faça o login no docker hub:
 
         # Se não tiver um usuário e senha, faça o registro em https://hub.docker.com/
@@ -104,7 +103,7 @@
             
             docker volume prune -a
 
-        . Crie o container:
+        . Crie o container a partir do "Docker Hub":
 
             docker container create -p 5098:5098 --name investTools maransi/investtools:1.0
 
