@@ -1,3 +1,121 @@
+08. Dockerizando o Projeto
+--------------------------
+
+. Crie o arquivo "Dockerfile" com o conteúdo abaixo na pasta do projeto "InvestTools.Web":
+
+    FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+    LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC - InvestTools"
+    WORKDIR /app
+    # COPY ["app.db", "."]
+    EXPOSE 5098
+
+    ENV ASPNETCORE_URLS=http://+:5098
+    ENV ASPNETCORE_ENVIRONMENT=Development
+
+    RUN apt-get update && apt-get install -y sudo
+    RUN apt install sqlite3 -y
+    # Creates a non-root user with an explicit UID and adds permission to access the /app folder
+    # For more info, please refer to https://aka.ms/vscode-docker-dotnet-configure-containers
+    RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+    USER appuser
+
+
+
+    FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+    ARG configuration=Release
+    WORKDIR /src
+    COPY ["investTools.Web.csproj", "."]
+    RUN dotnet restore "./investTools.Web.csproj"
+    COPY . .
+    WORKDIR "/src/."
+    RUN dotnet build "./investTools.Web.csproj" -c $configuration -o /app/build
+
+    # RUN dotnet tool install --version 6.0.9 --global dotnet-ef
+    # ENV PATH="$PATH:/root/.dotnet/tools"
+    # ENTRYPOINT dotnet ef database update --context ApplicationDbContext
+
+
+    FROM build AS publish
+    ARG configuration=Release
+    RUN dotnet publish "./investTools.Web.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
+
+    FROM base AS final
+    WORKDIR /app
+    COPY --from=publish /app/publish .
+    ENTRYPOINT ["dotnet", "investTools.Web.dll"]
+
+. Inclua as linhas abaixo no arquivo "Program.cs":
+
+    ...
+    app.MapRazorPages();                                                        
+
+    System.Console.WriteLine("Aplicando Migrations...");                        // Linha inserida
+
+    using (var scope = app.Services.CreateScope())                              // Linha inserida
+    {                                                                           // Linha inserida
+        var ctx = scope.ServiceProvider.GetService<ApplicationDbContext>();     // Linha inserida
+
+        ctx.Database.Migrate();                                                 // Linha inserida
+    }                                                                           // Linha inserida
+
+    app.Run();
+
+. Limpando o ambiente
+
+    docker container rm -f $(docker ps -aq)
+
+    docker image rm $(docker images -aq)
+    
+    docker volume prune -a
+
+. Execute os comandos abaixo na pasta raiz do projeto "InvestTools.Web":
+
+    docker build -t maransi/investtools:1.0
+
+    docker container create -p 5098:5098 --name investTools maransi/investtools:1.0
+
+    docker container start investTools
+
+. Execute a URL abaixo:
+
+    http://localhost:5098
+
+. Crie um novo usuário e faça o login
+
+. Publicando a imagem no "docker hub":
+
+
+    . Faça o login no docker hub:
+
+        # Se não tiver um usuário e senha, faça o registro em https://hub.docker.com/
+        docker login
+
+    . Publicando a imagem:
+
+        docker push maransi/investtools:1.0
+
+    . Testando a imagem publicada:
+
+        . Limpando o ambiente
+
+            docker container rm -f $(docker ps -aq)
+
+            docker image rm $(docker images -aq)
+            
+            docker volume prune -a
+
+        . Crie o container:
+
+            docker container create -p 5098:5098 --name investTools maransi/investtools:1.0
+
+            docker container start investTools
+
+        . Execute a URL abaixo:
+
+            http://localhost:5098
+
+
+
 # Minicurso Docker - Conteinerizando uma aplicação ASP.NET Core MVC
 https://www.youtube.com/watch?v=rqBWvco0i_Y
 
@@ -29,3 +147,4 @@ https://www.youtube.com/watch?v=cYfh_Axbugc&list=PL7yxJa4Na-iqS50DXxIUhCC9ClB7oO
 
 # Docker - ASP .NET Core, EF Core com SQL Server - III
 https://www.youtube.com/watch?v=lFJEPGCFtTA&list=PL7yxJa4Na-iqS50DXxIUhCC9ClB7oOL5V&index=2
+
