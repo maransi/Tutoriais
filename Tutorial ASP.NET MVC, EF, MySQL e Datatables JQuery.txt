@@ -402,4 +402,5 @@ Parte 3 - Criação do banco de dados
 
 
 
-
+# Ver a instalação das ferramentas dotnet-ef e dotnet-aspnet-codegenerator. Este último pesquisar
+https://medium.com/@Mohammed_Taherali/mysql-connection-in-net-core-8-mvc-86c71c3613fd
