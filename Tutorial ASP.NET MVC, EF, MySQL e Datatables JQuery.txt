@@ -45,7 +45,7 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
 2. Crie o container do mysql:
 
     # docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mysql:5.7 
-    docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+    docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:8.0 
 
     # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
     #
@@ -130,16 +130,16 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
 
 5. Crie a pasta da "Solution":
 
-    mkdir ~/workspace-dotnet/MvcDatatable
+    mkdir MvcDatatable
 
-    dotnet new sln -n mvcDatatable
+    dotnet new sln -n MvcDatatable
 
     dotnet new mvc -o ./src/MvcDatatable.Web -n MvcDatatable.Web -f net8.0
     dotnet sln add ./src/MvcDatatable.Web/
 
 6. Dentro da pasta do projeto Web adicione as bibliotecas necessárias para trabalharmos no projeto:
 
-    cd ~/workspace-dotnet/mvcDatatable/src/MvcDatatable
+    cd MvcDatatable/src/MvcDatatable
 
     dotnet add package Microsoft.EntityFrameworkCore --version 8.0.6
     dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.6
@@ -152,7 +152,183 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
 
     cd ~/workspace-dotnet/MvcDatatable
 
-    dotnet run --project MvcDatatable.Web
+    dotnet run --project ./src/MvcDatatable.Web 
+
+8. Faça a alteração abaixo na classe do projeto "./src/MvcDatatable.Web/MvcDatatable.Web.csproj" para eliminar 
+    o aviso "Null-Value":
+
+    <Project Sdk="Microsoft.NET.Sdk.Web">
+
+        <PropertyGroup>
+            <TargetFramework>net8.0</TargetFramework>
+            <Nullable>disable</Nullable>
+            <ImplicitUsings>enable</ImplicitUsings>
+                                |
+                                +---> Altere para "disable"
+        </PropertyGroup>
+
+        ...
+    </Project>
+
+
+9. Acesse os arquivos "appsettings.Development.json" e insira a linha abaixo:
+
+
+    // IMPORTANTE: Caso ocorra algum problema na identificação do servidor "mysql" como localhost, use o fisico do container.
+    //              Utilize o comando "docker exec mysqldb hostname -I" para encontrar o IP do container
+    //              ou
+    //             Execute o comando:   docker container inspect mysqldb |grep -i "IPAddress\|Gateway"
+    //
+    //              Outra dica importante: Caso ocorra o erro "Authentication method 'caching_sha2_password' failed.", acrescente aos
+    //              parâmetros de autenticação do "DotNetCoreMySQLAppConnection" o item "; AllowPublicKeyRetrieval=True". Isto ocorre 
+    //              ao utilizar o container docker "MySQL:8.XX"
+    //
+    // IMPORTANTE: As configurações de "Development" existentes nos "Properties/launchSetting.json" não está apontando
+                    para o arquivo "appsetings.Development.json", talvez isto ocorra devido ao comando "dotnet ef migrations..."
+                    enxergar somente o arquivo "appsetings.json"
+    {
+        ...,
+        "ConnectionStrings": {
+            "DefaultConnection": "server=localhost; port=3306; database=clientedb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+        },
+    }
+
+10. Crie a pasta "Data" na raiz do projeto e crie a classe "ApplicationDbContext.cs" como abaixo:
+
+    using Microsoft.EntityFrameworkCore;
+
+    namespace MvcDatatable.Web.Data;
+
+    public class ApplicationDbContext : DbContext
+    {
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+
+        public DbSet<Cliente> Clientes{ get; set; }
+    }
+
+
+11. Adicione as linhas abaixo na classe "Program.cs":
+
+    using Microsoft.EntityFrameworkCore;                                                // Linha inserida
+
+    ...
+    var builder = WebApplication.CreateBuilder(args);
+
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");  // Linha inserida
+
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>                          // Linha inserida
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+    ...
+
+12. Crie o arquivo "GlobalUsings.cs" na raiz do projeto "MvcDatatable.Web" com o conteúdo abaixo:
+
+    global using System.Component.Model.DataAnnotations;
+    global using Microsoft.EntityFrameworkCore;
+    global using Datatable.Web.Model;
+    global using Datatable.Web.Data;
+
+13. Crie a pasta "Utils" na raiz do projeto
+
+14. Crie a interface "AuditEntity.cs" na pasta "Utils" como abaixo:
+
+    using System.ComponentModel;
+    using System.ComponentModel.DataAnnotations.Schema;
+
+    namespace MvcDatatable.Web.Utils;
+
+    public abstract class AuditEntity
+    {
+
+        [Column("dataInclusao", TypeName = "DATETIME")]
+        // [DefaultValue("current_timestamp")]
+        // [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime? DataInclusao { get; set; }
+
+
+        [Column("dataAlteracao", TypeName = "DATETIME")]
+        public DateTime? DataAlteracao { get; set; }
+    }
+
+15. Crie as classes abaixo dentro da pasta "Models":
+
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    namespace MvcDatatable.Models;
+
+    [Table("cliente")]
+    public class Cliente: AudittEntity
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("codigo")]
+        public int codigo { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [Column("cpf", TypeName = "VARCHAR(15)")]
+        public string Cpf { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [MaxLength(150, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
+        [MinLength(5, ErrorMessage = "Este campo dever ter entre 5 a 150 caracateres")]
+        [Column("nome", TypeName = "VARCHAR(100)")]
+        public string Nome { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [Column("dataNascimento", TypeName = "DATE")]
+        public DateTime? DataNascimento { get; set; }
+
+        [Column("rg", TypeName = "VARCHAR(11)")]
+        public string rg { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [Column("sexo", TypeName = "CHAR(1)")]
+        public string Sexo { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [Column("estadoCivil", TypeName = "VARCHAR(10)")]
+        public string EstadoCivil { get; set; }
+
+        [Column("pai", TypeName = "VARCHAR(100)")]
+        public string Pai { get; set; }
+
+        [Column("mae", TypeName = "VARCHAR(100)")]
+        public string Mae { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [MaxLength(250, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
+        [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
+        [Column("endereco", TypeName = "VARCHAR(100)")]
+        public string Endereco { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+        [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+        [Column("cidade", TypeName = "VARCHAR(50)")]
+        public string Cidade { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [MaxLength(2, ErrorMessage = "Este campo deve ter 2 caracateres")]
+        [MinLength(2, ErrorMessage = "Este campo deve ter 2caracateres")]
+        [Column("estado", TypeName = "CHAR(2)")]
+        public string Estado { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [Column("cep", TypeName = "CHAR(8)")]
+        public string Cep { get; set; }
+
+        [Required(ErrorMessage = "Este campo é obrigatorio")]
+        [Column("telefone", TypeName = "VARCHAR(20)")]
+        public string Telefone { get; set; }
+    }
 
 
 
