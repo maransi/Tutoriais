@@ -1,160 +1,170 @@
 Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
 ---------------------------------------------------
 
-1. Instalando o Docker
+Parte 1 - Instalação das ferramentas
+------------------------------------
 
-    . No caso do windows, acesse a URL abaixo e baixe o instalador:
+    1. Instalando o Docker
 
-        https://store.docker.com/editions/community/docker-ce-desktop-windows
+        . No caso do windows, acesse a URL abaixo e baixe o instalador:
 
-    . Utilizar a versão Community Edition (CE)
+            https://store.docker.com/editions/community/docker-ce-desktop-windows
 
-    . No caso do Linux execute os comandos abaixo no prompt no terminal:
+        . Utilizar a versão Community Edition (CE)
 
-        . A URL abaixo tem os passos atualizado para instalação do Docker:
+        . No caso do Linux execute os comandos abaixo no prompt no terminal:
 
-            https://docs.docker.com/engine/install/ubuntu/
+            . A URL abaixo tem os passos atualizado para instalação do Docker:
 
-        . Instalação Atualizada
+                https://docs.docker.com/engine/install/ubuntu/
 
-            sudo apt-get update
-            sudo apt-get install \
-                ca-certificates \
-                curl \
-                gnupg \
-                lsb-release
+            . Instalação Atualizada
 
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+                sudo apt-get update
+                sudo apt-get install \
+                    ca-certificates \
+                    curl \
+                    gnupg \
+                    lsb-release
 
-            echo \
-                "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-                $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
-            sudo apt-get update
-            sudo apt-get install docker-ce docker-ce-cli containerd.io
-            sudo docker --version
+                echo \
+                    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+                    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-            sudo groupadd docker
-            sudo gpasswd -a <usuario> docker
-            sudo chown "$USER":"$USER" /var/run/docker.sock -R
-            sudo service docker restart
+                sudo apt-get update
+                sudo apt-get install docker-ce docker-ce-cli containerd.io
+                sudo docker --version
 
-            docker --version
+                sudo groupadd docker
+                sudo gpasswd -a <usuario> docker
+                sudo chown "$USER":"$USER" /var/run/docker.sock -R
+                sudo service docker restart
 
-
-2. Crie o container do mysql:
-
-    # docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mysql:5.7 
-    docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:8.0 
-
-    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
-    #
-    #   mysql -u root -p
-    #
-    # Informe a senha "root"
-    #
-    #       create database desenv;
-    #
-    docker container exec -it mysql bash
+                docker --version
 
 
+    2. Crie o container do mysql:
 
-3. Instalando o .NET Core SDK
+        # docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mysql:5.7 
+        docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:8.0 
 
-	wget https://dot.net/v1/dotnet-install.sh
-
-	chmod +x dotnet-install.sh
-
-	./dotnet-install.sh -c 3.1
-	./dotnet-install.sh -c 5.0
-	./dotnet-install.sh -c 6.0
-	./dotnet-install.sh -c 8.0
-	
-    # Se o bash shell for o padrão do linux execute as duas linha abaixo
-    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
-
-	source ~/.bashrc
-
-    # Se o zsh shell for o padrão do linux execute as duas linha abaixo
-    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.zshrc
-
-	source ~/.zshrc
-
-    # Caso for o Fish Shell, insira na primeira linha do arquivo "~/.config/fish/config.fish" a linha abaixo
-    set -x PATH $PATH /home/$USER/.dotnet /home/$USER/.dotnet/tools
-
-	dotnet --info
-	dotnet --version
-	dotnet --list-runtimes
-	dotnet --list-sdks
-
-4. Instalando o VS Code
-
-    . Instalação das extensões do VSCode
-
-            C# 
-            C# Extensions
-            C# XML Documentation Comments
-            vscode-icons (Opcional)
-            Docker
-
-        . Atalhos:
-
-            Ctrl + K + D ou Shit + Alt + F:             Identa todo o seu código automaticamente;
-            Ctrl + K + C:                               comenta um bloco de linhas;
-            Ctrl + /                                    Comenta a linha
-            Ctrl + K + U:                               descomenta um bloco de linhas;
-            Alt + Left Arrow:                           durante a programação, volta um método que você estava navegando;
-            Alt + Right Arrow:                          durante a programação, avança um método que você estava navegando;
-            Ctrl + .:                                   implementa o método/classe inexistente que você acabou de escrever;
-            Ctrl + M + O:                               esconde todas as regions da classe atual;
-            Ctrl + Shift + B:                           compila todos os projetos;
-            F5:                                         manda depurar um projeto;
-            Ctrl + F5:                                  manda executar um projeto;
-            F10:                                        durante a depuração, avança uma linha;
-            F11:                                        durante a depuração, avança uma linha entrando nos detalhes da mesma;
+        # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
+        #
+        #   mysql -u root -p
+        #
+        # Informe a senha "root"
+        #
+        #       create database desenv;
+        #
+        docker container exec -it mysql bash
 
 
-    . Configurar Visual Studio Code para .NETCore
 
-        . Acesse File / Preferences / Settings
+    3. Instalando o .NET Core SDK
 
-        . Digite C#
+        wget https://dot.net/v1/dotnet-install.sh
 
-        . Acesse "C# Configuration / CSharp Format Enabled" e habilite a configuração
+        chmod +x dotnet-install.sh
 
-        . Digite "Format on save" e habilite a configuração
+        ./dotnet-install.sh -c 3.1
+        ./dotnet-install.sh -c 5.0
+        ./dotnet-install.sh -c 6.0
+        ./dotnet-install.sh -c 8.0
+        
+        # Se o bash shell for o padrão do linux execute as duas linha abaixo
+        echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
 
-        . Digite "Final" e habilite a configuração "Files: Insert final newline" e habilite a configuração
+        source ~/.bashrc
+
+        # Se o zsh shell for o padrão do linux execute as duas linha abaixo
+        echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.zshrc
+
+        source ~/.zshrc
+
+        # Caso for o Fish Shell, insira na primeira linha do arquivo "~/.config/fish/config.fish" a linha abaixo
+        set -x PATH $PATH /home/$USER/.dotnet /home/$USER/.dotnet/tools
+
+        dotnet --info
+        dotnet --version
+        dotnet --list-runtimes
+        dotnet --list-sdks
+
+    4. Instalando o VS Code
+
+        . Instalação das extensões do VSCode
+
+                C# 
+                C# Extensions
+                C# XML Documentation Comments
+                vscode-icons (Opcional)
+                Docker
+
+            . Atalhos:
+
+                Ctrl + K + D ou Shit + Alt + F:             Identa todo o seu código automaticamente;
+                Ctrl + K + C:                               comenta um bloco de linhas;
+                Ctrl + /                                    Comenta a linha
+                Ctrl + K + U:                               descomenta um bloco de linhas;
+                Alt + Left Arrow:                           durante a programação, volta um método que você estava navegando;
+                Alt + Right Arrow:                          durante a programação, avança um método que você estava navegando;
+                Ctrl + .:                                   implementa o método/classe inexistente que você acabou de escrever;
+                Ctrl + M + O:                               esconde todas as regions da classe atual;
+                Ctrl + Shift + B:                           compila todos os projetos;
+                F5:                                         manda depurar um projeto;
+                Ctrl + F5:                                  manda executar um projeto;
+                F10:                                        durante a depuração, avança uma linha;
+                F11:                                        durante a depuração, avança uma linha entrando nos detalhes da mesma;
 
 
-5. Crie a pasta da "Solution":
+        . Configurar Visual Studio Code para .NETCore
 
-    mkdir MvcDatatable
+            . Acesse File / Preferences / Settings
 
-    dotnet new sln -n MvcDatatable
+            . Digite C#
 
-    dotnet new mvc -o ./src/MvcDatatable.Web -n MvcDatatable.Web -f net8.0
-    dotnet sln add ./src/MvcDatatable.Web/
+            . Acesse "C# Configuration / CSharp Format Enabled" e habilite a configuração
 
-6. Dentro da pasta do projeto Web adicione as bibliotecas necessárias para trabalharmos no projeto:
+            . Digite "Format on save" e habilite a configuração
 
-    cd MvcDatatable/src/MvcDatatable
+            . Digite "Final" e habilite a configuração "Files: Insert final newline" e habilite a configuração
 
-    dotnet add package Microsoft.EntityFrameworkCore --version 8.0.6
-    dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.6
-    dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.6
-    dotnet add package Pomelo.EntityFrameworkCore.MySql --version 8.0.2
 
-    dotnet restore
+Parte 2 - Criação do Projeto
+----------------------------
 
-7. Execute o projeto para ver se foi bem sucedido a contrução:
+    1. Crie a pasta da "Solution":
 
-    cd ~/workspace-dotnet/MvcDatatable
+        mkdir MvcDatatable
 
-    dotnet run --project ./src/MvcDatatable.Web 
+        dotnet new sln -n MvcDatatable
 
-8. Faça a alteração abaixo na classe do projeto "./src/MvcDatatable.Web/MvcDatatable.Web.csproj" para eliminar 
+        dotnet new mvc -o ./src/MvcDatatable.Web -n MvcDatatable.Web -f net8.0
+        dotnet sln add ./src/MvcDatatable.Web/
+
+    2. Dentro da pasta do projeto Web adicione as bibliotecas necessárias para trabalharmos no projeto:
+
+        cd MvcDatatable/src/MvcDatatable
+
+        dotnet add package Microsoft.EntityFrameworkCore --version 8.0.6
+        dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.6
+        dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.6
+        dotnet add package Pomelo.EntityFrameworkCore.MySql --version 8.0.2
+
+        dotnet restore
+
+    3. Execute o projeto para ver se foi bem sucedido a contrução:
+
+        cd ~/workspace-dotnet/MvcDatatable
+
+        dotnet run --project ./src/MvcDatatable.Web 
+
+
+Parte 3 - Criação do banco de dados
+-----------------------------------
+
+1. Faça a alteração abaixo na classe do projeto "./src/MvcDatatable.Web/MvcDatatable.Web.csproj" para eliminar 
     o aviso "Null-Value":
 
     <Project Sdk="Microsoft.NET.Sdk.Web">
@@ -171,7 +181,7 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
     </Project>
 
 
-9. Acesse os arquivos "appsettings.Development.json" e insira a linha abaixo:
+2. Acesse os arquivos "appsettings.Development.json" e insira a linha abaixo:
 
 
     // IMPORTANTE: Caso ocorra algum problema na identificação do servidor "mysql" como localhost, use o fisico do container.
@@ -193,7 +203,7 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
         },
     }
 
-10. Crie a pasta "Data" na raiz do projeto e crie a classe "ApplicationDbContext.cs" como abaixo:
+3. Crie a pasta "Data" na raiz do projeto e crie a classe "ApplicationDbContext.cs" como abaixo:
 
     using Microsoft.EntityFrameworkCore;
 
@@ -208,10 +218,65 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
         }
 
         public DbSet<Cliente> Clientes{ get; set; }
+
+
+        public override int SaveChanges()                   // Método Incluido
+        {
+            var entries = ChangeTracker
+                .Entries()
+                .Where(e => e.Entity is AuditEntity && (
+                        e.State == EntityState.Added
+                        || e.State == EntityState.Modified));
+
+            foreach (var entityEntry in entries)
+            {
+                ((AuditEntity)entityEntry.Entity).DataAlteracao = DateTime.Now;
+
+                if (entityEntry.State == EntityState.Added)
+                {
+                    ((AuditEntity)entityEntry.Entity).DataInclusao = DateTime.Now;
+                }
+            }
+
+            return base.SaveChanges();
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)   // Método Incluido
+        {
+            var insertedEntries = this.ChangeTracker.Entries()
+                                .Where(x => x.State == EntityState.Added)
+                                .Select(x => x.Entity);
+
+            foreach (var insertedEntry in insertedEntries)
+            {
+                var auditableEntity = insertedEntry as AuditEntity;
+                //If the inserted object is an Auditable. 
+                if (auditableEntity != null)
+                {
+                    auditableEntity.DataInclusao = DateTime.Now;
+                }
+            }
+
+
+            var modifiedEntries = this.ChangeTracker.Entries()
+                    .Where(x => x.State == EntityState.Modified)
+                    .Select(x => x.Entity);
+
+            foreach (var modifiedEntry in modifiedEntries)
+            {
+                //If the inserted object is an Auditable. 
+                var auditableEntity = modifiedEntry as AuditEntity;
+                if (auditableEntity != null)
+                {
+                    auditableEntity.DataAlteracao = DateTime.Now;
+                }
+            }
+            return base.SaveChangesAsync(cancellationToken);
+        }
     }
 
 
-11. Adicione as linhas abaixo na classe "Program.cs":
+4. Adicione as linhas abaixo na classe "Program.cs":
 
     using Microsoft.EntityFrameworkCore;                                                // Linha inserida
 
@@ -224,16 +289,16 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
         options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
     ...
 
-12. Crie o arquivo "GlobalUsings.cs" na raiz do projeto "MvcDatatable.Web" com o conteúdo abaixo:
+5. Crie o arquivo "GlobalUsings.cs" na raiz do projeto "MvcDatatable.Web" com o conteúdo abaixo:
 
     global using System.Component.Model.DataAnnotations;
     global using Microsoft.EntityFrameworkCore;
     global using Datatable.Web.Model;
     global using Datatable.Web.Data;
 
-13. Crie a pasta "Utils" na raiz do projeto
+6. Crie a pasta "Utils" na raiz do projeto
 
-14. Crie a interface "AuditEntity.cs" na pasta "Utils" como abaixo:
+7. Crie a interface "AuditEntity.cs" na pasta "Utils" como abaixo:
 
     using System.ComponentModel;
     using System.ComponentModel.DataAnnotations.Schema;
@@ -253,7 +318,7 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
         public DateTime? DataAlteracao { get; set; }
     }
 
-15. Crie as classes abaixo dentro da pasta "Models":
+8. Crie as classes abaixo dentro da pasta "Models":
 
     using System;
     using System.Collections.Generic;
@@ -329,6 +394,12 @@ Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
         [Column("telefone", TypeName = "VARCHAR(20)")]
         public string Telefone { get; set; }
     }
+
+9. Execute o comando abaixo na pasta raiz do projeto:
+
+    dotnet ef migrations add CreationInitial
+    dotnet ef database update
+
 
 
 
