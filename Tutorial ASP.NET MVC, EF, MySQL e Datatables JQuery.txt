@@ -1,0 +1,158 @@
+Tutorial ASP.NET MVC, EF, MySQL e Datatables JQuery
+---------------------------------------------------
+
+1. Instalando o Docker
+
+    . No caso do windows, acesse a URL abaixo e baixe o instalador:
+
+        https://store.docker.com/editions/community/docker-ce-desktop-windows
+
+    . Utilizar a versão Community Edition (CE)
+
+    . No caso do Linux execute os comandos abaixo no prompt no terminal:
+
+        . A URL abaixo tem os passos atualizado para instalação do Docker:
+
+            https://docs.docker.com/engine/install/ubuntu/
+
+        . Instalação Atualizada
+
+            sudo apt-get update
+            sudo apt-get install \
+                ca-certificates \
+                curl \
+                gnupg \
+                lsb-release
+
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+            echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+                $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+            sudo apt-get update
+            sudo apt-get install docker-ce docker-ce-cli containerd.io
+            sudo docker --version
+
+            sudo groupadd docker
+            sudo gpasswd -a <usuario> docker
+            sudo chown "$USER":"$USER" /var/run/docker.sock -R
+            sudo service docker restart
+
+            docker --version
+
+
+2. Crie o container do mysql:
+
+    # docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mysql:5.7 
+    docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
+    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
+    #
+    #   mysql -u root -p
+    #
+    # Informe a senha "root"
+    #
+    #       create database desenv;
+    #
+    docker container exec -it mysql bash
+
+
+
+3. Instalando o .NET Core SDK
+
+	wget https://dot.net/v1/dotnet-install.sh
+
+	chmod +x dotnet-install.sh
+
+	./dotnet-install.sh -c 3.1
+	./dotnet-install.sh -c 5.0
+	./dotnet-install.sh -c 6.0
+	./dotnet-install.sh -c 8.0
+	
+    # Se o bash shell for o padrão do linux execute as duas linha abaixo
+    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
+
+	source ~/.bashrc
+
+    # Se o zsh shell for o padrão do linux execute as duas linha abaixo
+    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.zshrc
+
+	source ~/.zshrc
+
+    # Caso for o Fish Shell, insira na primeira linha do arquivo "~/.config/fish/config.fish" a linha abaixo
+    set -x PATH $PATH /home/$USER/.dotnet /home/$USER/.dotnet/tools
+
+	dotnet --info
+	dotnet --version
+	dotnet --list-runtimes
+	dotnet --list-sdks
+
+4. Instalando o VS Code
+
+    . Instalação das extensões do VSCode
+
+            C# 
+            C# Extensions
+            C# XML Documentation Comments
+            vscode-icons (Opcional)
+            Docker
+
+        . Atalhos:
+
+            Ctrl + K + D ou Shit + Alt + F:             Identa todo o seu código automaticamente;
+            Ctrl + K + C:                               comenta um bloco de linhas;
+            Ctrl + /                                    Comenta a linha
+            Ctrl + K + U:                               descomenta um bloco de linhas;
+            Alt + Left Arrow:                           durante a programação, volta um método que você estava navegando;
+            Alt + Right Arrow:                          durante a programação, avança um método que você estava navegando;
+            Ctrl + .:                                   implementa o método/classe inexistente que você acabou de escrever;
+            Ctrl + M + O:                               esconde todas as regions da classe atual;
+            Ctrl + Shift + B:                           compila todos os projetos;
+            F5:                                         manda depurar um projeto;
+            Ctrl + F5:                                  manda executar um projeto;
+            F10:                                        durante a depuração, avança uma linha;
+            F11:                                        durante a depuração, avança uma linha entrando nos detalhes da mesma;
+
+
+    . Configurar Visual Studio Code para .NETCore
+
+        . Acesse File / Preferences / Settings
+
+        . Digite C#
+
+        . Acesse "C# Configuration / CSharp Format Enabled" e habilite a configuração
+
+        . Digite "Format on save" e habilite a configuração
+
+        . Digite "Final" e habilite a configuração "Files: Insert final newline" e habilite a configuração
+
+
+5. Crie a pasta da "Solution":
+
+    mkdir ~/workspace-dotnet/MvcDatatable
+
+    dotnet new sln -n mvcDatatable
+
+    dotnet new mvc -o ./src/MvcDatatable.Web -n MvcDatatable.Web -f net8.0
+    dotnet sln add ./src/MvcDatatable.Web/
+
+6. Dentro da pasta do projeto Web adicione as bibliotecas necessárias para trabalharmos no projeto:
+
+    cd ~/workspace-dotnet/mvcDatatable/src/MvcDatatable
+
+    dotnet add package Microsoft.EntityFrameworkCore --version 8.0.6
+    dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.6
+    dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.6
+    dotnet add package Pomelo.EntityFrameworkCore.MySql --version 8.0.2
+
+    dotnet restore
+
+7. Execute o projeto para ver se foi bem sucedido a contrução:
+
+    cd ~/workspace-dotnet/MvcDatatable
+
+    dotnet run --project MvcDatatable.Web
+
+
+
