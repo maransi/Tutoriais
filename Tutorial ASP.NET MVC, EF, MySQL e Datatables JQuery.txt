@@ -550,60 +550,48 @@ Parte 4 - Montagem das APIs
         public class CreateClienteViewModel
         {
             [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [Column("cpf", TypeName = "VARCHAR(15)")]
             public string Cpf { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             [MaxLength(150, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
             [MinLength(5, ErrorMessage = "Este campo dever ter entre 5 a 150 caracateres")]
-            [Column("nome", TypeName = "VARCHAR(100)")]
             public string Nome { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             [Column("dataNascimento", TypeName = "DATE")]
-            public DateTime? DataNascimento { get; set; }
+            public DateTime DataNascimento { get; set; }
 
-            [Column("rg", TypeName = "VARCHAR(14)")]
             public string rg { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [Column("sexo", TypeName = "CHAR(1)")]
             public string Sexo { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [Column("estadoCivil", TypeName = "VARCHAR(25)")]
             public string EstadoCivil { get; set; }
 
-            [Column("pai", TypeName = "VARCHAR(100)")]
             public string Pai { get; set; }
 
-            [Column("mae", TypeName = "VARCHAR(100)")]
             public string Mae { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             [MaxLength(250, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
             [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
-            [Column("endereco", TypeName = "VARCHAR(100)")]
             public string Endereco { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
             [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
-            [Column("cidade", TypeName = "VARCHAR(50)")]
             public string Cidade { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             [MaxLength(2, ErrorMessage = "Este campo deve ter 2 caracateres")]
             [MinLength(2, ErrorMessage = "Este campo deve ter 2caracateres")]
-            [Column("estado", TypeName = "CHAR(2)")]
             public string Estado { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [Column("cep", TypeName = "CHAR(8)")]
             public string Cep { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [Column("telefone", TypeName = "VARCHAR(20)")]
             public string Telefone { get; set; }
         }
 
