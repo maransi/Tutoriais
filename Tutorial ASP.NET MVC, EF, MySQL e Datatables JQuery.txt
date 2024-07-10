@@ -100,7 +100,9 @@ Parte 1 - Instalação das ferramentas
                 C# 
                 C# Extensions
                 C# XML Documentation Comments
+                C# Snippets
                 vscode-icons (Opcional)
+                Numbered Bookmarks
                 Docker
                 PostgreSQL
                 Postman
@@ -327,7 +329,7 @@ Parte 3 - Criação do banco de dados
             public DateTime? DataAlteracao { get; set; }
         }
 
-    8. Crie as classes abaixo dentro da pasta "Models":
+    8. Crie a classe "Cliente.cs" abaixo dentro da pasta "Models":
 
         using System;
         using System.Collections.Generic;
@@ -344,7 +346,7 @@ Parte 3 - Criação do banco de dados
             [Key]
             [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
             [Column("codigo")]
-            public int codigo { get; set; }
+            public int Codigo { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             [Column("cpf", TypeName = "VARCHAR(15)")]
@@ -361,7 +363,7 @@ Parte 3 - Criação do banco de dados
             public DateTime? DataNascimento { get; set; }
 
             [Column("rg", TypeName = "VARCHAR(14)")]
-            public string rg { get; set; }
+            public string Rg { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             [Column("sexo", TypeName = "CHAR(1)")]
@@ -541,11 +543,11 @@ Parte 4 - Montagem das APIs
             Task<bool> ExistAsync(K id);
         }
 
-    2. Crie a pasta ViewModels:
+    2. Crie a pasta ViewModels.Cliente:
 
-    3. Crie a classe "CreateClienteViewModel.cs" dentro da pasta "ViewModels"
+    3. Crie a classe "CreateClienteViewModel.cs" dentro da pasta "ViewModels.Cliente"
 
-        namespace MvcDatatable.Web.ViewModels.Pessoa;
+        namespace MvcDatatable.Web.ViewModels.Cliente;
 
         public class CreateClienteViewModel
         {
@@ -561,7 +563,7 @@ Parte 4 - Montagem das APIs
             [Column("dataNascimento", TypeName = "DATE")]
             public DateTime DataNascimento { get; set; }
 
-            public string rg { get; set; }
+            public string Rg { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             public string Sexo { get; set; }
@@ -584,20 +586,20 @@ Parte 4 - Montagem das APIs
             public string Cidade { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [MaxLength(2, ErrorMessage = "Este campo deve ter 2 caracateres")]
-            [MinLength(2, ErrorMessage = "Este campo deve ter 2caracateres")]
+            [StringLength(2, ErrorMessage = "Este campo deve ter 8 caracateres")]
             public string Estado { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [StringLength(8, ErrorMessage = "Este campo deve ter 8 caracateres")]
             public string Cep { get; set; }
 
             [Required(ErrorMessage = "Este campo é obrigatorio")]
             public string Telefone { get; set; }
         }
 
-    . Crie a classe "ClienteViewModel.cs" dentro da pasta "ViewModels.Pessoa"
+    . Crie a classe "ClienteViewModel.cs" dentro da pasta "ViewModels.Cliente"
 
-        namespace MvcDatatable.Web.ViewModels.Pessoa;
+        namespace MvcDatatable.Web.ViewModels.Cliente;
 
         public class ClienteViewModel
         {
@@ -658,19 +660,19 @@ Parte 4 - Montagem das APIs
                 // {
                     var cliente = new Cliente
                     {
-                        cpf = model.cpf,
-                        nome = model.nome,
-                        dataNascimento = model.dataNascimento,
-                        rg = model.rg,
-                        sexo = model.sexo,
-                        estadoCivil = model.estadoCivil,
-                        pai = model.pai,
-                        mae = model.mae,
-                        endereco = model.endereco,
-                        cidade = model.cidade,
-                        estado = model.estado,
-                        cep = model.cep,
-                        telefone = model.telefone
+                        Cpf = model.Cpf,
+                        Nome = model.Nome,
+                        DataNascimento = model.DataNascimento,
+                        Rg = model.Rg,
+                        Sexo = model.Sexo,
+                        EstadoCivil = model.EstadoCivil,
+                        Pai = model.Pai,
+                        Mae = model.Mae,
+                        Endereco = model.Endereco,
+                        Cidade = model.Cidade,
+                        Estado = model.Estado,
+                        Cep = model.Cep,
+                        Telefone = model.Telefone
                     };
 
                     await _context.AddAsync( cliente );
@@ -706,8 +708,8 @@ Parte 4 - Montagem das APIs
                                                         options.SuppressModelStateInvalidFilter = true;     
                                                     }); 
         ...
-        app.UseAuthentication();
-        app.UseAuthorization();                                                         // Linha inserida
+        app.UseAuthentication();                                                    // Linha inserida
+        app.UseAuthorization();                                                         
 
         app.MapControllerRoute(                                                         
             name: "default",
@@ -717,8 +719,6 @@ Parte 4 - Montagem das APIs
     . Crie a pasta "ViewModels" na raiz do projeto.
 
     . Crie a classe "ResultViewModel.cs" dentro da pasta "ViewModels" como abaixo:
-
-        using System.Collections.Generic;
 
         namespace MvcDatatable.Web.ViewModels;
 
@@ -772,7 +772,7 @@ Parte 4 - Montagem das APIs
 
         [ApiController]
         [Route("[controller]/api/")]
-        public class ClienteAPIController: ControllerBase
+        public class ClienteAPIController : ControllerBase
         {
             private readonly IClienteRepository _clienteRepository;
 
@@ -788,27 +788,29 @@ Parte 4 - Montagem das APIs
                 {
                     var clientes = _clienteRepository.GetAllAsync();
 
-                    return Ok( new ResultViewModel< Task<List<cliente>> >( clientes ));
+                    // return Ok(new ResultViewModel<Task<List<Cliente>>>(clientes));
+                    return Ok(new ResultViewModel<Task<List<Cliente>>>(Task.FromResult(clientes)));
+
                 }
-                catch( Exception ex)
+                catch (Exception ex)
                 {
-                    return StatusCode( 500, new ResultViewModel<List<cliente>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
+                    return StatusCode(500, new ResultViewModel<List<Cliente>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
                 }
             }
 
             [HttpPost("v1")]
-            public async Task<ActionResult<cliente>> PostAsync( [FromBody] CreateClienteViewModel model )
+            public async Task<ActionResult<Cliente>> PostAsync([FromBody] CreateClienteViewModel model)
             {
                 if (!ModelState.IsValid)
-                    return BadRequest(new ResultViewModel<cliente>(ModelState.GetErrors()));
+                    return BadRequest(new ResultViewModel<Cliente>(ModelState.GetErrors()));
 
                 try
                 {
-                    var resultRet = await _clienteRepository.InsertAsync( model );
+                    var resultRet = await _clienteRepository.InsertAsync(model);
 
-                    if (resultRet > 0 )
+                    if (resultRet > 0)
                     {
-                        return Created($"cliente/v1/cpf/{model.CPF}", new ResultViewModel<CreateClienteViewModel>(model));
+                        return Created($"cliente/v1/cpf/{model.Cpf}", new ResultViewModel<CreateClienteViewModel>(model));
                     }
                     else
                     {
@@ -824,28 +826,38 @@ Parte 4 - Montagem das APIs
             }
         }
 
+    . Acesse a pasta raiz da "Solution" e Levante a aplicação:
+
+        dotnet clean
+
+        dotnet restore
+
+        dotnet build
+
+        dotnet run
+
     . Acesse o Postman e execute as URLs abaixo:
 
         Method: GET
-        Url: https://localhost:[porta]/clienteAPI/api/v1
+        Url: http://localhost:[porta]/clienteAPI/api/v1
 
 
         Method: POST
-        Url: https://localhost:[porta]/clienteAPI/api/v1
+        Url: http://localhost:[porta]/clienteAPI/api/v1
         Body.raw: 
                 {
                     "cpf": "106.523.608-58",
                     "nome": "MARCO ANTONIO SILVA",
                     "dataNascimento" : "1966-10-17",
-                    "rg" : "16.531.521"
-                    "sexo" : "Masculino"
+                    "rg" : "16.531.521",
+                    "sexo" : "M",
                     "estadoCivil" : "Casado",
                     "pai" : "LOURIVAL MARINHO SILVA",
                     "mae" : "BENEDITA ABRANTES SILVA",
                     "endereco" : "R Carioba 360",
                     "cidade" : "São Paulo",
-                    "estado" : "SP"
-                    "cep" : "02423-100",
+                    "estado" : "SP",
+                    "cep" : "02423100",
                     "telefone" : "11 98336-1336"
                 }       
         Type: JSON
