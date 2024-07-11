@@ -748,6 +748,27 @@ Parte 4 - Montagem das APIs
             public List<string> Errors { get; private set; } = new();
         }
 
+    . Crie a classe "DataResponse" abaixo na pasta "MvcDatatable.Utils":
+
+        namespace MvcDatatable.Web.Utils;
+
+        public class DataResponse<T>
+        {
+            public List<T> Data { get; set; }
+        }
+
+    . Configure a injeção de dependência da classe acima no "Program.cs":
+
+        ...
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+
+        builder.Services.AddScoped<DataResponse<Cliente>>();                    // Linha inserida
+
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");  
+        ...
+
 
     . Crie a pasta "Extensions" na raiz do projeto e crie a classe "ModelStateExtension.cs" abaixo:
 
@@ -775,10 +796,12 @@ Parte 4 - Montagem das APIs
         public class ClienteAPIController : ControllerBase
         {
             private readonly IClienteRepository _clienteRepository;
+            private readonly DataResponse<Cliente> _dataResponse;
 
-            public ClienteAPIController(IClienteRepository clienteRepository)
+            public ClienteAPIController(IClienteRepository clienteRepository, DataResponse<Cliente> dataResponse)
             {
                 _clienteRepository = clienteRepository;
+                _dataResponse = dataResponse;
             }
 
             [HttpGet("v1")]
@@ -786,11 +809,11 @@ Parte 4 - Montagem das APIs
             {
                 try
                 {
-                    var clientes = _clienteRepository.GetAllAsync();
+                    var clientes = await _clienteRepository.GetAllAsync();
 
-                    // return Ok(new ResultViewModel<Task<List<Cliente>>>(clientes));
-                    return Ok(new ResultViewModel<Task<List<Cliente>>>(Task.FromResult(clientes)));
+                    _dataResponse.Data = clientes;
 
+                    return Ok(_dataResponse);
                 }
                 catch (Exception ex)
                 {
@@ -862,7 +885,288 @@ Parte 4 - Montagem das APIs
                 }       
         Type: JSON
 
+    . Adicionando o Swagger na aplicação:
+
+        . Execute o comando abaixo na pasta do projeto "MvcDatatable.Web":
+
+            dotnet add package Swashbuckle.AspNetCore --version 6.6.2
+
+        . Acesse o arquivo "Program.cs" e implemente as linhas abaixo:
+
+            ...
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>                         
+                options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+            // Add services to the container.
+            builder.Services.AddControllersWithViews()                                      
+                            .ConfigureApiBehaviorOptions(options =>
+                                                        {
+                                                            options.SuppressModelStateInvalidFilter = true;
+                                                        });
+
+            builder.Services.AddEndpointsApiExplorer();         // Linha inserida
+            builder.Services.AddSwaggerGen();                   // Linha inserida
+
+
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Home/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+            else                                                // Linha inserida
+            {
+                app.UseSwagger();                               // Linha inserida
+                app.UseSwaggerUI();                             // Linha inserida
+
+            }
+            ...
+
+        . Acesse o link abaixo e verifique se o Swagger está funcionando:
+
+            http://localhost:[porta]/swagger/index.html
+
+        . Expanda o item "GET" "/ClienteAPI/api/v1", clique em "Try it out" e no botão "Execute": 
+
+        . Expanda o item "POST" "/ClienteAPI/api/v1", clique em "Try it out" e altere os parâmetro como abaixo:
+
+            . Insira o conteúdo abaixo no campo "Resquest Body"
+
+                {
+                    "cpf": "106.523.608-58",
+                    "nome": "MARCO ANTONIO SILVA",
+                    "dataNascimento" : "1966-10-17",
+                    "rg" : "16.531.521",
+                    "sexo" : "M",
+                    "estadoCivil" : "Casado",
+                    "pai" : "LOURIVAL MARINHO SILVA",
+                    "mae" : "BENEDITA ABRANTES SILVA",
+                    "endereco" : "R Carioba 360",
+                    "cidade" : "São Paulo",
+                    "estado" : "SP",
+                    "cep" : "02423100",
+                    "telefone" : "11 98336-1336"
+                }     
+
+            . Clique no botão "Execute"
+
+
+Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no client
+---------------------------------------------------------------------------------
+
+    . Crie o controller abaixo dentro da pasta "Controllers":
+
+        namespace MvcDatatable.Web.Controllers; 
+
+        public class ClienteController : Controller
+        {
+
+            private readonly IClienteRepository _clienteRepository;
+
+            public ClienteController(IClienteRepository clienteRepository)
+            {
+                _clienteRepository = clienteRepository;
+            }
+
+
+            public IActionResult List()
+            {
+                return View();
+            }
+        }
+
+    . Crie a pasta "Views/Cliente" e dentro dela a view abaixo  "List.cshtml":
+
+        @{
+            ViewData["Title"] = "Cadastro de Clientes";
+        }
+
+        @section Links {
+            <!-- Page level plugins -->
+            <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        }
+
+        <h1>Cadastro de Clientes</h1>
+
+        <div>
+            <button id="addCustomerBtn">Add New Customer</button>
+
+
+            <div class="table-responsive">
+                <table class="table table-bordered" id="clienteTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>CPF</th>
+                            <th>Nome</th>
+                            <th>Endereço</th>
+                            <th>Cidade</th>
+                            <th>UF</th>
+                            <th>CEP</th>
+                            <th>Telefone</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+
+        </div>
+
+        @section Scripts {
+            <!-- Page level plugins -->
+            <!--    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
+            <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+            <script src="~/js/cliente.js"></script>
+            <script src="~/js/cliente.js"></script>
+        }
+
+
+    . Crie o arquivo "cliente.js" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
+
+
+        $(document).ready(function () {
+            $('#clienteTable').DataTable({
+                destroy: true,
+                scrollY: "320px",
+                scrollX: true,
+                select: true,
+                sAjaxDataProp: "data",
+                scrollCollapse: true,
+                info: false,
+                language: {
+                    decimal: ",",
+                    thousands: "."
+                },
+                pagingType: "full_numbers",
+                language: {
+                    // url : "../docs/portuguese.json"
+                    "url": "/js/Portuguese.json"
+                },
+                sPaginationType: "bootstrap",
+                contentType: "application/json; charset=utf-8",
+                aLengthMenu: [[5, 10, 20, 100, -1],
+                [5, 10, 20, 100, "Todos"]],
+                pageLength: 5,
+                lengthChange: true,
+
+                ajax: {
+                    url: '/ClienteAPI/api/v1', // Replace with your ASP.NET API endpoint
+                    type: 'GET',
+                },
+                processing: true,
+                columns: [
+                    { data: 'cpf', width: "15%", className : "dt-center" },
+                    { data: 'nome', width: "25%"},
+                    { data: 'endereco', width: "25%" },
+                    { data: 'cidade', width: "15%" },
+                    { data: 'estado', width: "5%" },
+                    { data: 'cep', autoWitdth: true, visible: false  },
+                    { data: 'telefone', visible: false },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            return '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
+                                '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>';
+                        }
+                    }
+                ],
+                "columnDefs": [{
+                    "className": "small",
+                    "targets": "_all"
+                }        ],
+                select: true,
+                colReorder: true
+
+            });
+        });
+
+    . Crie o arquivo "Portuguese.json" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
+
+        {
+            "sProcessing":   "Carregando...",
+            "sLengthMenu":   "Mostrar _MENU_ registos",
+            "sZeroRecords":  "Não foram encontrados resultados",
+            "sInfo":         "Mostrando de _START_ até _END_ de _TOTAL_ registos",
+            "sInfoEmpty":    "Mostrando de 0 até 0 de 0 registos",
+            "sInfoFiltered": "(filtrado de _MAX_ registos no total)",
+            "sInfoPostFix":  "",
+            "sSearch":       "Procurar:",
+            "sUrl":          "",
+            "oPaginate": {
+                "sFirst":    "Primeiro",
+                "sPrevious": "Anterior",
+                "sNext":     "Seguinte",
+                "sLast":     "Último"
+            }
+        }    
+
+    . Acrescente o link na página principal, alterando o arquivo "_Layout.cshtml" da pasta "Views/Shared" como abaixo:
+
+        ...
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>@ViewData["Title"] - MvcDatatable.Web</title>
+            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+            <link rel="stylesheet" href="~/MvcDatatable.Web.styles.css" asp-append-version="true" />
+            
+            
+            @* Seção Incluída *@
+            @await RenderSectionAsync("Links", required: false)
+
+
+        </head>
+        <body>
+            <header>
+                <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                    <div class="container-fluid">
+                        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MvcDatatable.Web</a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                                aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                            <ul class="navbar-nav flex-grow-1">
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                                </li>
+
+
+
+                                @* Link Incluido *@
+                                
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Cliente" asp-action="List">Clientes</a>
+                                </li>
+
+
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+
+            ...
+        </body>
+
+        
+        @* Seção alterada *@
+        @await RenderSectionAsync("Scripts", required: false)
+
+
+        </html>
+
 
 
     # Ver a instalação das ferramentas dotnet-ef e dotnet-aspnet-codegenerator. Este último pesquisar
     https://medium.com/@Mohammed_Taherali/mysql-connection-in-net-core-8-mvc-86c71c3613fd
+
+    https://datatables.net/examples/data_sources/server_side.html
