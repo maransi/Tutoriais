@@ -978,6 +978,69 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
             }
         }
 
+    . Crie a pasta "Controller/Api" e dentro dela insira a classe abaixo:
+
+        namespace MvcDatatable.Web.Controllers.Api;
+
+        [ApiController]
+        [Route("[controller]/api/")]
+        public class ClienteAPIController : ControllerBase
+        {
+            private readonly IClienteRepository _clienteRepository;
+
+            public ClienteAPIController(IClienteRepository clienteRepository)
+            {
+                _clienteRepository = clienteRepository;
+            }
+
+            [HttpGet("v1")]
+            public async Task<ActionResult<List<Cliente>>> GetAllAsync()
+            {
+                try
+                {
+                    var clientes = await _clienteRepository.GetAllAsync();
+
+
+                    return Ok(new { 
+                                Data = clientes
+                    });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new ResultViewModel<List<Cliente>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
+                }
+            }
+
+            [HttpPost("v1")]
+            public async Task<ActionResult<Cliente>> PostAsync([FromBody] CreateClienteViewModel model)
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(new ResultViewModel<Cliente>(ModelState.GetErrors()));
+
+                try
+                {
+                    var resultRet = await _clienteRepository.InsertAsync(model);
+
+                    if (resultRet > 0)
+                    {
+                        return Created($"cliente/v1/cpf/{model.Cpf}", new ResultViewModel<CreateClienteViewModel>(model));
+                    }
+                    else
+                    {
+                        return StatusCode(500, new ResultViewModel<Cliente>($"Ocorreu o seguinte erro "));  // Linha alterada
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new ResultViewModel<Cliente>($"Ocorreu o seguinte erro [ {ex.Message} ]"));  // Linha alterada
+
+                }
+            }
+        }
+
+
+
     . Crie a pasta "Views/Cliente" e dentro dela a view abaixo  "List.cshtml":
 
         @{
@@ -986,47 +1049,56 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
 
         @section Links {
             <!-- Page level plugins -->
-            <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            @* <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"> *@
+            <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
         }
 
-        <h1>Cadastro de Clientes</h1>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                            Cadastro de Clientes
+                            @* <button id="addCustomerBtn">Add New Customer</button> *@
+                    </div>
 
-        <div>
-            <button id="addCustomerBtn">Add New Customer</button>
-
-
-            <div class="table-responsive">
-                <table class="table table-bordered" id="clienteTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>CPF</th>
-                            <th>Nome</th>
-                            <th>Endereço</th>
-                            <th>Cidade</th>
-                            <th>UF</th>
-                            <th>CEP</th>
-                            <th>Telefone</th>
-                            <th>&nbsp;</th>
-                        </tr>
-                    </thead>
-                </table>
+                    <div class="card-body" style="padding:0; margin:0">
+                        @* <table class="table-responsive display row-border cell-border stripe table-striped table-bordered"
+                        id="clienteTable" width="100%" cellspacing="0"> *@
+                        <div style="padding:5px;">
+                            <table  id="clienteTable" 
+                                    class="table table-bordered table-striped table-hover responsive "
+                                    width="100%">
+                                <thead class="thin-border-bottom">
+                                    <tr>
+                                        <th>CPF</th>
+                                        <th>Nome</th>
+                                        <th>Endereço</th>
+                                        <th>Cidade</th>
+                                        <th>UF</th>
+                                        <th>CEP</th>
+                                        <th>Telefone</th>
+                                        <th>&nbsp;</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-
         </div>
-
         @section Scripts {
-            <!-- Page level plugins -->
             <!--    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
-            <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
-
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
             <script src="~/js/cliente.js"></script>
-            <script src="~/js/cliente.js"></script>
+            <!-- Page level plugins -->
         }
 
 
     . Crie o arquivo "cliente.js" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
-
 
         $(document).ready(function () {
             $('#clienteTable').DataTable({
@@ -1110,7 +1182,7 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
         <head>
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>@ViewData["Title"] - MvcDatatable.Web</title>
+            <title>@ViewData["Title"] - MVC Datatable</title>
             <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
             <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
             <link rel="stylesheet" href="~/MvcDatatable.Web.styles.css" asp-append-version="true" />
@@ -1156,8 +1228,11 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
 
             ...
         </body>
+       
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
 
-        
+
         @* Seção alterada *@
         @await RenderSectionAsync("Scripts", required: false)
 
@@ -1165,8 +1240,11 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
         </html>
 
 
+    # Icons
+    https://getbootstrap.com/docs/5.0/extend/icons/
 
     # Ver a instalação das ferramentas dotnet-ef e dotnet-aspnet-codegenerator. Este último pesquisar
     https://medium.com/@Mohammed_Taherali/mysql-connection-in-net-core-8-mvc-86c71c3613fd
 
     https://datatables.net/examples/data_sources/server_side.html
+    https://www.w3schools.com/bootstrap/bootstrap_ver.asp
