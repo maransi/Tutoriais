@@ -954,7 +954,7 @@ Parte 4 - Montagem das APIs
             . Clique no botão "Execute"
 
 
-Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no client
+Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no client
 ---------------------------------------------------------------------------------
 
     . Crie o controller abaixo dentro da pasta "Controllers":
@@ -1061,12 +1061,12 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
                             @* <button id="addCustomerBtn">Add New Customer</button> *@
                     </div>
 
-                    <div class="card-body" style="padding:0; margin:0">
+                    <div class="card-body" style="padding:0px; margin:0px">
                         @* <table class="table-responsive display row-border cell-border stripe table-striped table-bordered"
                         id="clienteTable" width="100%" cellspacing="0"> *@
-                        <div style="padding:5px;">
+                        </div style="padding:5px;"> 
                             <table  id="clienteTable" 
-                                    class="table table-bordered table-striped table-hover responsive "
+                                    class="table table-bordered table-striped table-hover responsive"
                                     width="100%">
                                 <thead class="thin-border-bottom">
                                     <tr>
@@ -1075,7 +1075,6 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
                                         <th>Endereço</th>
                                         <th>Cidade</th>
                                         <th>UF</th>
-                                        <th>CEP</th>
                                         <th>Telefone</th>
                                         <th>&nbsp;</th>
                                     </tr>
@@ -1097,17 +1096,21 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
             <!-- Page level plugins -->
         }
 
+    . Crie a pasta "/wwwroot/image" e insira dois icones/imagens, um para edição e outro para deleção:
+
+        . Localize no google imagens "jpeg" com tamanho pequeno
 
     . Crie o arquivo "cliente.js" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
 
         $(document).ready(function () {
             $('#clienteTable').DataTable({
+                processing: true,
                 destroy: true,
-                scrollY: "320px",
+                scrollY: "369px",
                 scrollX: true,
+                scrollCollapse: true,
                 select: true,
                 sAjaxDataProp: "data",
-                scrollCollapse: true,
                 info: false,
                 language: {
                     decimal: ",",
@@ -1120,29 +1123,29 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
                 },
                 sPaginationType: "bootstrap",
                 contentType: "application/json; charset=utf-8",
-                aLengthMenu: [[5, 10, 20, 100, -1],
-                [5, 10, 20, 100, "Todos"]],
-                pageLength: 5,
+                aLengthMenu: [[8, 10, 20, 100, -1],
+                [8, 10, 20, 100, "Todos"]],
+                pageLength: 10,
                 lengthChange: true,
-
                 ajax: {
                     url: '/ClienteAPI/api/v1', // Replace with your ASP.NET API endpoint
-                    type: 'GET',
+                    type: 'GET'
                 },
-                processing: true,
                 columns: [
-                    { data: 'cpf', width: "15%", className : "dt-center" },
+                    { data: 'cpf', width: "10%", className : "dt-center" },
                     { data: 'nome', width: "25%"},
-                    { data: 'endereco', width: "25%" },
+                    { data: 'endereco', width: "20%" },
                     { data: 'cidade', width: "15%" },
                     { data: 'estado', width: "5%" },
-                    { data: 'cep', autoWitdth: true, visible: false  },
-                    { data: 'telefone', visible: false },
+                    { data: 'telefone', width: "15%" },
                     {
                         data: null,
+                        width: "8%",
                         render: function (data, type, row) {
-                            return '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
-                                '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>';
+                            return '<a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30" data-id="' + row.id + '"></a>&nbsp&nbsp&nbsp' +
+                                '<a href="#"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30" data-id="' + row.id + '"></a>';
+                                // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
+                                // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
                         }
                     }
                 ],
@@ -1150,7 +1153,6 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
                     "className": "small",
                     "targets": "_all"
                 }        ],
-                select: true,
                 colReorder: true
 
             });
@@ -1239,6 +1241,209 @@ Parte 5 - Criando página web utiliando o Datatable JQuery com paginação no cl
 
         </html>
 
+Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no server
+---------------------------------------------------------------------------------
+
+    . Insira e altere as linhas abaixo no arquivo "wwwroot/js/cliente.js":
+
+        $(document).ready(function () {
+            $('#clienteTable').DataTable({
+                processing: true,
+                serverSide: true,                                           // Linha inserida
+                destroy: true,
+                scrollY: "369px",
+                scrollX: true,
+                scrollCollapse: true,
+                select: true,
+                sAjaxDataProp: "data",
+                info: false,
+                language: {
+                    decimal: ",",
+                    thousands: "."
+                },
+                pagingType: "full_numbers",
+                language: {
+                    // url : "../docs/portuguese.json"
+                    "url": "/js/Portuguese.json"
+                },
+                sPaginationType: "bootstrap",
+                contentType: "application/json; charset=utf-8",
+                aLengthMenu: [[8, 10, 20, 100, -1],
+                [8, 10, 20, 100, "Todos"]],
+                pageLength: 10,
+                lengthChange: true,
+                ajax: {
+                    url: '/ClienteAPI/api/pageable/v1',          // Linha alterada
+                    type: 'POST'                                // Linha alterada
+                //    data: function (d) {
+                //        // Add any additional parameters you need to send to the server
+                //        d.draw = d.draw;
+                //        d.start = d.start;
+                //        d.length = d.length;
+                //        d.search = d.search;
+                //        return d;
+                //    }
+
+                },
+                columns: [
+                    { data: 'cpf', width: "10%", className : "dt-center" },
+                    { data: 'nome', width: "25%"},
+                    { data: 'endereco', width: "20%" },
+                    { data: 'cidade', width: "15%" },
+                    { data: 'estado', width: "5%" },
+                    { data: 'telefone', width: "15%" },
+                    {
+                        data: null,
+                        width: "8%",
+                        render: function (data, type, row) {
+                            return '<a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30" data-id="' + row.id + '"></a>&nbsp&nbsp&nbsp' +
+                                '<a href="#"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30" data-id="' + row.id + '"></a>';
+                                // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
+                                // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
+                        }
+                    }
+                ],
+                "columnDefs": [{
+                    "className": "small",
+                    "targets": "_all"
+                }        ],
+                colReorder: true
+
+            });
+        });
+
+    . Crie a classe "DataTableRequest" na pasta "MvcDatatable.Web.Utils" com o conteúdo abaixo:
+
+        namespace MvcDatatable.Web.Utils;
+
+        public class DataTableRequest
+        {
+            public int Draw { get; set; }
+            public int Start { get; set; }
+            public int Length { get; set; }
+            public string Search { get; set; }
+            public Order Order { get; set; }
+
+            public DataTableRequest(HttpRequest request)
+            {
+                Draw = Convert.ToInt32(request.Form["draw"].FirstOrDefault());
+                Start = Convert.ToInt32(request.Form["start"].FirstOrDefault());
+                Length = Convert.ToInt32(request.Form["length"].FirstOrDefault());
+
+                Search = request.Form["search[value]"].FirstOrDefault() != null ? request.Form["search[value]"].FirstOrDefault() : "";
+
+                var order =
+                    new Order()
+                    {
+                        Dir = request.Form["order[0][dir]"].FirstOrDefault(),
+                        Column = Convert.ToInt32(request.Form["order[0][column]"].FirstOrDefault())
+                    };
+
+                Order = order;
+            }
+        }
+
+        public class Order
+        {
+            public int Column { get; set; }
+            public string Dir { get; set; }
+        }
+
+    . Insira o método abaixo na interface "IRepository":
+
+        ...
+        Task<List<T>> GetAllPagebleAsync(DataTableRequest dataTableRequest, DataTableResponse<T> dataTableResponse);
+        ...
+
+    . Insira o método abaixo na classe "ClienteRepository":
+
+        ...
+        public async Task<List<Cliente>> GetAllPagebleAsync(DataTableRequest dataTableRequest, DataTableResponse<Cliente> dataTableResponse)
+        {
+
+            var clientes = await _context.Clientes
+                                            .AsNoTracking()
+                                            .ToListAsync();
+
+            var totalRecords = clientes.Count();
+            var clientesCount = clientes.Count();
+
+            if ((dataTableRequest.Search != "")
+                && (dataTableRequest.Search != null))
+            {
+                clientes = clientes.Where(x => x.Nome.Contains(dataTableRequest.Search) ||
+                                                                x.Cpf.Contains(dataTableRequest.Search))
+                                    .ToList();
+            };
+
+            switch (dataTableRequest.Order.Column)
+            {
+                case 0: // Cpf
+                    clientes = dataTableRequest.Order.Dir == "asc" ? clientes.OrderBy(c => c.Cpf).ToList() : clientes.OrderByDescending(c => c.Cpf).ToList();
+                    break;
+                case 1: // Nome
+                    clientes = dataTableRequest.Order.Dir == "asc" ? clientes.OrderBy(c => c.Nome).ToList() : clientes.OrderByDescending(c => c.Nome).ToList();
+                    break;
+                case 2: // Endereco
+                    clientes = dataTableRequest.Order.Dir == "asc" ? clientes.OrderBy(c => c.Endereco).ToList() : clientes.OrderByDescending(c => c.Endereco).ToList();
+                    break;
+                case 3: // Cidade
+                    clientes = dataTableRequest.Order.Dir == "asc" ? clientes.OrderBy(c => c.Cidade).ToList() : clientes.OrderByDescending(c => c.Cidade).ToList();
+                    break;
+                case 4: // UF
+                    clientes = dataTableRequest.Order.Dir == "asc" ? clientes.OrderBy(c => c.Estado).ToList() : clientes.OrderByDescending(c => c.Estado).ToList();
+                    break;
+                case 5: // Telefone
+                    clientes = dataTableRequest.Order.Dir == "asc" ? clientes.OrderBy(c => c.Telefone).ToList() : clientes.OrderByDescending(c => c.Telefone).ToList();
+                    break;
+            }
+
+            // Pagination
+            clientes = clientes.Skip(dataTableRequest.Start).Take(dataTableRequest.Length).ToList();
+
+            dataTableResponse.Draw = dataTableRequest.Draw;
+            dataTableResponse.RecordsTotal = totalRecords;
+            dataTableResponse.RecordsFiltered = clientesCount;
+            dataTableResponse.Data = clientes;
+
+            return clientes;
+        }
+        ...
+
+    . Crie o método abaixo na classe "ClienteAPIController":
+
+        ...
+        [HttpPost("pageable/v1")]
+        public async Task<ActionResult<List<Cliente>>> GetAllPagebleAsync() // [FromQuery] DataTableRequest request)
+        {
+            try
+            {
+
+                var dataTableRequest = new DataTableRequest( Request );
+                var dataTableResponse = new DataTableResponse<Cliente>();
+
+                var clientes = await _clienteRepository.GetAllPagebleAsync( dataTableRequest, dataTableResponse );
+
+                return Ok(dataTableResponse);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ResultViewModel<List<Cliente>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
+            }
+        }
+        ...
+
+    . Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./src/MvcDatatable.Web   
+
+    . Acesse a página do "DataTable" e teste a paginação:
+
+        http://localhost:[porta]/Cliente/List
+
+
+
+https://www.ezzylearning.net/tutorial/jquery-datatables-paging-sorting-and-filtering-in-asp-net-core-using-dapper-orm
 
     # Icons
     https://getbootstrap.com/docs/5.0/extend/icons/
