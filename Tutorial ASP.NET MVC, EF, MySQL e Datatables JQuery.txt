@@ -1048,67 +1048,66 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
         }
 
         @section Links {
-            <!-- Page level plugins -->
-            @* <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"> *@
+            <link   rel="stylesheet" 
+                    href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.css"
+                    integrity="sha512-d0jyKpM/KPRn5Ys8GmjfSZSN6BWmCwmPiGZJjiRAycvLY5pBoYeewUi2+u6zMyW0D/XwQIBHGk2coVM+SWgllw=="
+                    crossorigin="anonymous" referrerpolicy="no-referrer" />
             <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+            <link   href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
         }
 
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                            Cadastro de Clientes
-                            @* <button id="addCustomerBtn">Add New Customer</button> *@
-                    </div>
+        <div class="col-md-12"> 
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h5 class="m-0 font-weight-bold">Cadastro de Clientes</h5>
+                </div>
 
-                    <div class="card-body" style="padding:0px; margin:0px">
-                        @* <table class="table-responsive display row-border cell-border stripe table-striped table-bordered"
-                        id="clienteTable" width="100%" cellspacing="0"> *@
-                        </div style="padding:5px;"> 
-                            <table  id="clienteTable" 
-                                    class="table table-bordered table-striped table-hover responsive"
-                                    width="100%">
-                                <thead class="thin-border-bottom">
-                                    <tr>
-                                        <th>CPF</th>
-                                        <th>Nome</th>
-                                        <th>Endereço</th>
-                                        <th>Cidade</th>
-                                        <th>UF</th>
-                                        <th>Telefone</th>
-                                        <th>&nbsp;</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Data will be loaded here -->
-                                </tbody>
-                            </table>
-                        </div>
+                <div class="card-body mx-0 px-0"> 
+                    <div class="px-1 py-1">
+                        <table id="clienteTable" class="table table-bordered table-striped table-hover responsive" width="100%">
+                            <thead class="thin-border-bottom">
+                                <tr>
+                                    <th>CPF</th>
+                                    <th>Nome</th>
+                                    <th>Endereço</th>
+                                    <th>Cidade</th>
+                                    <th>UF</th>
+                                    <th>Telefone</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
+
         @section Scripts {
-            <!--    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-            <script src="~/js/cliente.js"></script>
-            <!-- Page level plugins -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.min.js"
+                integrity="sha512-Cwi0jz7fz7mrX990DlJ1+rmiH/D9/rjfOoEex8C9qrPRDDqwMPdWV7pJFKzhM10gAAPlufZcWhfMuPN699Ej0w=="
+                crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            <script src="~/js/index.js"></script>
         }
 
     . Crie a pasta "/wwwroot/image" e insira dois icones/imagens, um para edição e outro para deleção:
 
         . Localize no google imagens "jpeg" com tamanho pequeno
 
-    . Crie o arquivo "cliente.js" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
+    . Crie o arquivo "index.js" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
 
         $(document).ready(function () {
             $('#clienteTable').DataTable({
                 processing: true,
                 destroy: true,
                 scrollY: "369px",
-                scrollX: true,
-                scrollCollapse: true,
+                // scrollX: true,
+                // scrollCollapse: true,
                 select: true,
                 sAjaxDataProp: "data",
                 info: false,
@@ -1123,9 +1122,9 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
                 },
                 sPaginationType: "bootstrap",
                 contentType: "application/json; charset=utf-8",
-                aLengthMenu: [[8, 10, 20, 100, -1],
-                [8, 10, 20, 100, "Todos"]],
-                pageLength: 10,
+                aLengthMenu: [[7, 10, 20, 100, -1],
+                [7, 10, 20, 100, "Todos"]],
+                pageLength: 7,
                 lengthChange: true,
                 ajax: {
                     url: '/ClienteAPI/api/v1', // Replace with your ASP.NET API endpoint
@@ -1244,7 +1243,7 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
 Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no server
 ---------------------------------------------------------------------------------
 
-    . Insira e altere as linhas abaixo no arquivo "wwwroot/js/cliente.js":
+    . Insira e altere as linhas abaixo no arquivo "wwwroot/js/index.js":
 
         $(document).ready(function () {
             $('#clienteTable').DataTable({
@@ -1441,7 +1440,425 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
 
         http://localhost:[porta]/Cliente/List
 
+    . Escalando o uso do "DataTable":
 
+        . Insira o código javascript abaixo na página "List.cshtml"
+
+            ...
+            @section Scripts {
+                <!--    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+                @* <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.min.js"></script> *@
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.0.1/dataTables.bootstrap5.min.js"></script>    
+                <script src="~/js/index.js"></script>
+
+                <script src="~/js/cliente.js"></script>
+
+                <script>
+                    LoadDataTable('clienteTable',
+                        7,
+                        {
+                            url: '/ClienteAPI/api/pageable/v1',
+                            type: 'POST'
+                        },
+                        [{ data: 'cpf', width: "12%", className: "dt-center" },
+                        { data: 'nome', width: "25%" },
+                        { data: 'endereco', width: "20%" },
+                        { data: 'cidade', width: "15%" },
+                        { data: 'estado', width: "5%" },
+                        { data: 'telefone', width: "13%" },
+                        {
+                            data: '',
+                            width: "10%",
+                            render: function (data, type, row) {
+                                return '<a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30" data-id="' + row.id + '"></a>&nbsp&nbsp&nbsp' +
+                                    '<a href="#"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30" data-id="' + row.id + '"></a>';
+                            }
+                    }]);
+                </script>
+
+            }
+
+        . Altere o arquivo "wwwroot/js/index.js" como abaixo:
+
+            const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
+                var table;
+
+                $(document).ready(function () {
+                    table = $('#' + tableId).DataTable({
+                        processing: true,
+                        serverSide: true,                                           // Linha inserida
+                        destroy: false,
+                        searching: true,
+                        ordering: true,
+                        paging: true,
+                        dom: 'Blfrtip',
+                        // dom: 'Blp',
+                        buttons: [{ extend: 'print', text: 'Imprimir' },
+                                    { extend: 'copy', text: 'Copy to clipboard' },
+                                    { extend: 'pdf', text: 'Criar PDF' },
+                                    { extend: 'excel', text: 'Excel' },
+                                    { extend: 'csv', text: 'Exportar para Excel' }
+                        ],
+                        layout:{
+                            topEnd: {
+                                search: {
+                                    placeholder: 'Pelo CPF, ou Nome...'
+                                }
+                            }
+                        },
+                        // layout: {
+                            // topStart: {
+                            //     pageLength: {
+                            //         menu: [ 7, 25, 50, 100 ]
+                            //     }
+                            // },
+                            // top1B: $('<div class="toolbar"><a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a></div>'),
+                            // topStart: "pageLength",
+                            // topEnd: {
+                            //     search: {
+                            //         placeholder: 'Pelo CPF, ou Nome...'
+                            //     }
+                            // },
+                            // bottomStart: {
+                            //     buttons: {
+                            //         buttons: [ 'copy', 'csv', 'excel' ]
+                            //     }
+                            // },
+                            // bottomStart: {
+                            //     paging: {
+                            //         buttons: 6
+                            //     }
+                            // }
+                        // },
+                        scrollY: "320px",
+                        // scrollX: true,
+                        // scrollCollapse: true,
+                        select: true,
+                        sAjaxDataProp: "data",
+                        info: false,
+                        language: {
+                            decimal: ",",
+                            thousands: "."
+                        },
+                        pagingType: "full_numbers",
+                        language: {
+                            "url": "/js/Portuguese.json"
+                        },
+                        sPaginationType: "bootstrap",
+                        contentType: "application/json; charset=utf-8",
+                        aLengthMenu: [[pageLength, 10, 20, 100, -1],
+                        [pageLength, 10, 20, 100, "Todos"]],
+                        pageLength: pageLength,
+                        lengthChange: true,
+                        ajax: ajaxConfig,
+                        columns: columnConfig,
+                        "columnDefs": [{
+                            "className": "small",
+                            "targets": "_all"
+                        }]
+                        // colReorder: true
+
+                    });
+
+                });
+            }
+
+    . Crie o arquivo "wwwroot/js/cliente.js" como abaixo:
+
+        // Adiciona novo cliente pelo click do botão
+        $('#btnAdd').click(function () {
+            $('#formModal').modal('show');
+            $('#clienteForm')[0].reset(); // Clear the form
+            $('#formModalLabel').text('Novo cliente');
+            $('#saveCustomerBtn').text('Salvar');
+            $('#codigo').val(''); // Clear the hidden ID field
+        });
+
+        // Save o cliente pelo click do botão
+        $('#btnSave').click(function () {
+            var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
+            var method = $('#codigo').val().trim() == '' ? 'POST' : 'PUT';
+            var sendInfo = {
+                codigo: $('#codigo').val(),
+                cpf: $('#cpf').val(),
+                nome: $('#nome').val(),
+                dataNascimento: $('#dataNascimento').val(),
+                rg: $('#rg').val(),
+                sexo: $('#sexo').val(),
+                estadoCivil: $('#estadoCivil').val(),
+                pai: $('#pai').val(),
+                mae: $('#mae').val(),
+                endereco: $('#endereco').val(),
+                cidade: $('#cidade').val(),
+                estado: $('#estado').val(),
+                cep: $('#cep').val(),
+                telefone: $('#telefone').val(),
+
+            };
+
+            $.ajax({
+                url: url,
+                type: method,
+                data: JSON.stringify(sendInfo),
+                contentType: "application/json; charset=utf-8",
+                success: function () {
+                    alert('Cliente incluido com sucesso!!!');
+                    $('#formModal').modal('hide');
+                    $('#clienteTable').DataTable().ajax.reload();
+                },
+                error: function (request, status, error) {
+                    alert(request.responseText);
+                }
+            });
+        });
+
+    . Crie o arquivo "_ClienteModal.cshtml" dentro da pasta "Views/Shared" com o conteúdo abaixo:
+
+        <!-- Modal for adding/editing cliente -->
+        <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="formModalLabel">Detalhes</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="clienteForm">
+                            <input type="hidden" id="codigo" name="codigo">
+
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="cpf">CPF</label>
+                                        <input type="text" class="form-control form-control-sm"
+                                            aria-label=".form-control-sm example" placeholder="CPF" id="cpf" name="cpf">
+                                    </div>
+                                </div>
+                                <div class="col-9">
+                                    <div class="form-group">
+                                        <label for="nome">Nome</label>
+                                        <input type="text" class="form-control form-control-sm" id="nome" name="nome" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="endereco">Endereço</label>
+                                        <input type="text" class="form-control form-control-sm" id="endereco" name="endereco" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-7">
+                                    <div class="form-group">
+                                        <label for="cidade">Cidade</label>
+                                        <input type="text" class="form-control form-control-sm" id="cidade" name="cidade" required>
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <div class="form-group">
+                                        <label for="estado">UF</label>
+                                        <input type="text" class="form-control form-control-sm" id="estado" name="estado" required>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="form-group">
+                                        <label for="cep">CEP</label>
+                                        <input type="text" class="form-control form-control-sm" id="cep" name="cep" required>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="form-group">
+                                        <label for="sexo">Sexo</label>
+                                        <input type="text" class="form-control form-control-sm" id="sexo" name="sexo" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="telefone">Telefone</label>
+                                        <input type="tel" class="form-control form-control-sm" id="telefone" name="telefone" required>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="rg">RG</label>
+                                        <input type="text" class="form-control form-control-sm" id="rg" name="rg" required>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" class="form-control form-control-sm" id="email" name="email" required>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="form-group">
+                                        <label for="estadoCivil">Estado Civil</label>
+                                        <input type="text" class="form-control form-control-sm" id="estadoCivil" name="estadoCivil" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-5">
+                                    <div class="form-group">
+                                        <label for="pai">Nome do Pai</label>
+                                        <input type="text" class="form-control form-control-sm" id="pai" name="pai" required>
+                                    </div>
+                                </div>
+                                <div class="col-5">
+                                    <div class="form-group">
+                                        <label for="mae">Nome da Mãe</label>
+                                        <input type="text" class="form-control form-control-sm" id="mae" name="mae" required>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="form-group">
+                                        <label for="dataNascimento">Data Nasc</label>
+                                        <input type="date" class="form-control form-control-sm" id="dataNascimento" name="dataNascimento" required>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" id="btnSave">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    . Inclua a Partial View "_ClienteModal" na página "List.cshtml" como abaixo:
+
+        ...
+        <partial name="_ClienteModal" />     <!-- Linha inserida -->
+
+        @section Scripts {
+            ...
+        }
+
+
+    . Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./src/MvcDatatable.Web   
+
+    . Acesse a página do "DataTable" e teste o comportamento da funcionalidade se ficou como era antes:
+
+        http://localhost:[porta]/Cliente/List
+
+    . Colocando mascara no campos da tela de edição:
+
+        . Adicione a função abaixo no arquivo "index.js":
+
+            ...
+            // Remover qq caractere diferente de número
+            function removeNonNumeric(str) {
+                return str.replace(/\D/g, '');
+            }
+
+        . Adicione as linhas abaixo no arquivo "List.cshtml":
+
+            ...
+            <!-- Linhas incluidas -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"></script>
+            <!-- Fim -->
+
+            <script src="~/js/index.js"></script>
+            <script src="~/js/cliente.js"></script>
+
+
+        . Inclua e altere o código abaixo no arquivo "cliente.js":
+
+            // Bloco incluido
+            $(document).ready(function(){
+                $("#cpf").mask("000.000.000-00");
+                $("#telefone").mask("(00) 00000-0000");
+                // $("#salario").mask("999.999.990,00", {reverse: true});
+                $("#cep").mask("00000-000");
+                
+                $("#rg").mask("999.999.999-W", {
+                    translation: {
+                        'W': {
+                            pattern: /[X0-9]/
+                        }
+                    },
+                    reverse: true
+                });
+
+                $("#telefone").blur(function(event){
+                    if ($(this).val().length == 15){
+                        $("#telefone").mask("(00) 00000-0009")
+                    }else{
+                        $("#telefone").mask("(00) 0000-00009")
+                    }
+                });
+
+                // $('#salario').maskMoney({ prefix: 'R$ ', allowNegative: true, thousands: '.', decimal: ',', affixesStay: false });
+
+            });
+            // FIM
+
+
+            // Add New Customer Button Click
+            $('#btnAdd').click(function () {
+                $('#formModal').modal('show');
+                ...
+
+
+            // Save/Update Customer Button Click
+            $('#btnSave').click(function () {
+                var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
+                var method = $('#codigo').val().trim() == '' ? 'POST' : 'PUT';
+                var sendInfo = {
+                    codigo: $('#codigo').val(),
+                    cpf: $('#cpf').val(),
+                    nome: $('#nome').val(),
+                    dataNascimento: $('#dataNascimento').val(),         // Linha alterada
+                    rg: removeNonNumeric( $('#rg').val() ),             // Linha alterada
+                    sexo: $('#sexo').val(),
+                    estadoCivil: $('#estadoCivil').val(),
+                    pai: $('#pai').val(),
+                    mae: $('#mae').val(),
+                    endereco: $('#endereco').val(),
+                    cidade: $('#cidade').val(),
+                    estado: $('#estado').val(),
+                    cep: removeNonNumeric($('#cep').val()),             // Linha alterada
+                    telefone: removeNonNumeric( $('#telefone').val() )  // Linha alterada
+                };
+
+                ...
+            });
+
+        . Execute o projeto na pasta raiz da solution:
+
+            dotnet run --project ./src/MvcDatatable.Web   
+
+        . Acesse a página do "DataTable" e teste as mascaras na inclusão:
+
+            http://localhost:[porta]/Cliente/List
+
+    . Alterando os tipos de campos para lista
+
+
+
+
+
+
+    . Realizando a validação dos campos
+
+
+
+
+
+
+https://datatables.net/extensions/buttons/examples/initialisation/simple.html
 
 https://www.ezzylearning.net/tutorial/jquery-datatables-paging-sorting-and-filtering-in-asp-net-core-using-dapper-orm
 
