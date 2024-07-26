@@ -1440,130 +1440,132 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
 
         http://localhost:[porta]/Cliente/List
 
-    . Escalando o uso do "DataTable":
 
-        . Insira o código javascript abaixo na página "List.cshtml"
+Parte 7. Escalando o uso do "DataTable"
+---------------------------------------
 
-            ...
-            @section Scripts {
-                <!--    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
-                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-                @* <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.min.js"></script> *@
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.0.1/dataTables.bootstrap5.min.js"></script>    
-                <script src="~/js/index.js"></script>
+    . Insira o código javascript abaixo na página "List.cshtml"
 
-                <script src="~/js/cliente.js"></script>
+        ...
+        @section Scripts {
+            <!--    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+            @* <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.min.js"></script> *@
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.0.1/dataTables.bootstrap5.min.js"></script>    
+            <script src="~/js/index.js"></script>
 
-                <script>
-                    LoadDataTable('clienteTable',
-                        7,
-                        {
-                            url: '/ClienteAPI/api/pageable/v1',
-                            type: 'POST'
-                        },
-                        [{ data: 'cpf', width: "12%", className: "dt-center" },
-                        { data: 'nome', width: "25%" },
-                        { data: 'endereco', width: "20%" },
-                        { data: 'cidade', width: "15%" },
-                        { data: 'estado', width: "5%" },
-                        { data: 'telefone', width: "13%" },
-                        {
-                            data: '',
-                            width: "10%",
-                            render: function (data, type, row) {
-                                return '<a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30" data-id="' + row.id + '"></a>&nbsp&nbsp&nbsp' +
-                                    '<a href="#"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30" data-id="' + row.id + '"></a>';
+            <script src="~/js/cliente.js"></script>
+
+            <script>
+                LoadDataTable('clienteTable',
+                    7,
+                    {
+                        url: '/ClienteAPI/api/pageable/v1',
+                        type: 'POST'
+                    },
+                    [{ data: 'cpf', width: "12%", className: "dt-center" },
+                    { data: 'nome', width: "25%" },
+                    { data: 'endereco', width: "20%" },
+                    { data: 'cidade', width: "15%" },
+                    { data: 'estado', width: "5%" },
+                    { data: 'telefone', width: "13%" },
+                    {
+                        data: '',
+                        width: "10%",
+                        render: function (data, type, row) {
+                            return '<a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30" data-id="' + row.id + '"></a>&nbsp&nbsp&nbsp' +
+                                '<a href="#"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30" data-id="' + row.id + '"></a>';
+                        }
+                }]);
+            </script>
+
+        }
+
+    . Altere o arquivo "wwwroot/js/index.js" como abaixo:
+
+        const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
+            var table;
+
+            $(document).ready(function () {
+                table = $('#' + tableId).DataTable({
+                    processing: true,
+                    serverSide: true,                                           // Linha inserida
+                    destroy: false,
+                    searching: true,
+                    ordering: true,
+                    paging: true,
+                    dom: 'Blfrtip',
+                    // dom: 'Blp',
+                    buttons: [{ extend: 'print', text: 'Imprimir' },
+                                { extend: 'copy', text: 'Copy to clipboard' },
+                                { extend: 'pdf', text: 'Criar PDF' },
+                                { extend: 'excel', text: 'Excel' },
+                                { extend: 'csv', text: 'Exportar para Excel' }
+                    ],
+                    layout:{
+                        topEnd: {
+                            search: {
+                                placeholder: 'Pelo CPF, ou Nome...'
                             }
-                    }]);
-                </script>
-
-            }
-
-        . Altere o arquivo "wwwroot/js/index.js" como abaixo:
-
-            const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
-                var table;
-
-                $(document).ready(function () {
-                    table = $('#' + tableId).DataTable({
-                        processing: true,
-                        serverSide: true,                                           // Linha inserida
-                        destroy: false,
-                        searching: true,
-                        ordering: true,
-                        paging: true,
-                        dom: 'Blfrtip',
-                        // dom: 'Blp',
-                        buttons: [{ extend: 'print', text: 'Imprimir' },
-                                    { extend: 'copy', text: 'Copy to clipboard' },
-                                    { extend: 'pdf', text: 'Criar PDF' },
-                                    { extend: 'excel', text: 'Excel' },
-                                    { extend: 'csv', text: 'Exportar para Excel' }
-                        ],
-                        layout:{
-                            topEnd: {
-                                search: {
-                                    placeholder: 'Pelo CPF, ou Nome...'
-                                }
-                            }
-                        },
-                        // layout: {
-                            // topStart: {
-                            //     pageLength: {
-                            //         menu: [ 7, 25, 50, 100 ]
-                            //     }
-                            // },
-                            // top1B: $('<div class="toolbar"><a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a></div>'),
-                            // topStart: "pageLength",
-                            // topEnd: {
-                            //     search: {
-                            //         placeholder: 'Pelo CPF, ou Nome...'
-                            //     }
-                            // },
-                            // bottomStart: {
-                            //     buttons: {
-                            //         buttons: [ 'copy', 'csv', 'excel' ]
-                            //     }
-                            // },
-                            // bottomStart: {
-                            //     paging: {
-                            //         buttons: 6
-                            //     }
-                            // }
+                        }
+                    },
+                    // layout: {
+                        // topStart: {
+                        //     pageLength: {
+                        //         menu: [ 7, 25, 50, 100 ]
+                        //     }
                         // },
-                        scrollY: "320px",
-                        // scrollX: true,
-                        // scrollCollapse: true,
-                        select: true,
-                        sAjaxDataProp: "data",
-                        info: false,
-                        language: {
-                            decimal: ",",
-                            thousands: "."
-                        },
-                        pagingType: "full_numbers",
-                        language: {
-                            "url": "/js/Portuguese.json"
-                        },
-                        sPaginationType: "bootstrap",
-                        contentType: "application/json; charset=utf-8",
-                        aLengthMenu: [[pageLength, 10, 20, 100, -1],
-                        [pageLength, 10, 20, 100, "Todos"]],
-                        pageLength: pageLength,
-                        lengthChange: true,
-                        ajax: ajaxConfig,
-                        columns: columnConfig,
-                        "columnDefs": [{
-                            "className": "small",
-                            "targets": "_all"
-                        }]
-                        // colReorder: true
-
-                    });
+                        // top1B: $('<div class="toolbar"><a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a></div>'),
+                        // topStart: "pageLength",
+                        // topEnd: {
+                        //     search: {
+                        //         placeholder: 'Pelo CPF, ou Nome...'
+                        //     }
+                        // },
+                        // bottomStart: {
+                        //     buttons: {
+                        //         buttons: [ 'copy', 'csv', 'excel' ]
+                        //     }
+                        // },
+                        // bottomStart: {
+                        //     paging: {
+                        //         buttons: 6
+                        //     }
+                        // }
+                    // },
+                    scrollY: "320px",
+                    // scrollX: true,
+                    // scrollCollapse: true,
+                    select: true,
+                    sAjaxDataProp: "data",
+                    info: false,
+                    language: {
+                        decimal: ",",
+                        thousands: "."
+                    },
+                    pagingType: "full_numbers",
+                    language: {
+                        "url": "/js/Portuguese.json"
+                    },
+                    sPaginationType: "bootstrap",
+                    contentType: "application/json; charset=utf-8",
+                    aLengthMenu: [[pageLength, 10, 20, 100, -1],
+                    [pageLength, 10, 20, 100, "Todos"]],
+                    pageLength: pageLength,
+                    lengthChange: true,
+                    ajax: ajaxConfig,
+                    columns: columnConfig,
+                    "columnDefs": [{
+                        "className": "small",
+                        "targets": "_all"
+                    }]
+                    // colReorder: true
 
                 });
-            }
+
+            });
+        }
 
     . Crie o arquivo "wwwroot/js/cliente.js" como abaixo:
 
@@ -1578,6 +1580,13 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
 
         // Save o cliente pelo click do botão
         $('#btnSave').click(function () {
+            if (!validaCPF( $('#cpf').val() )) {
+                alert('CPF inválido. Verifique o número digitado.');
+                $('#cpf').focus();
+
+                exit;
+            }
+
             var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
             var method = $('#codigo').val().trim() == '' ? 'POST' : 'PUT';
             var sendInfo = {
@@ -1616,9 +1625,8 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
 
     . Crie o arquivo "_ClienteModal.cshtml" dentro da pasta "Views/Shared" com o conteúdo abaixo:
 
-        <!-- Modal for adding/editing cliente -->
-        <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel"
-            aria-hidden="true">
+        <!-- Modal for adding/editing customers -->
+        <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -1634,7 +1642,8 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
                                     <div class="form-group">
                                         <label for="cpf">CPF</label>
                                         <input type="text" class="form-control form-control-sm"
-                                            aria-label=".form-control-sm example" placeholder="CPF" id="cpf" name="cpf">
+                                            aria-label=".form-control-sm example" 
+                                            placeholder="123.456.789-00" id="cpf" name="cpf">
                                     </div>
                                 </div>
                                 <div class="col-9">
@@ -1648,21 +1657,54 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label for="endereco">Endereço</label>
-                                        <input type="text" class="form-control form-control-sm" id="endereco" name="endereco" required>
+                                        <input type="text" class="form-control form-control-sm" id="endereco" name="endereco"
+                                            required>
                                     </div>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-7">
+                                <div class="col-6">
                                     <div class="form-group">
                                         <label for="cidade">Cidade</label>
-                                        <input type="text" class="form-control form-control-sm" id="cidade" name="cidade" required>
+                                        <input type="text" class="form-control form-control-sm" id="cidade" name="cidade"
+                                            required>
                                     </div>
                                 </div>
-                                <div class="col-1">
+                                <div class="col-2">
                                     <div class="form-group">
                                         <label for="estado">UF</label>
-                                        <input type="text" class="form-control form-control-sm" id="estado" name="estado" required>
+                                        <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                            id="estado" name="estado" required>
+                                            <option value="" selected>Selecione</option>
+                                            <option value="AC">Acre</option>
+                                            <option value="AL">Alagoas</option>
+                                            <option value="AP">Amapá</option>
+                                            <option value="AM">Amazonas</option>
+                                            <option value="BA">Bahia</option>
+                                            <option value="CE">Ceará</option>
+                                            <option value="DF">Distrito Federal</option>
+                                            <option value="ES">Espírito Santo</option>
+                                            <option value="GO">Goiás</option>
+                                            <option value="MA">Maranhão</option>
+                                            <option value="MT">Mato Grosso</option>
+                                            <option value="MS">Mato Grosso do Sul</option>
+                                            <option value="MG">Minas Gerais</option>
+                                            <option value="PA">Pará</option>
+                                            <option value="PB">Paraíba</option>
+                                            <option value="PR">Paraná</option>
+                                            <option value="PE">Pernambuco</option>
+                                            <option value="PI">Piauí</option>
+                                            <option value="RJ">Rio de Janeiro</option>
+                                            <option value="RN">Rio Grande do Norte</option>
+                                            <option value="RS">Rio Grande do Sul</option>
+                                            <option value="RO">Rondônia</option>
+                                            <option value="RR">Roraima</option>
+                                            <option value="SC">Santa Catarina</option>
+                                            <option value="SP">São Paulo</option>
+                                            <option value="SE">Sergipe</option>
+                                            <option value="TO">Tocantins</option>
+                                            <option value="EX">Estrangeiro</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-2">
@@ -1674,7 +1716,15 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
                                 <div class="col-2">
                                     <div class="form-group">
                                         <label for="sexo">Sexo</label>
-                                        <input type="text" class="form-control form-control-sm" id="sexo" name="sexo" required>
+                                        @* <input type="text" class="form-control form-control-sm" id="sexo" name="sexo"
+                                        required> *@
+                                        <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                            id="sexo" name="sexo" required>
+                                            <option value="" selected>Selecione</option>
+                                            <option value="1">Masculino</option>
+                                            <option value="2">Feminino</option>
+                                            <option value="3">Outros</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -1682,25 +1732,33 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
                                 <div class="col-3">
                                     <div class="form-group">
                                         <label for="telefone">Telefone</label>
-                                        <input type="tel" class="form-control form-control-sm" id="telefone" name="telefone" required>
+                                        <input type="tel" class="form-control form-control-sm" id="telefone" name="telefone"
+                                            required>
                                     </div>
                                 </div>
-                                <div class="col-3">
+                                <div class="col-2">
                                     <div class="form-group">
                                         <label for="rg">RG</label>
                                         <input type="text" class="form-control form-control-sm" id="rg" name="rg" required>
                                     </div>
                                 </div>
-                                <div class="col-4">
+                                <div class="col-3">
                                     <div class="form-group">
                                         <label for="email">Email</label>
-                                        <input type="email" class="form-control form-control-sm" id="email" name="email" required>
+                                        <input type="email" class="form-control form-control-sm" id="email" name="email"
+                                            aria-describedby="emailHelp" placeholder="Seu email" required>
                                     </div>
                                 </div>
                                 <div class="col-4">
                                     <div class="form-group">
                                         <label for="estadoCivil">Estado Civil</label>
-                                        <input type="text" class="form-control form-control-sm" id="estadoCivil" name="estadoCivil" required>
+                                        <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                            id="estadoCivil" name="estadoCivil" required>
+                                            <option value="" selected>Selecione</option>
+                                            <option value="C">Casado</option>
+                                            <option value="S">Solteiro</option>
+                                            <option value="O">Outro</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -1720,10 +1778,24 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
                                 <div class="col-2">
                                     <div class="form-group">
                                         <label for="dataNascimento">Data Nasc</label>
-                                        <input type="date" class="form-control form-control-sm" id="dataNascimento" name="dataNascimento" required>
+                                        <input type="date" class="form-control form-control-sm" id="dataNascimento"
+                                            name="dataNascimento" required>
                                     </div>
                                 </div>
                             </div>
+
+                            @* 
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="salario">Salário</label>
+                                        <input type="text" class="form-control form-control-sm" name="salario" id="salario">
+                                    </div>
+                                </div>
+
+                            </div>
+                            @*
+
                         </form>
                     </div>
                     <div class="modal-footer">
@@ -1760,6 +1832,29 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
             // Remover qq caractere diferente de número
             function removeNonNumeric(str) {
                 return str.replace(/\D/g, '');
+            }
+
+            // Validação do CPF
+            function validaCPF(cpf) {
+                cpf = removeNonNumeric(cpf);
+                if (cpf.length !== 11) return false;
+
+                let soma = 0;
+                let resto;
+                if (/^(\d)\1{10}$/.test(cpf)) return false;
+
+                for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+                resto = (soma * 10) % 11;
+                if ((resto === 10) || (resto === 11)) resto = 0;
+                if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+                soma = 0;
+                for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+                resto = (soma * 10) % 11;
+                if ((resto === 10) || (resto === 11)) resto = 0;
+                if (resto !== parseInt(cpf.substring(10, 11))) return false;
+
+                return true;
             }
 
         . Adicione as linhas abaixo no arquivo "List.cshtml":
@@ -1836,23 +1931,27 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
                 ...
             });
 
-        . Execute o projeto na pasta raiz da solution:
+    . Execute o projeto na pasta raiz da solution:
 
-            dotnet run --project ./src/MvcDatatable.Web   
+        dotnet run --project ./src/MvcDatatable.Web   
 
-        . Acesse a página do "DataTable" e teste as mascaras na inclusão:
+    . Acesse a página do "DataTable" e teste as mascaras na inclusão:
 
-            http://localhost:[porta]/Cliente/List
-
-    . Alterando os tipos de campos para lista
+        http://localhost:[porta]/Cliente/List
 
 
 
+Parte 8. Realizando a validação dos campos
+------------------------------------------
 
+https://www.youtube.com/watch?v=bESQ7X_pMR0
 
+https://www.youtube.com/watch?v=fB1TmfaT6pg
+https://www.devmedia.com.br/validacao-com-jquery-como-usar-o-plugin-validation/33670
 
-    . Realizando a validação dos campos
+https://designmodo.com/validate-forms-bootstrap/
 
+https://chinhplq.wordpress.com/2016/05/18/dynamic-error-message-in-jquery-validation/
 
 
 
