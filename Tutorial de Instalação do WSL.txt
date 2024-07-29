@@ -1,0 +1,394 @@
+Tutorial WSL ( Windows Subsystem Linux )
+========================================
+
+. Instalação do WSL
+
+    . Acessar as "Configurações do Windows", localizar "Ativar ou Desativar Recursos do Windows" e na tela que abrir ative:
+
+        . Plataforma de Máquina Virtual
+
+        . Subsistema do Windows para Linux
+
+    . Abrir o Powershell como adminstrador e executar os comando abaixo:
+
+        # Listar as distribuições disponíveis para instalação
+        wsl --list -o
+
+        # Instalar o wsl, sendo o "-d <Distribuição> opcional. Se for usado inclua uma das opções apresentadas na linha anterior"
+        wsl --install -d <Distribuição>
+
+        # O comando acima pode ser feito pela "Play Store" do Windows. Basta localizar a distribuição do Linux que deseja instalar.
+
+    . Após a instalação, reinicie a máquina
+
+        . Quando a máquina ligar, localize no menu do windows a opção "Ubuntu <A versão instalada>"
+
+        . Execute o icone da distribuição instalada:
+
+            . Aguarde alguns minutos para terminar a instalação.
+
+            . Informe o usuário e senha do novo ambiente.
+
+    . Caso foi instalado mais de uma distribuição do Linux no WSL e se deseje que uma delas seja a versão padrão de entrada, execute 
+        o comando abaixo:
+
+        # Substituindo <DistributionName> pelo nome da distribuição do Linux que você gostaria de usar. 
+        wsl -s <DistributionName> 
+        
+        ou 
+        
+        wsl --set-default <DistributionName> 
+
+    . Como consultar as distribuições instaladas:
+
+        . No Powershell execute o comando abaixo:
+
+            wsl -l -v
+
+    . Instalação do "Windows Terminal":
+
+        . Acesse a Play Store do Windows e instale a app abaixo:
+
+            Windows Terminal Preview
+
+        . ShortKeys
+
+            F11                     Maximiza a tela e deixa tela inteira
+            Ctrl + Shift + D        Duplica a guia do terminal atual
+            Ctrl + Tab              Navega entre as guias/terminal
+            Ctrl + Shift + W        Fecha a guia atual
+
+        . Nas Configurações do Terminal:
+
+            . Abra o Terminal e vá para a janela Configurações da interface do usuário.
+
+            . Selecione Inicialização 
+            
+                . Acesse "Inicialização" / "Perfil Padrão" e escolha a distribuição Linux que se deseja
+
+                . Acesse "Inicialização" / "Aplicativo Terminal Padrão" e escolha "Prévia do Terminal Windows".
+
+                . Acesse "Inicialização" / "Parametros de Inicialização" e escolha:
+
+                    Modo de inicialização:          Maximizado,
+                    Centralização na Inicialização: True
+
+        . Comandos básicos do terminal:
+
+            . Acesse o Powershell para executar os comandos abaixo:
+
+                # Entrar na distro padrão via terminal
+                wsl
+
+                # Desligar instância WSL
+                wsl --shutdown
+
+                # Verificar o status do WSL
+                wsl --status
+                
+                # Execute como um usuário específico
+                wsl --user Username
+
+                # Listar distribuições do Linux instaladas
+                wsl --list --verbose
+
+                # Use esse comando para alterar a distribuição que vai abrir por padrão quando rodar somente o comando WSL
+                wsl --set-default nomeDistro
+
+                # Atualizar o WSL
+                wsl --update
+
+                # Desinstalar uma distribuição linux
+                wsl --unregister nomeDistro
+
+
+
+
+    . Limitando o uso dos recursos da máquina:
+
+        . Crie um arquivo chamado .wslconfig na raiz da sua pasta de usuário (C:\Users\<seu_usuario>) e defina estas configurações:
+
+            [wsl2]
+            memory=8GB
+            processors=4
+            swap=2GB
+
+            # Para mais opções de configurações acesse o link "https://learn.microsoft.com/pt-br/windows/wsl/wsl-config#example-wslconfig-file"
+
+        . Acesse o Powershell e execute o comando abaixo para fazer uso das configurações acima:
+
+            wsl --shutdown
+
+
+
+. Instalando o Chrome no WSL
+
+    cd
+
+    mkdir Downloads
+
+    sudo apt update && sudo apt -y upgrade && sudo apt -y autoremove
+
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+
+    sudo dpkg -i google-chrome-stable_current_amd64.deb
+
+    google-chrome
+
+. Alterando a senha do root:
+
+    sudo passwd root
+
+. Instalando o zsh Shell
+
+    . Execute o comando abaixo no prompt do linux para instalar o "zsh":
+
+        sudo apt-get update && sudo apt-get upgrade -y
+
+        sudo apt install zsh -y
+
+    . Execute o complemento "Oh-My-ZSH" executando o comando abaixo no prompt do linux:
+
+        # Instalar o complemento Oh-My-ZSH. Ao termino da instalação, o prompt do shell já passa o controle para o zsh
+        curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh; zsh
+
+        # OBSERVAÇÃO: Se já estiver instalado o "oh-my-zsh" simplesmente apague a pasta dele para reinstalá-lo e execute o comando acima
+        rm -rf ~/.oh-my-zsh
+
+
+    . Definindo ZSH como padrão. Após instalação, feche e abra o terminal:
+    
+        sudo usermod --shell $(which zsh) $USER
+
+    . Instalação do plugins ZSH Highlight. Após a conclusão da instalação, feche e abra o terminal para ver o resultado.
+        
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 
+
+        . Abra o arquivo ~/.zshrc, localize o paragrafo "plugins" e adicione o plugin "zsh-syntax-highlighting"
+
+            plugins=(
+                git
+                zsh-syntax-highlighting
+            )
+
+        . Feche e abra o terminal
+
+    . Instalação do plugins ZSH Suggestions. Após instalação, feche e abra novamente o terminal:
+
+        git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
+
+        . Abra o arquivo ~/.zshrc, localize o paragrafo "plugins" e adicione o plugin "zsh-syntax-highlighting"
+
+            plugins=(
+                git
+                zsh-syntax-highlighting
+                zsh-autosuggestions
+            )
+
+        . Feche e abra o terminal
+
+    . Instalação do Buscador com ctrl+t FZF. Após instalação, feche e abra novamente o terminal:
+
+        # Responda Yes em todas as perguntas
+        git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install
+
+        . Feche e abra o terminal
+
+
+    . Acesse o site abaixo para baixar novas fontes. Adicionar uma fonte nova:
+    
+        # Baixe a fonte "Hack Nerd Font"
+        https://www.nerdfonts.com/#downloads
+
+        ou
+
+        cd ~/Downloads
+        wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Hack.zip
+
+
+    . Alteração da fonte do terminal:
+    
+        . Criar o diretório para a fonte e descompacte aqui:
+    
+            mkdir ~/.fonts 
+            cd ~/.fonts
+            unzip ~/Downloads/Hack.zip 
+
+        . No caso do terminal numa instalçao Linux puro sangue:
+        
+            . Acesse as configurações do terminal e altere a fonte da interface "Hack NF"
+
+        . No caso do WSL:
+        
+            . Copie as fontes do arquivo "Hack.zip" para a pasta do windows "C:\Windows\Fonts"
+
+            . Acesse as configurações do terminal WSL da distribuição sendo 
+                usada "WSL -> Configurações -> <Distribuição> -> Aparência -> Tipo de Fonte":
+
+                . Altere para "Hack Nerd Font"
+
+        . Feche e abra o terminal
+
+    . Alteração do tema do terminal:
+
+        . Altere o Tema do terminal para Powerlevel9k:
+
+            git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
+
+        . Altere o arquivo .zshrc para adicionar o novo tema,  conforme abaixo:
+    
+            . Altere o item abaixo com o novo tema:
+                
+                ZSH_THEME="powerlevel9k/powerlevel9k"
+
+            . Logo abaixo deste item, insira o item abaixo:
+
+                POWERLEVEL9K_MODE="nerdfont-complete"
+
+        . Feche e abra o terminal
+
+
+. Instalando o Fish Shell
+
+    . Adicione o Fish Shell Repositório
+
+        sudo apt-add-repository ppa:fish-shell/release-3
+
+    . Atualize os pacotes do repositório
+
+        sudo apt-get update && sudo apt-get upgrade
+
+    . Instale o Fish Shell
+
+        sudo apt-get install fish
+
+    . Defina o Fish Shell como o shell padrão
+
+        sudo chsh -s /usr/bin/fish
+
+    . Para retornar ao bash padrão use o comando abaixo:
+
+        sudo chsh -s /bin/bash
+
+    . Insira as linhas abaixo no arquivo  "~/.config/fish/functions/history.fish"
+
+        function history
+            builtin history --show-time='%F %T ' | cat -n
+        end
+
+. Instalação "dotnet"
+
+	wget https://dot.net/v1/dotnet-install.sh
+	chmod +x dotnet-install.sh
+	./dotnet-install.sh -c 3.1
+	./dotnet-install.sh -c 5.0
+	./dotnet-install.sh -c 6.0
+	./dotnet-install.sh -c 8.0
+	
+    # Se o bash shell for o padrão do linux execute as duas linha abaixo
+    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
+	source ~/.bashrc
+
+    # Se o zsh shell for o padrão do linux execute as duas linha abaixo
+    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.zshrc
+	source ~/.zshrc
+
+    # Caso for o Fish Shell, insira na primeira linha do arquivo "~/.config/fish/config.fish" a linha abaixo
+    set -x PATH $PATH /home/$USER/.dotnet /home/$USER/.dotnet/tools
+
+
+	dotnet --info
+	dotnet --version
+	dotnet --list-runtimes
+	dotnet --list-sdks
+
+
+. Instalação do VSCode:
+
+    . Inicie o VSCode no Windows e instale as extensões:
+
+        WSL
+
+        Docker
+
+        C# Dev Kit
+
+        IntelliCode for C# Dev Kit
+
+https://www.youtube.com/watch?v=hlCNP3lcHQU&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=3     4.29
+
+
+    . Acesse o "wsl"
+
+        . No prompt do linux execute a chamado do VSCode como abaixo:
+
+            code .
+
+        . Verifique se no rodapé está saindo a msg ">< WSL: Ubuntu-..."
+
+        . Acione o terminal e veja se o prompt posicionado e a pasta de dentro do ambiente do wsl
+
+. Instalação do Docker
+
+    . No prompt do linux execute o comandos abaixo:
+
+        # Add Docker's official GPG key:
+        sudo apt-get update
+        sudo apt-get install ca-certificates curl
+        sudo install -m 0755 -d /etc/apt/keyrings
+        sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+        sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+        # Add the repository to Apt sources:
+        echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+
+        sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+        # Teste da instalação do docker
+        sudo docker run hello-world
+
+        # Criar o grupo do docker
+        sudo groupadd docker
+
+        # Adicionar o usuário corrente ao grupo do docker
+        sudo usermod -aG docker $USER
+
+        # Ativar as mudanças feitas no grupo
+        newgrp docker
+
+        # Para testar novamente a instalação
+        docker ps -a
+
+
+
+        # If you initially ran Docker CLI commands using sudo before adding your user to the docker group, 
+        # you may see the following error:
+
+        # WARNING: Error loading config file: /home/user/.docker/config.json -
+        #  stat /home/user/.docker/config.json: permission denied
+
+        # This error indicates that the permission settings for the ~/.docker/ directory are incorrect, 
+        # due to having used the sudo command earlier.
+
+        # To fix this problem, either remove the ~/.docker/ directory (it's recreated automatically, 
+        # but any custom settings are lost), or change its ownership and permissions using the following commands:
+
+        sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
+        sudo chmod g+rwx "$HOME/.docker" -R
+
+. Instalação do Docker-Compose:
+
+    DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+    mkdir -p $DOCKER_CONFIG/cli-plugins
+    curl -SL https://github.com/docker/compose/releases/download/v2.4.1/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
+
+    chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
+
+    sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+    docker compose version
+

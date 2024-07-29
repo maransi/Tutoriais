@@ -4,6 +4,13 @@ Tutorial Dockerizando Aplicações ASP.NET
 . Baseado no video:
     
     https://www.youtube.com/watch?v=raklAKmyJpI
+    https://www.youtube.com/watch?v=DdaZBeXAS30&list=PL7yxJa4Na-iqS50DXxIUhCC9ClB7oOL5V&index=4
+
+    https://www.youtube.com/watch?v=VbEhMVcWOFs&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=26
+    https://www.youtube.com/watch?v=cYfh_Axbugc&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=25
+    https://www.youtube.com/watch?v=lFJEPGCFtTA&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=24
+
+    https://www.youtube.com/watch?v=rqBWvco0i_Y&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=53
 
 . No Windows, basta baixar o instalador no link abaixo:
 
@@ -208,3 +215,12 @@ Tutorial Dockerizando Aplicações ASP.NET
                 docker pull [docker-username]/docker-aspnet-vscode-app:latest
 
                 docker run -d -p 5000:80 --name docker-demo-vscode [docker-username]/docker-aspnet-vscode-app
+
+
+
+
+
+
+
+https://learn.microsoft.com/pt-br/windows/wsl/basic-commands
+https://github.com/codeedu/wsl2-docker-quickstart?tab=readme-ov-file#o-que-%C3%A9-o-wsl2

@@ -1,6 +1,22 @@
 Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
 -----------------------------------------------------
 
+Baseado nos artigos:
+
+https://www.macoratti.net/19/01/aspn_lnxsite1.htm
+https://www.macoratti.net/19/01/aspn_lnxsite2.htm
+https://www.macoratti.net/19/01/intro_docker11.htm
+https://www.macoratti.net/19/01/intro_docker12.htm
+https://www.macoratti.net/19/01/intro_docker13.htm
+
+https://www.macoratti.net/19/01/intro_docker7.htm
+
+# Analisar o artigo a partir do link abaixo
+https://www.macoratti.net/19/01/intro_docker1.htm   
+
+# Docker Compose com Mysql e .Net
+https://macoratti.net/21/06/docker_apimysql2.htm
+
 1. Instalando o Docker
 
     . No caso do windows, acesse a URL abaixo e baixe o instalador:
@@ -44,7 +60,8 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
 
 2. Crie o container do mysql:
 
-    docker container run -d --name mysql -e MYSQL_ROOT_PASSWORD=root mysql:5.7
+    # docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mysql:5.7 
+    docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
 
     # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
     #
@@ -60,43 +77,32 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
 
 3. Instalando o .NET Core SDK
 
-    . Instalçao Atualizada:
+	wget https://dot.net/v1/dotnet-install.sh
 
-        . URL com informações para realizar a instalação.
+	chmod +x dotnet-install.sh
 
-            https://docs.microsoft.com/pt-br/dotnet/core/install/linux-ubuntu
+	./dotnet-install.sh -c 3.1
+	./dotnet-install.sh -c 5.0
+	./dotnet-install.sh -c 6.0
+	./dotnet-install.sh -c 8.0
+	
+    # Se o bash shell for o padrão do linux execute as duas linha abaixo
+    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.bashrc
 
-            . IMPORTANTE: Acesse a instalação da distribuição e versão especifica do linux que estamos utilizando para 
-                            proceder os comandos adequadamente.
+	source ~/.bashrc
 
-                            A instalação abaixo está para o Ubuntu 20.04
+    # Se o zsh shell for o padrão do linux execute as duas linha abaixo
+    echo 'export PATH="/home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"' >> ~/.zshrc
 
-        # Instalação do SDK
-        wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-        sudo dpkg -i packages-microsoft-prod.deb
+	source ~/.zshrc
 
-        sudo dpkg --purge packages-microsoft-prod && sudo dpkg -i packages-microsoft-prod.deb
-        sudo apt-get update
+    # Caso for o Fish Shell, insira na primeira linha do arquivo "~/.config/fish/config.fish" a linha abaixo
+    set -x PATH $PATH /home/$USER/.dotnet /home/$USER/.dotnet/tools
 
-        sudo apt-get install -y gpg
-        wget -O - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o microsoft.asc.gpg
-        sudo mv microsoft.asc.gpg /etc/apt/trusted.gpg.d/
-        wget https://packages.microsoft.com/config/ubuntu/{os-version}/prod.list
-        sudo mv prod.list /etc/apt/sources.list.d/microsoft-prod.list
-        sudo chown root:root /etc/apt/trusted.gpg.d/microsoft.asc.gpg
-        sudo chown root:root /etc/apt/sources.list.d/microsoft-prod.list
-
-        sudo apt-get update; \
-        sudo apt-get install -y apt-transport-https && \
-        sudo apt-get update && \
-        sudo apt-get install -y dotnet-sdk-6.0
-
-        sudo apt-get install -y apt-transport-https && \
-        sudo apt-get update && \
-        sudo apt-get install -y aspnetcore-runtime-6.0
-
-        sudo apt-get install -y dotnet-runtime-6.0
-
+	dotnet --info
+	dotnet --version
+	dotnet --list-runtimes
+	dotnet --list-sdks
 
 4. Instalando o VS Code
 
@@ -138,27 +144,43 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
         . Digite "Final" e habilite a configuração "Files: Insert final newline" e habilite a configuração
 
 
-5. Crie uma pasta para o projeto MVC
+5. Crie a pasta da "Solution":
 
-    mkdir ~/workspace-dotnet/mvc1
+    mkdir ~/workspace-dotnet/mvcDocker
+
+6. Dentro da pasta criada acima cria a "Solution":
+
+    cd ~/workspace-dotnet/mvcDocker
+
+    dotnet new sln -n mvcDocker
 
 6. Dentro da pasta criada acima crie um projeto dotnet MVC:
 
-    cd ~/workspace-dotnet/mvc1
+    
 
-    dotnet new mvc -f net5.0
+    dotnet new mvc -o ./src/mvc1 -n mvc1 -f net5.0
 
-    dotnet add package Microsoft.EntityFrameworkCore --version 5.0.1
-    dotnet add package Microsoft.EntityFrameworkCore.Design --version 5.0.1
-    dotnet add package Pomelo.EntityFrameworkCore.MySql --version 5.0.0-alpha.2
-    dotnet add package Microsoft.EntityFrameworkCore.Tools --version 5.0.1
+    dotnet sln mvcDocker.sln add ./src/mvc1/mvc1.csproj
+
+    cd ~/workspace-dotnet/mvcDocker/src/mvc1
+
+    dotnet add package Microsoft.EntityFrameworkCore --version 5.0.17
+    dotnet add package Microsoft.EntityFrameworkCore.Design --version 5.0.17
+    dotnet add package Microsoft.EntityFrameworkCore.Tools --version 5.0.17
+    dotnet add package Pomelo.EntityFrameworkCore.MySql --version 5.0.4
 
     dotnet restore
 
+    cd ~/workspace-dotnet/mvcDocker/
+
     # Responda "Yes" para criar os arquivos de debug
+    # Senão for perguntado para criar os arquivos de debug dentro da pasta ".vscode"
+    #   1. acesse o icone de debug na barra lateral do VSCode
+    #   2. Acione o link "Create file lauch.json"
+    #   3. Escolha a opção ".Net ... .Net5"
     code .
 
-7. Dentro da pasta "Models" cria a classe abaixo:
+7. Dentro da pasta "Models" do projeto "mvc1" cria a classe abaixo:
 
     namespace mvc1.Models
     {
@@ -191,8 +213,22 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
         }
     }
 
+9. Dentro da pasta Models crie o arquivo "AppDbContext"
 
-9. Classe de repositório:
+    using Microsoft.EntityFrameworkCore;
+
+    namespace mvc1.Models
+    {
+        public class AppDbContext : DbContext
+        {
+            public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+            {
+            }
+            public DbSet<Produto> Produtos { get; set; }
+        }
+    }
+
+10. Classe de repositório:
 
     using System.Collections.Generic;
 
@@ -209,33 +245,13 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
         }
     }
 
-10. Dentro da pasta Models crie o arquivo "AppDbContext"
-
-    using Microsoft.EntityFrameworkCore;
-
-    namespace mvc1.Models
-    {
-        public class AppDbContext : DbContext
-        {
-            public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-            {
-            }
-            public DbSet<Produto> Produtos { get; set; }
-        }
-    }
-
-
-
 11. Altere o "HomeController" como abaixo, Atente para a injeçao de dependência no construtor da classe:
 
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Logging;         // LINHA INCLUIDA
     using mvc1.Models;                          // LINHA INCLUIDA
+
 
     namespace mvc1.Controllers
     {
@@ -340,46 +356,108 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
         }
     }
 
-14. Acesse o arquivo "appsettings.json" e insira a linha abaixo:
+14. Acesse o arquivo "appsettings.Development.json" e insira a linha abaixo:
 
-    // IMPORTANTE: O IP 172.17.0.2 pode ser adquirido pelo comando "docker exec mysql hostname -I"
+    // IMPORTANTE: Caso ocorra algum problema na identificação do servidor "mysql" como localhost, use o fisico do container.
+    //              Utilize o comando "docker exec mysqldb hostname -I" para encontrar o IP do container
+    //              ou
+    //             Execute o comando:   docker container inspect mysqldb |grep -i "IPAddress\|Gateway"
+    //
+    //              Outra dica importante: Caso ocorra o erro "Authentication method 'caching_sha2_password' failed.", acrescente aos
+    //              parâmetros de autenticação do "DotNetCoreMySQLAppConnection" o item "; AllowPublicKeyRetrieval=True". Isto ocorre 
+    //              ao utilizar o container docker "MySQL:8.XX"
+    //
+    // IMPORTANTE: As configurações de "Development" existentes nos "Properties/launchSetting.json" não está apontando
+    //                para o arquivo "appsetings.Development.json", talvez isto ocorra devido ao comando "dotnet ef migrations..."
+    //                enxergar somente o arquivo "appsetings.json"
+    //
+    // IMPORTANTE: Quando for executar "dotnet ef migrations add CreationInicial" o comando irá procurar sempre os parâmetros de conexão no arquivo
+    //              "appsettings.json". Nesse caso somos obrigados a criar a conexão nos dois arquivos "appsetings.json" e "appsetings.Development.json"
     {
         ...,
         "ConnectionStrings": {
-                    "DotNetCoreMySQLAppConnection": "server=172.17.0.2; port=3306; database=desenv; user=root; password=root; Persist Security Info=false; Connect Timeout=300"
-        }
+            "DotNetCoreMySQLAppConnection": "server=localhost; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+        },
     }
 
 
 15. Acrescente essas linhas dentrao do método "ConfigureServices" da classe "Startup":
 
-    ...
-    public void ConfigureServices(IServiceCollection services)
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.EntityFrameworkCore;                // Linha inserida
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using mvc1.Models;                                  // Linha inserida
+
+    namespace mvc1
     {
-        services.Configure<CookiePolicyOptions>(options =>
+        public class Startup
         {
-            // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-            options.CheckConsentNeeded = context => true;
-            options.MinimumSameSitePolicy = SameSiteMode.None;
-        });
+            public Startup(IConfiguration configuration)
+            {
+                Configuration = configuration;
+            }
 
+            public IConfiguration Configuration { get; }
 
-        string dbConnectionString = Configuration.GetConnectionString("DotNetCoreMySQLAppConnection");                                      // ADICIONADO
-        services.AddDbContext<AppDbContext>(options => options.UseMySql(dbConnectionString, ServerVersion.AutoDetect(dbConnectionString))); // ADICIONADO
+            // This method gets called by the runtime. Use this method to add services to the container.
+            public void ConfigureServices(IServiceCollection services)
+            {
+                services.AddControllersWithViews();
 
-        services.AddSingleton<IConfiguration>(Configuration);
-        services.AddTransient<IRepository, ProdutoRepository>();    // LINHA ALTERADA
+                string dbConnectionString = Configuration.GetConnectionString("DotNetCoreMySQLAppConnection");                                      // ADICIONADO
+                services.AddDbContext<AppDbContext>(options => options.UseMySql(dbConnectionString, ServerVersion.AutoDetect(dbConnectionString))); // ADICIONADO
 
-        services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+                // Linha inserida
+                services.AddSingleton<IConfiguration>(Configuration);
+
+                // Linha inserida
+                services.AddTransient<IRepository, ProdutoRepository>();    // LINHA ALTERADA
+            }
+
+            // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+            public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+            {
+                if (env.IsDevelopment())
+                {
+                    app.UseDeveloperExceptionPage();
+                }
+                else
+                {
+                    app.UseExceptionHandler("/Home/Error");
+                    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                    app.UseHsts();
+                }
+                app.UseHttpsRedirection();
+                app.UseStaticFiles();
+
+                app.UseRouting();
+
+                app.UseAuthorization();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllerRoute(
+                        name: "default",
+                        pattern: "{controller=Home}/{action=Index}/{id?}");
+                });
+
+                // Linha inserida
+                Populadb.IncluiDadosDB(app);    
+
+            }
+        }
     }
-    ...
 
-    public void Configure( IApplicationBuilder app, ... ){
-        ...
-        Populadb.IncluiDadosDB(app);    // ADICIONADO   
-    }
+16. Levante o container do MySQL:
 
-16. Acesse a linha de comandos na pasta raiz do projeto e digito o comando abaixo:
+    docker run -d --name mysqldb -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
+16. Acesse a linha de comandos na pasta raiz da solution e digito o comando abaixo:
+
+    cd src/mvc1
 
     # Caso não encontre o "dotnet ef" instale com o comando "dotnet tool install --global dotnet-ef"
     dotnet ef migrations add Inicial
@@ -396,9 +474,86 @@ Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
 
 18. Execute a URL abaixo no navegador
 
-    localhost:5001
+    https://localhost:5001
 
 
+
+Trabalhando com volumes
+-----------------------
+
+1. Limpando o ambiente
+
+    docker container rm -f $(docker ps -aq)
+
+    docker volume prune -a 
+
+    docker image rm $(docker images -a -q)
+
+2. Recriando o ambiente:
+
+    docker volume create --name produtosdata
+
+    docker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
+3. Atualização da migration para o novo container MySQL:
+
+    cd ./src/mvc1
+
+    dotnet ef database update --context AppDbContext
+
+    # Para verificar se o UPDATE foi feito com sucesso
+    
+    mysql -u root -p -h 127.0.0.1 -A
+
+    # Execute os comandos abaixo:
+
+        mysql> use productsdb;
+        Database changed
+
+        mysql> DESC Produtos;
+        +-----------+----------------+------+-----+---------+----------------+
+        | Field     | Type           | Null | Key | Default | Extra          |
+        +-----------+----------------+------+-----+---------+----------------+
+        | ProdutoId | int(11)        | NO   | PRI | NULL    | auto_increment |
+        | Nome      | longtext       | YES  |     | NULL    |                |
+        | Categoria | longtext       | YES  |     | NULL    |                |
+        | Preco     | decimal(65,30) | NO   |     | NULL    |                |
+        +-----------+----------------+------+-----+---------+----------------+
+        4 rows in set (0.01 sec)
+
+
+3. Apagar o container do mysql e criar outro container mysql apontando para o volume criado no passo 2. Ao final
+    se tudo der certo os dados criados inicialmente sobrevirá a eliminação do container, pois eles foram guardados
+    no volume.
+
+    docker container rm -f mysqldb
+
+    docker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
+    # Para verificar se o volume permaneceu com os dados do container anterior
+    
+    mysql -u root -p -h 127.0.0.1 -A
+
+    # Execute os comandos abaixo:
+
+        mysql> use productsdb;
+        Database changed
+
+        mysql> DESC Produtos;
+        +-----------+----------------+------+-----+---------+----------------+
+        | Field     | Type           | Null | Key | Default | Extra          |
+        +-----------+----------------+------+-----+---------+----------------+
+        | ProdutoId | int(11)        | NO   | PRI | NULL    | auto_increment |
+        | Nome      | longtext       | YES  |     | NULL    |                |
+        | Categoria | longtext       | YES  |     | NULL    |                |
+        | Preco     | decimal(65,30) | NO   |     | NULL    |                |
+        +-----------+----------------+------+-----+---------+----------------+
+        4 rows in set (0.01 sec)
+
+
+4. Podemos substituir um volume por uma pasta fisica ao criar o container
+
+    docker container run -d --name mysql -v /home/marco/mysql-docker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
 
 
 Trabalhando com Dockerfile com imagens
@@ -410,59 +565,62 @@ Trabalhando com Dockerfile com imagens
 
     docker image rm $(docker images -a -q)
     
-    docker volume prune
+    docker volume prune -a
 
+2. Criar um arquivo "Dockerfile" com conteúdo abaixo na pasta raiz do projeto "./src/mvc1"
 
-
-2. Publicação da aplicação - Acesse a pasta raiz do projeto ASP.NET e execute o comando abaixo:
-
-    rm dist/ -R
-
-    dotnet publish --configuration Realease --output dist
-
-3. Criar um arquivo Dockerfile na pasta raiz do projeto
-
-    FROM mcr.microsoft.com/dotnet/sdk:5.0
+    FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
     LABEL version="1.0.1" description="Aplicação ASP.NET Core MVC"
-    COPY dist app/
     WORKDIR /app
     EXPOSE 5000
     ENV ASPNETCORE_URLS=http://*:5000
-    ENTRYPOINT ["dotnet","mvc1.dll"]
+    ENV ASPNETCORE_ENVIRONMENT=Development      # ATENÇÃO: Essa variável que apontará para o arquivo "appsettings.Development.json"
 
-4. Execute o comando abaixo na pasta raiz do projeto
+    # Procedimentos abaixo opcional, caso queira instalar o my-client para conectar o container do "mysql" de dentro do container da aplicação.
+    # RUN apt-get update && apt-get install -y sudo
+    # RUN apt install mysql-client 
+    # RUN apt install iputils-ping -y
+
+    FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+    WORKDIR /src
+    COPY ["mvc1.csproj", "."]
+    RUN dotnet restore "./mvc1.csproj"
+    COPY . .
+    WORKDIR "/src/."
+    RUN dotnet build "./mvc1.csproj" -c Release -o /app/build
+
+    FROM build AS publish
+    RUN dotnet publish "./mvc1.csproj" -c Release -o /app/publish
+
+    FROM base AS final
+    WORKDIR /app
+    COPY --from=publish /app/publish .
+    ENTRYPOINT ["dotnet", "mvc1.dll"]
+
+3. Crie o container do mysql:
+
+    dockerdocker run -d --name mysqldb -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
+4. Altere o endereço IP do "server" dentro do arquivo "appsettings.Development.json"
+
+    docker inspect mysqldb| grep -i IpAddress
+
+            "SecondaryIPAddresses": null,
+            "IPAddress": "172.17.0.2",
+                    "IPAddress": "172.17.0.2", -----+
+                                                    |
+    #appsettings.Development.json                   V
+    "DotNetCoreMySQLAppConnection": "server=172.17.0.2; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+
+5. Execute o comando abaixo na pasta raiz do projeto "./src/mvc1"
+
+    cd src/mvc1
 
     docker build -t aspnetcoremvc/app:1.0 .
 
-5. Confira se a imagem foi criada com sucesso:
-
     docker images
 
-6. Crie o container do mysql:
-
-    docker container run -d --name mysql -e MYSQL_ROOT_PASSWORD=root mysql:5.7
-
-    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
-    #
-    #   mysql -u root -p
-    #
-    # Informe a senha "root"
-    #
-    #       create database desenv;
-    #
-    docker container exec -it mysql bash
-
-    # Verifique no MySQL se o "database" e as "Table" foi contruído com sucesso.
-    #
-    # PROCEDIMENTO PODE SER OPCIONAL, TENTE NÃO EXECUTÁ-LO PARA VER SE REALMENTE É NECESSÁRIO
-    #
-    #dotnet ef database update --context AppDbContext
-
-7. Certifique-se que o IP do container "mysql" é o mesmo configurado dentro da string de conexão localizada no arquivo "appsettings.json"
-
-7. Crie o container com o comando abaixo:
-
-    docker container create -p 500:5000 --name mvcprodutos aspnetcoremvc/app:1.0 
+    docker container create -p 5000:5000 --name mvcprodutos aspnetcoremvc/app:1.0 
 
     docker container ps -a
 
@@ -470,167 +628,330 @@ Trabalhando com Dockerfile com imagens
 
 8. Acesse o navegador e execute a URL abaixo:
 
-    localhost:500
+    http://localhost:5000
+
+
+9. Utilizando os containeres na mesma rede do Host
+
+    . IMPORTANTE: Durante a criação dos containeres, se não identificarmos a rede que o container será lançado, o docker criará ele na rede padrão "Bridge".
+                    Caso venhamos alterar a rede dos containeres para "Host", eles permanecerão na mesma rede da máquina que está executando os containeres.
+                    Nesse caso, podemos deixar o parâmetro "server" da conexão ao MySQL como "localhost" e não precisaremos colocar o IP fixo do container do banco
+
+                    . Altere o parâmetro "server" para "localhost"
+                                                    |
+                                                    +-------------------+
+                                                                        |
+                        #appsettings.Development.json                   V
+                        "DotNetCoreMySQLAppConnection": "server=localhost; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+
+
+                    . Executando os containeres na rede host:
+
+                        docker container rm -f mysqldb
+
+                        docker container rm -f mvcprodutos
+
+                        docker run -d --name mysqldb --network Host -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+                                                      |-----------|
+                                                            |
+                                                            V
+                                                    Identificação da rede
+                                                            |
+                                                            +---------------------------+
+                                                                                        |
+                                                                                        V
+                        docker container create -p 5000:5000 --name mvcprodutos --network Host aspnetcoremvc/app:1.0 
+
+                        docker container start mvcprodutos
+
+                    . Execute a URL abaixo:
+                    
+                        http://localhost:5000
 
 
 
+Trabalhando com Docker Compose
+------------------------------
+
+2. Crie o arquivo "docker-compose.yml" com o conteúdo abaixo:
+
+    version: '3.4'
+    services:
+
+        database:
+            image: mysql:5.7
+            container_name: mysqldb
+            ports:
+                - 3306:3306
+            expose: 
+                - 3306
+            restart: always
+            environment: 
+                MYSQL_ROOT_PASSWORD: root
+                MYSQL_USER: marco
+                MYSQL_PASSWORD: brasil
+                MYSQL_DATABASE: productsdb
+            volumes:
+                - db-volume:/var/lib/mysql
+            #      - ./_MySQL_Init_Script/init.sql:/docker-entrypoint-initdb.d/init.sql
+            #      - ./MySQLConf/my.cnf:/etc/my.cnf
+
+        mvcdocker:
+            image: ${DOCKER_REGISTRY-}mvcdocker
+            container_name: mvcdocker
+            build:
+                context: ./src/mvc1/
+                dockerfile: Dockerfile
+            depends_on: 
+                - database
+            ports:
+                - "5000:5000"
+            restart: always
+            environment: 
+                - ASPNETCORE_ENVIRONMENT=Development
+          #      - DB_HOST=database
+
+    volumes:
+        db-volume:
+
+3. Altere  o parâmetro server da string de conexão no "appsettings.Development" pelo nome do serviço do banco do "docker-compose":
+
+  "ConnectionStrings": {
+                            "DotNetCoreMySQLAppConnection": "server=database; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+                        }                                               ^
+                                                                        |
+                                                                       Aqui
+4. Execute os comandos abaixo:
+
+    # Comando para apagar todos os container referenciado pelo arquivo docker-compose acima
+    docker compose down -v
+
+    # Constroi uma image baseada nas configurações do arquivo docker-compose
+    docker compose build
+
+    # Levanta os containeres construidos pelo build
+    docker compose up -d
+
+5. Aguarde uns 10 segundos para o container "mvcdocker" levantar. Devido ao container do banco mysql demorar para se auto levantar, o container "mvcdocker" tenta umas três
+    vezes levantar. Ao termino desse tempo, podemos seguir para o próximo passo. 
+
+5. Acesse o link abaixo no navegador
+
+    http://localhost:5000
 
 
+https://www.youtube.com/watch?v=PyQxzZrdGHk     25:20
 
-
-Trabalhando com volumes
------------------------
-
-1. Limpando o ambiente
-
-    docker container rm -f $(docker ps -aq)
-
-    docker volume prune
-
-    docker image rm $(docker images -a -q)
-
-2. Recriando o ambiente:
-
-    docker volume create --name produtosdata
-
-    docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0 mysql:5.7
-
-    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
-    #
-    #   mysql -u root -p
-    #
-    # Informe a senha "root"
-    #
-    #
-    #   create database desenv;
-    #   use desenv;
-    #   create table Produtos( id int, name varchar(30));
-    #   select * from Produtos;
-    #
-    docker exec mysql bash     
-
-    ou 
-
-    docker exec -it mysql mysql -u root -p
-
-    ou 
-
-    docker exec mysql hostname -I
-
-    mysql -u root -p -h <IP do container acima>
-
-
-3. Apagar o container do mysql e criar outro container mysql apontando para o volume criado no passo 2. Ao final
-    se tudo der certo os dados criados inicialmente sobrevirá a eliminação do container, pois eles foram guardados
-    no volume.
-
-    docker container rm -f mysql
-
-    docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
-
-    # Ao executar o comando abaixo, entraremos na linha de comando do container. Digite o comando abaixo:
-    #
-    #   mysql -u root -p
-    #
-    # Informe a senha "root"
-    #
-    #   use desenv;
-    #   select * from Produtos;
-    #
-    docker container exec -it mysql bash
-
-4. Podemos substituir um volume por uma pasta fisica ao criar o container
-
-    docker container run -d --name mysql -v /home/marco/mysql-docker:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root -e bind-address=0.0.0.0 mysql:5.7
-
-
-
-Trabalhando com redes ( Trabalhando com host e um container "mysql")
----------------------------------------------------------------------
-
-1. Acesse a classe "Startup.cs" no método "ConfigureServices" e deixa-a como abaixo
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            var host = Configuration["DBHOST"] ?? "localhost";      // 
-            var port = Configuration["DBPORT"] ?? "33600";
-            var password = Configuration["DBPASSWORD"] ?? "root";
-
-
-            string dbConnectionString = String.Format( Configuration.GetConnectionString("DotNetCoreMySQLAppConnection"), host, port, password );
-            services.AddDbContext<AppDbContext>(options => options.UseMySql(dbConnectionString, ServerVersion.AutoDetect(dbConnectionString))); 
-
-            ...
-        }
-
-2. Certifique-se que o contéudo da linha abaixo seja a mesma do arquivo "appsettings.json":
-
-    {
-        ...,
-        "ConnectionStrings": {
-                    "DotNetCoreMySQLAppConnection": "server={0}; port={1}; database=desenv; user=root; password={2}; Persist Security Info=false; Connect Timeout=300"
-        }
-    }
-
-3. Crie o container mysql:
-
-    docker container rm mysql
-    docker volume create --name produtosdata
-    docker container run -d --name mysql -v produtosdata:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root  -p 33600:3306 mysql:5.7 
-
-
-4. Compile o projeto:
-
-    dotnet clean
-    dotnet restore
-    dotnet build
-    dotnet run
-
-5. Acesse o navegador e execute a URL abaixo:
-
-    localhost:5000
-
-
-
-
-
-Trabalhando com redes ( Trabalhando com dois containeres "appmvc" e "mysql")
+Trabalhando com redes ( Trabalhando com dois containeres "appmvc" e "mysql" sem o docker compose)
 ----------------------------------------------------------------------------
-
 
 1. Crie uma rede bridge com o comando abaixo:
 
     docker network rm net-mysql
 
-    docker network create net-mysql
+    docker network create -d bridge net-mysql 
 
 2. Crie o container mysql:
 
+    docker container rm -f mysqldb
 
-    docker container rm -f mysql
-    docker volume rm -f produtosdata
+    docker container run -d --name mysqldb -v produtosdata:/var/lib/mysql --network net-mysql -e MYSQL_ROOT_PASSWORD=root  mysql:5.7 
+                                    |
+                                    +---------------------------------------------------------------------------+
+                                                                                                                |
+                                                                                                                V
+3. Altere  o parâmetro server da string de conexão no "appsettings.Development" pelo nome do serviço do banco "mysqldb"
 
-    docker volume create --name produtosdata
-    docker container run -d --name mysql -v produtosdata:/var/lib/mysql --network net-mysql -e MYSQL_ROOT_PASSWORD=root  mysql:5.7 
+  "ConnectionStrings": {
+                            "DotNetCoreMySQLAppConnection": "server=mysqldb; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+                        }                                               ^
+                                                                        |
+                                                                       Aqui
+4. Acesse a pasta raiz do projeto mvc
 
-3. Crie a imagem do projeto:
+    cd src/mvc1
 
-    docker image rm aspnetcoremvc/app:1.0
+5. Reconstrua o container da aplicação:
 
-    cd ~/workspace-dotnet/mvc4
-    rm dist -R
-    dotnet publish --configuration Realease --output dist
     docker build -t aspnetcoremvc/app:1.0 .
 
-4. Crie o container da aplicação:
+    docker container create -p 5000:5000 --name mvcprodutos --network net-mysql aspnetcoremvc/app:1.0 
 
-    docker container rm appmvc
-    docker container exec mysql hostname -I # -----------------------------------------V
-    docker container run -d --name appmvc -p 3000:5000 --network net-mysql -e DBHOST=172.19.0.2  -e DBPORT=3306 -e DBPASSWORD=root aspnetcoremvc/app:1.0
+    docker container start mvcprodutos
 
-5. Acesse o navegador e execute a URL abaixo:
+6. Execute o projeto:
 
-    localhost:3000
+    http://localhost:5000
+
+
+
+
+Publicando a imagem do projeto no docker hub
+--------------------------------------------
+
+    Utilizando o "docker"
+    ---------------------
+
+        1. Faça o login no docker hub:
+
+            # Se não tiver um usuário e senha, faça o registro em https://hub.docker.com/
+            docker login
+
+        2. Limpando o ambiente
+
+            docker container rm -f $(docker ps -aq)
+
+            docker image rm $(docker images -aq)
+            
+            docker volume prune -a
+
+        5. Acesse a pasta raiz do projeto:
+
+            cd src/mvc1
+
+        4. Altere  o parâmetro server da string de conexão no "appsettings.Development" pelo nome do serviço do banco "localhost"
+
+            "ConnectionStrings": {
+                                    "DotNetCoreMySQLAppConnection": "server=localhost; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+                                }                                               ^
+                                                                                |
+                                                                            Aqui
+
+        5. Crie a imagem do projeto MVC e a publicação dela:
+
+            docker build -t maransi/mvcdocker:latest .
+
+            docker push maransi/mvcdocker:latest  
+
+        6. Execute o comando abaixo para levantar o banco de dados MySQL:
+
+            docker run -d --name mysqldb --network host -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
+        7. Apague a imagem do projeto que foi criada no passo 6 para forçar o download dela do docker hub:
+
+            docker image rm -f maransi/mvcdocker 
+
+        8. Baixe a imagem do seu projeto recém publicado e faça o start dele:
+
+            docker container create -p 5000:5000 --name mvcDocker --network host  maransi/mvcdocker  
+
+            docker container start mvcDocker
+
+            # Se quiser criar num único passo
+            # docker run -d --name mvcDocker --network host -p 5000:5000  maransi/mvcdocker
+
+        9. Execute o projeto:
+
+            http://localhost:5000
+
+
+    Utilizando "docker compose"
+    --------------------------
+
+        1. Faça o login no docker hub:
+
+            # Se não tiver um usuário e senha, faça o registro em https://hub.docker.com/
+            docker login
+
+        2. Limpando o ambiente
+
+            docker container rm -f $(docker ps -aq)
+
+            docker image rm $(docker images -aq)
+            
+            docker volume prune -a
+
+        3. Acesse a pasta do projeto:
+
+            cd src/mvc1
+
+        4. Altere  o parâmetro server da string de conexão no "appsettings.Development" pelo nome do serviço do banco "localhost"
+
+            "ConnectionStrings": {
+                                    "DotNetCoreMySQLAppConnection": "server=localhost; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+                                }                                               ^
+                                                                                |
+                                                                            Aqui
+        5. Acesse a pasta da solution
+
+            cd ../..
+
+        6. Insira as linhas abaixo no arquivo "docker-compose.yml":
+
+            version: '3.4'
+            services:
+
+                database:
+                    image: mysql:5.7
+                    container_name: mysqldb
+                    ports:
+                        - 3306:3306
+                    expose: 
+                        - 3306
+                    restart: always
+                    environment: 
+                        MYSQL_ROOT_PASSWORD: root
+                        MYSQL_USER: marco
+                        MYSQL_PASSWORD: brasil
+                        MYSQL_DATABASE: productsdb
+                    volumes:
+                        # - db-volume:/var/lib/mysql                                            # LInha apagada
+
+                mvcdocker:
+                    image:  maransi/mvcdocker:latest                                            # Linha alterada
+                    container_name: mvcdocker
+                    build:
+                        context: ./src/mvc1/
+                        dockerfile: Dockerfile
+                    depends_on: 
+                        - database
+                    ports:
+                        - "5000:5000"
+                    restart: always
+                    environment: 
+                        - ASPNETCORE_ENVIRONMENT=Development
+
+
+        7. Execute os comandos abaixo para fazer a publicação da imagem do projeto ASP.NET:
+
+            docker compose build
+
+            docker compose push
+
+        8. Execute o comando abaixo para levantar o banco de dados MySQL:
+
+            docker run -d --name mysqldb --network host -e MYSQL_ROOT_PASSWORD=root -p 3306:3306  mysql:5.7 
+
+        9. Apague a imagem do projeto que foi criada no passo 6 para forçar o download dela do docker hub:
+
+            docker image rm -f maransi/mvcdocker 
+
+        10. Baixe a imagem do seu projeto recém publicado e faça o start dele:
+
+            docker container create -p 5000:5000 --name mvcDocker --network host  maransi/mvcdocker  
+
+            docker container start mvcDocker
+
+            # Se quiser criar num único passo
+            # docker run -d --name mvcDocker --network host -p 5000:5000  maransi/mvcdocker
+
+        11. Execute o projeto:
+
+            http://localhost:5000
+
+
+
+
+https://code.visualstudio.com/docs/containers/quickstart-aspnet-core
+https://code.visualstudio.com/docs/devcontainers/containers
+https://code.visualstudio.com/docs/editor/debugging#_launch-configurations
+https://code.visualstudio.com/docs/editor/tasks
+
+https://livro.descomplicandodocker.com.br
+
+
+
+
 
 
 

@@ -3,17 +3,29 @@ Tutorial Projeto InvestTools - Criando o Banco de Dados
 
 . Acesse os arquivos "appsettings.json" e "appsettings.Development.json" e insira a linha abaixo:
 
+
+    // IMPORTANTE: Caso ocorra algum problema na identificação do servidor "mysql" como localhost, use o fisico do container.
+    //              Utilize o comando "docker exec mysqldb hostname -I" para encontrar o IP do container
+    //              ou
+    //             Execute o comando:   docker container inspect mysqldb |grep -i "IPAddress\|Gateway"
+    //
+    //              Outra dica importante: Caso ocorra o erro "Authentication method 'caching_sha2_password' failed.", acrescente aos
+    //              parâmetros de autenticação do "DotNetCoreMySQLAppConnection" o item "; AllowPublicKeyRetrieval=True". Isto ocorre 
+    //              ao utilizar o container docker "MySQL:8.XX"
+    //
+    // IMPORTANTE: As configurações de "Development" existentes nos "Properties/launchSetting.json" não está apontando
+    //                para o arquivo "appsetings.Development.json", talvez isto ocorra devido ao comando "dotnet ef migrations..."
+    //                enxergar somente o arquivo "appsetings.json"
+    //
+    // IMPORTANTE: Quando for executar "dotnet ef migrations add CreationInicial" o comando irá procurar sempre os parâmetros de conexão no arquivo
+    //              "appsettings.json". Nesse caso somos obrigados a criar a conexão nos dois arquivos "appsetings.json" e "appsetings.Development.json"
+
     {
         "ConnectionStrings": {              
             "DefaultConnection": "DataSource=app.db;Cache=Shared"
         },
         ...
     }
-
-    . IMPORTANTE: As configurações de "Development" existentes nos "Properties/launchSetting.json" não está apontando
-                    para o arquivo "appsetings.Development.json", talvez isto ocorra devido ao comando "dotnet ef migrations..."
-                    enxergar somente o arquivo "appsetings.json"
-
 
 . Crie a pasta "Data" na raiz do projeto e crie a classe "ApplicationDbContext.cs" como abaixo:
 
