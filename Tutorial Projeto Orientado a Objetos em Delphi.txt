@@ -1,61 +1,987 @@
-SELECT DISTINCT 
-    240 AS cdModelo, 
-    a.cpfcnpj, 
-    CASE 
-        WHEN IFNULL(e.dddc,'') <> '' THEN 
-            e.dddc 
-        WHEN IFNULL(e.dddc2,'') <> '' THEN 
-            e.dddc2 
-    ELSE 
-        e.dddc3 
-    END AS ddd, 
-    CASE 
-        WHEN IFNULL(e.celular,'') <> '' THEN 
-            e.celular 
-        WHEN IFNULL(e.celular2,'') <> '' THEN 
-            e.celular2 
-    ELSE 
-        e.celular3 
-    END AS celular, 
-    e.estado 
-FROM cheques a 
-   INNER JOIN clientes e 
-      ON a.cpfCnpj = e.cpfCnpj 
-   INNER JOIN operacao c 
-     ON a.cpfCnpj = c.cpfCnpj 
-        AND a.operacao = c.operacao 
-  LEFT JOIN ListaNegra LN 
-    ON (LN.cpfcnpj = A.cpfcnpj) 
-  LEFT JOIN ListaNegraMotivo LM 
-    ON (LM.codigoMotivo = LN.codigoMotivo AND LM.bloqueio_env_cobr_int = 'S') 
-  INNER JOIN bdFechamento.financeiroLoteBacen flb USE INDEX( PRIMARY ) 
-    ON a.cpfCnpj = flb.cpfCnpj 
-WHERE  IFNULL(e.cobrancaSuspensa, 'N') = 'N' 
-   AND NOT EXISTS( SELECT * 
-                   FROM operacao 
-                   WHERE cpfCnpj = a.cpfCnpj 
-                      AND IFNULL( bloqueioJudicial, 'N' ) = 'S' ) 
-   AND NOT EXISTS( SELECT * FROM clienteProcesso WHERE cpfCnpj = CONVERT( a.cpfCnpj USING LATIN1) ) 
-   AND NOT EXISTS( SELECT * 
-                   FROM tab_acordos 
-                   WHERE cpfCnpj = a.cpfCnpj 
-                      AND tip_acordo = 19) 
-   AND IFNULL(e.processo,'N') = 'N' 
-   AND  IFNULL( e.liminar, 'N') = 'N' 
-   AND IFNULL( e.processoAdm, 'N') = 'N' 
-   AND ( ( a.datMov BETWEEN ADDDATE( CURDATE(), INTERVAL -45 DAY) 
-             AND ADDDATE( CURDATE(), INTERVAL -1 DAY ) 
-             AND a.datPag IS NULL  
-             AND NOT EXISTS( SELECT x1.num_acordo 
-                             FROM tab_acordos_originais x1 
-                                INNER JOIN tab_acordos x2 
-                                   ON x1.num_acordo = x2.num_acordo 
-                                      AND x2.cdSituacao IN (1,2) 
-                             WHERE x1.cheque = a.cheque ) ) 
-            OR 
-         ( a.datPag IS NULL 												
-              AND IFNULL(e.cobrancaInterna,'N') = 'S'  	
-              AND NOT EXISTS( SELECT * FROM tab_acordos WHERE cpfCnpj = a.cpfCnpj AND cdSituacao IN (1,2) )   ) ) 
-   AND c.banco IS NOT NULL 
-   AND IFNULL(a.situacao,'') NOT IN ( 'BAIXADO', 'COBRANCA', 'DEVOLUÇÃO') 
-   AND c.cdProduto IN ( 1,6 ) 
+Projeto
+
+. O Delphi possui a diretiva "{$region 'Descrição'} ... {$endregion}"
+
+    . Ela ajuda seu código ficar mais organizado, limpo e até mesmo achar mais fácil um bloco de código, 
+        pois ela “esconde” um determinado bloco
+
+. Criar um projeto "VCL Forms Application"
+
+. Acessar o formulário padrão do projeto e alterar a propriedade "name" para :
+
+    frmPessoa
+
+. Acessar a aba "code" do formulário e alterar na primeira linha o nome da "Unit"
+    para "Pessoa":
+
+
+    unit Pessoa;
+
+    interface
+
+    uses
+    Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+    Vcl.Controls, Vcl.Forms, Vcl.Dialogs;
+
+    type
+        TfrmPessoa = class(TForm)
+        private
+            { Private declarations }
+        public
+            { Public declarations }
+        end;
+
+        var
+        frmPessoa: TfrmPessoa;
+
+        implementation
+
+        {$R *.dfm}
+
+    end.
+
+. Crie uma unit no projeto com o nome de "ClasseTPessoa":
+
+    // Inicialmente a classe é construida de forma bem básica
+    unit ClasseTPessoa;
+
+    interface
+
+    implementation
+
+    end.
+
+. Abaixo da linha "interface" implemente o código abaixo:
+
+    type TPessoa = class
+
+        private
+
+
+        public
+
+
+
+
+    end;
+
+
+    . A convenção é iniciar o nome do apelido da classe sempre com a letra "T"
+    . Dentro do parágrafo "type" será o local onde definiremos métodos e propriedade
+    . Para facilitar o desenvolvimento da classe podemos digitar a palavra "prop" + Tab
+        e com isso o IDE completará com a definição dos Getter/Setter
+
+. Abaixo da linha "public" insira o código abaixo:
+
+    property codigo: Integer read GetCodigo write SetCodigo;
+    property nome: String read GetNome write SetNome;
+
+    . Posicione o cursor sobre a palavra "GetCodigo" e "SetCodigo"
+    . Pressione Shift + Ctrl + C para criar a implementação dos métodos
+    . IMPORTANTE: A declaração das propriedades deve ser feita sempre abaixo da linha "public"
+
+. A classe ficará com o código final abaixo:
+
+    unit ClasseTPessoa;
+
+    interface
+
+    type TPessoa = class
+
+    private
+        function GetCodigo: Integer;
+        function GetNome: String;
+        procedure SetCodigo(const Value: Integer);
+        procedure SetNome(const Value: String);
+
+
+
+    public
+
+
+        property codigo: Integer read GetCodigo write SetCodigo;
+        property nome: String read GetNome write SetNome;
+
+
+    end;
+
+
+    implementation
+    { TPessoa }
+
+    function TPessoa.GetCodigo: Integer;
+    begin
+
+    end;
+
+    function TPessoa.GetNome: String;
+    begin
+
+    end;
+
+    procedure TPessoa.SetCodigo(const Value: Integer);
+    begin
+
+    end;
+
+    procedure TPessoa.SetNome(const Value: String);
+    begin
+
+    end;
+
+    end.
+
+. Inclua as propriedades que guardarão os valores da classe acima da linha "private"
+
+    ..
+    type TPessoa = class
+
+        private
+            FCodigo : Integer;
+            FNome : String;
+
+            function GetCodigo: Integer;
+            function GetNome: String;
+            procedure SetCodigo(const Value: Integer);
+            procedure SetNome(const Value: String);
+    ...
+
+    . Observe que o padrão de nomenclatura das propriedades iniciam com a letro "F";
+    . Observe que as propriedades que manteram os valores ficaram dentro do escopo "private".
+
+. Acesse os métodos Getter/Setter e implemente o retorno e atualização das propriedades como abaixo:
+
+    ...
+    function TPessoa.GetCodigo: Integer;
+    begin
+        Result := FCodigo;
+    end;
+
+    function TPessoa.GetNome: String;
+    begin
+        Result := FNome;
+    end;
+
+    procedure TPessoa.SetCodigo(const Value: Integer);
+    begin
+        FCodigo := Value;
+    end;
+
+    procedure TPessoa.SetNome(const Value: String);
+    begin
+        FNome := Value;
+    end;
+    ...
+
+    . Observe que nos métodos "Getter" é feito a atualização do valor das "properties";
+        já nos "Setter" é feito o retorno desses valores.
+
+
+. No formulário do projeto inclua um componente "Button" para testar a nossa classe. No método onClick desse
+    componente insira o código abaixo:
+
+
+    ...
+    procedure btnExecutarClick(Sender: TObject);
+    ...
+    uses
+        ClasseTPessoa;
+
+    procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+    begin
+        try
+            Pessoa := TPessoa.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO';
+
+            ShowMessage('Pessoa com o código ' + IntToStr(Pessoa.codigo) + ' e o nome é ' + Pessoa.nome );
+        finally
+            FreeAndNil(Pessoa);
+        end;
+    end;
+
+    . Para utilizar a classe é necessário importar ela no "uses". Uma forma fácil para isso seria posicionar o 
+        cursor sobre a declaração da classe "Pessoa : TPessoa", pressionar Alt + F11 e escolher a classe
+        em questão.
+    . Observe que o padrão para nomear um objeto no método será começar com a letra maiúscula "Pessoa"
+
+
+. Crie a propriedade "FDataNascimento" com o Setter/Getter como abaixo:
+
+    ...
+    uses
+        System.SysUtils;
+
+    type TPessoa = class
+
+    private
+        FCodigo : Integer;
+        FNome : String;
+        FDataNascimento : String;
+
+        function GetCodigo: Integer;
+        function GetNome: String;
+        procedure SetCodigo(const Value: Integer);
+        procedure SetNome(const Value: String);
+        function GetDataNascimento: String;
+        procedure SetDataNascimento(const Value: String);
+
+    ...
+    public
+        property dataNascimento: String read GetDataNascimento write SetDataNascimento;
+
+. Crie os métodos Getter/Setter
+
+    function TPessoa.GetDataNascimento: String;
+    begin
+        Result := FDataNascimento;
+    end;
+
+    procedure TPessoa.SetDataNascimento(const Value: String);
+    begin
+        FDataNascimento := Value;
+    end;
+
+. Crie o método Idade:
+
+    ...
+    public
+        function Idade : Integer;
+    ...
+    function TPessoa.Idade: Integer;
+    begin
+        Result := Trunc( (now - StrToDate(Self.dataNascimento) ) / 365.25 );
+    end;
+    ...
+
+. Adicione as "Units" abaixo no Use:
+
+    uses System, System.SysUtils;
+
+. Faça a chamado do método no botão do formulário
+
+    procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+    begin
+        try
+            Pessoa := TPessoa.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO';
+            Pessoa.dataNascimento := '17/10/1966';
+
+            ShowMessage('Pessoa com o código ' + IntToStr(Pessoa.codigo) + ' e o nome é ' + Pessoa.nome + ' Sua idade é de ' + IntToStr( Pessoa.Idade ) );
+        finally
+            FreeAndNil(Pessoa);
+        end;
+    end;
+
+. Crie a Classe "ClasseTCliente" no projeto:
+
+    unit ClasseTCliente;
+
+    interface
+
+    uses ClasseTPessoa;
+
+
+    type
+
+    TCliente  = class(TPessoa)
+        private
+            FLimiteCredito : Real;
+
+            function GetLimiteCredito: Real;
+            procedure SetLimiteCredito(const Value: Real);
+
+
+        public
+            function EmprestaValor( prValor : Real ) : Boolean;
+
+        property limiteCredito: Real read GetLimiteCredito write SetLimiteCredito;
+
+    end;
+
+    implementation
+
+    { TClient }
+
+    function TCliente.EmprestaValor( prValor : Real ): Boolean;
+    begin
+        if prValor > limiteCredito then
+            Result := False
+        else
+            Result := True;
+
+    end;
+
+    function TCliente.GetLimiteCredito: Real;
+    begin
+        Result := FLimiteCredito;
+    end;
+
+    procedure TCliente.SetLimiteCredito(const Value: Real);
+    begin
+        FLimiteCredito := Value;
+    end;
+
+    end.
+
+
+    . Observe que a classe TCliente herda a classe TPessoa:
+
+        ...
+        TCliente  = class(TPessoa)
+        ...
+
+. Altere o código do botão do formulário como abaixo:
+
+    uses
+        ADODB, ClasseTPessoa, ClasseTCliente;
+
+    procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+        Cliente : TCliente;
+        valorSolicitado: Real;
+    begin
+        try
+            Pessoa := TPessoa.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO';
+            Pessoa.dataNascimento := '17/10/1966';
+
+            ShowMessage('Pessoa com o código ' + IntToStr(Pessoa.codigo) + ' e o nome é ' + Pessoa.nome + ' Sua idade é de ' + IntToStr( Pessoa.Idade ) );
+
+            Cliente := TCliente.Create;
+
+            Cliente.nome := 'JOSE';
+            Cliente.limiteCredito := 500.00;
+            valorSolicitado := 1000.00;
+
+
+            ShowMessage(Cliente.nome + ' Tem limite de R$ ' + FloatToStr( Cliente.limiteCredito ) );
+
+            if Cliente.EmprestaValor( valorSolicitado ) then
+                ShowMessage( 'Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) )
+            else
+                ShowMessage( 'NÃO Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) );
+        finally
+            FreeAndNil(Pessoa);
+            FreeAndNil(Cliente);
+        end;
+    end;
+
+    . Observe que a classe Cliente utiliza propriedades da classe Pessoa:
+
+        ...
+        Cliente.nome := 'JOSE';
+        ...
+
+    . Sempre que quiser declarar uma variável de dentro do bloco em desenvolvimento, basta posicionar o
+        cursor sobre a variável e pressionar Ctrl + Shift  + V. Automaticamente irá aparecer a declaração dela
+        no bloco "var".
+
+    . Sempre que quiser alterar dinamicamente uma palavra, o nome de uma variável por exemplo, basta selecionar
+        o trecho que deseja que ocorra essa alteração. Click no icone com dois lápis na barra de numeração no lado
+        esquerdo do monitor. Proceda a alteração do nome e observe que todas as palavras com o mesmo nome irá se
+        alterar dinamicamente.
+
+Polimorfismo 
+------------
+
+. Implemente o código abaixo na classe "ClasseTCliente"
+
+    ...
+    function EmprestaValor( prValor : Real ) : Boolean; overload;
+    function EmprestaValor( prValor : Real; out prValorDisponivel : Real ) : Boolean ; overload;
+
+    ...
+
+    uses
+        Math;
+
+    function TCliente.EmprestaValor( prValor : Real ): Boolean;
+    begin
+        if prValor > limiteCredito then
+            Result := False
+        else
+            Result := True;
+
+    end;
+
+    function TCliente.EmprestaValor(prValor: Real;
+                                    out prValorDisponivel: Real): Boolean;
+    begin
+        prValorDisponivel := ifThen( limiteCredito - prValor > 0, limiteCredito - prValor, limiteCredito );
+
+        if prValor > limiteCredito then
+            Result := False
+        else
+            Result := True;
+
+    end;
+
+    . Observe que o método EmprestaValor tem dois métodos sobrecarregados, com assinaturas diferentes.
+    . Os dois métodos sobrecarregados são identicados como "overload"
+
+. Acesse o formulário "Pessoa" e deixe o código do método "onClick" do botão executar como abaixo:
+
+    procedure TfrmPessoa.btnExecutarClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+        Cliente : TCliente;
+        valorSolicitado, valorDisponivel: Real;
+    begin
+        try
+            Pessoa := TPessoa.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO';
+            Pessoa.dataNascimento := '17/10/1966';
+
+            ShowMessage('Pessoa com o código ' + IntToStr(Pessoa.codigo) + ' e o nome é ' + Pessoa.nome + ' Sua idade é de ' + IntToStr( Pessoa.Idade ) );
+
+            Cliente := TCliente.Create;
+
+            Cliente.nome := 'JOSE';
+            Cliente.limiteCredito := 500.00;
+            valorSolicitado := 1000.00;
+            valorDisponivel := 0;
+
+
+            ShowMessage(Cliente.nome + ' Tem limite de R$ ' + FloatToStr( Cliente.limiteCredito ) );
+
+            if Cliente.EmprestaValor( valorSolicitado ) then
+              ShowMessage( 'Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) )
+            else
+            begin
+                ShowMessage( 'NÃO Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) );
+
+                Cliente.EmprestaValor( valorSolicitado, valorDisponivel );
+
+                ShowMessage( 'O valor máximo que podemos disponibilizar seria de R$ ' + FormatFloat('###,##0.00', valorDisponivel ) );
+            end;
+        finally
+            FreeAndNil(Pessoa);
+            FreeAndNil(Cliente);
+        end;
+    end;
+
+    . Observe que foi chamado o método Cliente.EmprestaValor para validar o valor solicitado de emprestimo e também
+        para retornar o valor limite do empréstimo.
+
+
+. Na classe ClasseTPessoa acrescente os métodos abaixo:
+
+    unit ClasseTPessoa;
+
+    interface
+
+    type TPessoa = class
+
+    private
+        ...
+        FSalario: Currency;
+
+        ...
+        procedure SetSalario(const Value: Currency);
+
+    public
+        ...
+        property salario: Currency read FSalario write SetSalario;
+
+        ...
+        function Bonificacao: Currency; virtual;
+        function ImpostoRenda: Currency; virtual; abstract;
+    end;
+
+
+    implementation
+
+    { TPessoa }
+    uses  System.SysUtils;
+
+
+    function TPessoa.Bonificacao: Currency;
+    begin
+        Result := FSalario;
+    end;
+
+    ...
+
+    procedure TPessoa.SetSalario(const Value: Currency);
+    begin
+        FSalario := Value;
+    end;
+
+    end.
+
+    . Observe os métodos "Bonificacao" e "ImpostoRenda":
+
+        function Bonificacao: Currency; virtual;
+        function ImpostoRenda: Currency; virtual; abstract;
+
+        . Ambos estão marcados como "virtual", informando ao Delphi que as classes que heradarem
+            a ClasseTPessoa poderá sobreescrever esse método.
+        . Para o método "Bonificacao" é obrigatório a implementação dele na ClasseTPessoa. 
+        . Já o método "ImpostoRenda" deixa de ser, pois além dele estar com a marcação de "virtual",
+            também tem a marcação de "abstract", desobrigando a implementação dele na classe principal.
+        . Todo método marcado como "virtual; abstract" será obrigatório a implementação do método na classe
+            que extender a classe pai.
+
+. Crie a classe ClasseTFuncionario com o código abaixo:
+
+    unit ClasseTFuncionario;
+
+    interface
+
+    uses ClasseTPessoa;
+
+    type TFuncionario = class(TPessoa)
+
+    private
+        FDesconto: Double;
+        procedure SetDesconto(const Value: Double);
+
+    public
+        property desconto: Double read FDesconto write SetDesconto;
+
+
+        function Bonificacao : Currency; override;
+
+        function ImpostoRenda: Currency; override;
+
+    end;
+
+    implementation
+
+    { TFuncionario }
+
+    function TFuncionario.Bonificacao: Currency;
+    begin
+        Result := Self.salario * (1-(FDesconto/100));
+    end;
+
+    function TFuncionario.ImpostoRenda: Currency;
+    begin
+        Result := Self.Bonificacao * 0.25;
+    end;
+
+    procedure TFuncionario.SetDesconto(const Value: Double);
+    begin
+        FDesconto := Value;
+    end;
+
+    end.
+
+. Crie a classe ClasseTPresidente como abaixo:
+
+    unit ClasseTPresidente;
+
+    interface
+
+    uses ClasseTPessoa;
+
+    type TPresidente = class(TPessoa)
+
+    private
+        FProLabore: Currency;
+        FComissao: Currency;
+        procedure SetProLabore(const Value: Currency);
+        procedure SetComissao(const Value: Currency);
+
+
+
+    public
+        property proLabore: Currency read FProLabore write SetProLabore;
+        property comissao: Currency read FComissao write SetComissao;
+
+        function Bonificacao: Currency; override;
+
+        function ImpostoRenda: Currency; override;
+
+    end;
+
+
+    implementation
+
+
+    { TPresidente }
+
+    function TPresidente.Bonificacao: Currency;
+    begin
+        Result := FProLabore + FComissao;
+    end;
+
+    function TPresidente.ImpostoRenda: Currency;
+    begin
+        Result := Self.Bonificacao * 0.10;
+    end;
+
+    procedure TPresidente.SetComissao(const Value: Currency);
+    begin
+        FComissao := Value;
+    end;
+
+    procedure TPresidente.SetProLabore(const Value: Currency);
+    begin
+        FProLabore := Value;
+    end;
+
+    end.
+
+. Observe que nas classes ClasseTFuncionario e ClasseTPresidente foram implementados os métodos:
+
+    Bonificacao
+    ImpostoRenda
+
+    . Caso o método Bonificacao não fosse implementado, ao chamar esse método seria chamado a implementação
+        padrão da classe principal ClasseTPessoa.Bonificacao.
+
+. Deixe o código do formulário Pessoa como abaixo:
+
+    procedure TfrmPessoa.btnPessoaClick(Sender: TObject);
+    var
+        Pessoa : TPessoa;
+        Cliente : TCliente;
+        Funcionario : TFuncionario;
+        Presidente : TPresidente;
+        valorSolicitado: Real;
+        valorDisponivel: Real;
+    begin
+
+        try
+            Pessoa := TPessoa.Create;
+            Cliente := TCliente.Create;
+            Funcionario := TFuncionario.Create;
+            Presidente := TPresidente.Create;
+
+            Pessoa.codigo := 1;
+            Pessoa.nome := 'MARCO ANTONIO DA SILVA';
+            Pessoa.dataNascimento := '17/10/1966';
+            Pessoa.salario := 5000;
+
+            valorSolicitado := 1000;
+
+
+            ShowMessage('{ ' + #13 +
+                        '  codigo: "' + IntToStr(Pessoa.codigo) + '",' + #13 +
+                        '  nome: "' + Pessoa.nome + '",' + #13 +
+                        '  dataNascimento: "' + Pessoa.dataNascimento + '",' + #13 +
+                        '  idade: ' + IntToStr( Pessoa.idade ) + #13 +
+                        '  salario: ' + FloatToStr( Pessoa.salario ) + #13 +
+                        '}' );
+
+            Cliente.nome := 'JOSE';
+            Cliente.limiteCredito := 500.00;
+            valorSolicitado := 1000.00;
+            valorDisponivel := 0;
+
+
+            ShowMessage(Cliente.nome + ' Tem limite de R$ ' + FloatToStr( Cliente.limiteCredito ) );
+
+            if Cliente.EmprestaValor( valorSolicitado ) then
+            ShowMessage( 'Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) )
+            else
+            begin
+                ShowMessage( 'NÃO Está liberado o valor de R$ ' + FloatToStr( valorSolicitado ) );
+
+                Cliente.EmprestaValor( valorSolicitado, valorDisponivel );
+
+                ShowMessage( 'O valor máximo que podemos disponibilizar seria de R$ ' + FormatFloat('###,##0.00', valorDisponivel ) );
+            end;
+
+            Funcionario.codigo := 2;
+            Funcionario.nome := 'JORGE MANUEL';
+            Funcionario.dataNascimento := '01/10/1976';
+            Funcionario.salario := 8000;
+            Funcionario.desconto := 30;
+
+
+            ShowMessage('{ ' + #13 +
+                        '  codigo: "' + IntToStr(Funcionario.codigo) + '",' + #13 +
+                        '  nome: "' + Funcionario.nome + '",' + #13 +
+                        '  dataNascimento: "' + Funcionario.dataNascimento + '",' + #13 +
+                        '  idade: ' + IntToStr( Funcionario.idade ) + #13 +
+                        '  salario: ' + FloatToStr( Funcionario.salario ) + #13 +
+                        '  salarioLiquido: ' + FloatToStr( Funcionario.Bonificacao ) + #13 +
+                        '  ImpostoRenda: ' + FloatToStr(Funcionario.ImpostoRenda ) + '",' + #13 +
+                        '}' );
+
+            Presidente.codigo := 3;
+            Presidente.nome := 'JOAO BATISTA';
+            Presidente.dataNascimento := '01/02/1946';
+            Presidente.salario := 0;
+            Presidente.comissao := 20000;
+            Presidente.proLabore := 50000;
+
+            ShowMessage('{ ' + #13 +
+                        '  codigo: "' + IntToStr(Presidente.codigo) + '",' + #13 +
+                        '  nome: "' + Presidente.nome + '",' + #13 +
+                        '  dataNascimento: "' + Presidente.dataNascimento + '",' + #13 +
+                        '  idade: ' + IntToStr( Presidente.idade ) + '",' + #13 +
+                        '  salario: ' + FloatToStr( Presidente.salario ) + '",' + #13 +
+                        '  comissao: ' + FloatToStr( Presidente.comissao ) + '",' + #13 +
+                        '  salarioLiquido: ' + FloatToStr( Presidente.Bonificacao ) + '",' + #13 +
+                        '  ImpostoRenda: ' + FloatToStr(Presidente.ImpostoRenda ) + '",' + #13 +
+                        '}' );
+        finally
+            FreeAndNil( Pessoa );
+            FreeAndNil( Cliente );
+            FreeAndNil( Funcionario );
+            FreeAndNil( Presidente );
+        end;
+
+    end;
+
+. Exemplo de uma classe que implementa uma Interface:
+
+    . Pressione "Ctrl + Shift + G" para criar um código GUID "['{FB1F4FB1-8AD8-48FD-AEA5-1E33B4628879}']"
+
+
+    unit ClasseTBridgeClientePrejuizo;
+
+    interface
+
+    uses Dialogs, SysUtils, Classes, DBClient, ClasseTHelperClientePrejuizo,  TClientePrejuizoData, dados;
+
+    type
+        IBridgeClientePrejuizo = interface
+            ['{FB1F4FB1-8AD8-48FD-AEA5-1E33B4628879}']
+            function execute : IBridgeClientePrejuizo;
+            function delete : IBridgeClientePrejuizo;
+            function table : string;
+    end;
+
+    TTabProxnumero = class(TinterfacedObject, IBridgeClientePrejuizo)
+
+    FHelper : THelperClientePrejuizo;
+    FDataModule : TDataModule;
+    FTable : string;
+    FPK : TStringList;
+
+    public
+        function execute : IBridgeClientePrejuizo;
+        function table : string;
+        function delete : IBridgeClientePrejuizo;
+        constructor Create( prHelper : THelperClientePrejuizo; prDataModule : TDataModule );
+
+    end;
+
+    implementation
+
+        { TTabProxnumero }
+
+        constructor TTabProxnumero.Create(prHelper: THelperClientePrejuizo; prDataModule : TDataModule);
+        begin
+            FHelper := prHelper;
+            FDataModule := prDataModule;
+            FTable := 'tab_proxnumero';
+
+            FPK := TStringList.Create;
+            FPK.Add('nmcampo');
+
+        end;
+
+        function TTabProxnumero.execute: IBridgeClientePrejuizo;
+
+        var
+            sqlFonte, sqlDestino : string;
+        begin
+            //   FHelper.FTable := FTable;
+            //   FHelper.FPK := FPK;
+            //
+            FHelper.FTable := FTable;
+            FHelper.FPK := FPK;
+            FHelper.getField();
+            FHelper.montaSQLUpdate();
+            FHelper.montaSQLInsert();
+
+            sqlFonte := FHelper.montaSQLSelect(ptFonte, False);
+            sqlDestino := FHelper.montaSQLSelect(ptDestino, true);
+
+            FHelper.export(sqlFonte, sqlDestino, FHelper.getAtualizacaoTotalClientePrejuizo);
+
+            Result := TReduzida.Create(FHelper, FDataModule );
+        end;
+
+        function TTabProxnumero.table: string;
+        begin
+            Result := FTable;
+        end;
+
+        function TTabProxnumero.delete: IBridgeClientePrejuizo;
+        begin
+            Result := nil;
+        end;
+    end.
+
+
+
+. Trabalhando com estrutura Type:
+
+    . Declare a estrutura dentro do Type:
+
+        ...
+        Type
+
+        TTipoAcordo = (
+            taNenhum = 0,
+            taPagtoAVista = 2,
+            taAcordoSemJuros = 8,
+            taAcPadrao033ADInativo = 14,
+            taAVencerBB = 16,
+            taDescoBoletoBB = 17,
+            taAltBoletoDebito = 18,
+            taBoletoSantanderProtesto = 19,
+            taReapresentacaoCheque = 22,
+            taDescComisFraude = 25,
+            taParcialFinanceiro = 26,
+            taPorConta = 27,
+            taAcPadrao0033AD = 29);            // Desc Comis Corresp (Fraude)
+
+        ...
+        procedure TAcordos.AbrirFormasPagto;
+        begin
+            with FormasPagto do
+            begin
+                Close;
+                CommandText := ' SELECT * FROM tab_forma_pagto_cob WHERE ativo = ''S'' ';
+                // O tipo de acordo "A vista Banco do Brasil" permite apenas realizar acordos com forma de pagamento que não seja débito automático
+                if (Self.TipAcordo = Integer(TTipoAcordo.taAVencerBB)) then
+                    CommandText := CommandText + ' AND cd_forma_pagto NOT IN(2,3) '
+                else if (Self.TipAcordo = Integer(TTipoAcordo.taDescoBoletoBB)) then
+                    CommandText := CommandText + ' AND cd_forma_pagto = 2 '
+                else if (Self.TipAcordo = Integer(TTipoAcordo.taBoletoSantanderProtesto)) then
+                    CommandText := CommandText + ' AND cd_forma_pagto = 6 '
+                // Fabio Costa 30/05/2016 - Permite apenas a forma de pagamento 8 - Cheque
+                else if (Self.TipAcordo = Integer(TTipoAcordo.taReapresentacaoCheque)) then
+                    CommandText := CommandText + ' AND cd_forma_pagto = 8 '
+                else   // Fabio Costa 30/05/2016 - A forma de pagamento 8 - Cheque não é permitida ainda para um acordo normal
+                    CommandText := CommandText + ' AND cd_forma_pagto NOT IN(6, 8) ';
+                Open;
+            end;
+        end;
+        ...
+
+
+    . Outro exemplo:
+
+        unit ClasseTAcordos;
+
+        interface
+
+        uses
+
+        type
+            TTaxaCobrancaExterna = record
+                multa, moraAD, descMulta, descMoraAD, descPrincipal : Integer
+            end;
+
+        ...
+        TAcordos = class(TObject)
+            private
+
+            public
+
+        end;
+
+        implementation
+
+        uses         
+
+        ...
+        function TAcordos.negociacaoDuvidosa(prNumAcordo: Integer; out prDetalheNegociacao : String): Boolean;
+        var
+            txCobExt : TTaxaCobrancaExterna;
+
+        begin
+            saldoDevedor := 0;
+        atraso := 0;
+        try
+            try
+                txCobExt := obtemTipoTaxa( 10 );	// 10. Cobrança Externa
+
+                divida := TTabelaTaxa.Create( 0 );
+                multa := TTabelaTaxa.Create( txCobExt.multa );
+                mora := TTabelaTaxa.Create( txCobExt.moraAD );
+                descontoMulta := TTabelaTaxa.Create(  txCobExt.descMulta );
+                descontoMora := TTabelaTaxa.Create( txCobExt.descMoraAD );
+                descontoPrincipal := TTabelaTaxa.Create( txCobExt.descPrincipal );
+            ....
+
+
+. Trabalhando com estrutura Record:
+
+    . Declare a estrutura no Type:
+
+        TAcordo = record
+                numAcordo, cdMotEstorno, cdTipoErro : Integer;
+                cpfCnpj : string;
+                operacaoParcial : Integer;
+                chequeParcial : string;
+                datLan : TDate;
+                hora : string;
+                dtPagamento : TDate;
+                valorPagoAcordo : Real;
+                banco : string
+        end;
+
+    . Declare o objeto do tipo da estrutura record:
+
+        private
+            regAcordo : TAcordo;
+
+    . Formas de trabalhar com a estrutura:
+
+        . Tipificando um objeto:
+
+            procedure baixaCheque( regAcordo : TAcordo );    
+
+        . Utilizando como um objeto:
+
+            . Faça a declaração na seção do type:
+
+                TPagamentoManual  =  record
+                    cpfCnpj     : string;
+                    operacao    : Integer;
+                    cheque      : string;
+                    datPag      :  TDate;
+                    juros, multa, desconto, valPag, rateio : Real;
+                    banco : string;
+                    cdFormaPagto : Integer;
+                    contrato : Integer;
+                    cobradora : Integer;
+                    observacao : string;
+                end;
+
+            . Declarando com valor vazio:
+
+                ...
+                procedure TContaCorrente.baixaCheque(regAcordo: TAcordo);
+
+                const pm : TPagamentoManual = ();
+                ...
+                var
+                       regPagamentoManual : TPagamentoManual;
+                ...
+                begin
+                ...
+                    while not Eof do
+                    begin
+                        chequeControle := FieldByName('chequeOriginal').AsString;
+
+                        regPagamentoManual := pm;
+
+                        regPagamentoManual.cpfCnpj := FieldByName('cpfCnpj').AsString;
+                        regPagamentoManual.operacao := FieldByName('operacaoOriginal').AsInteger;
+                        regPagamentoManual.cheque := FieldByName('chequeOriginal').asString;
+                        regPagamentoManual.cdFormaPagto := 8;
+                        regPagamentoManual.contrato := FieldByName('contrato').AsInteger;
+                    ...
