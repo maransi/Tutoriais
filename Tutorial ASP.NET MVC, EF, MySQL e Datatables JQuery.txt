@@ -1146,8 +1146,8 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
                         data: null,
                         width: "8%",
                         render: function (data, type, row) {
-                            return '<a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30" data-id="' + row.id + '"></a>&nbsp&nbsp&nbsp' +
-                                '<a href="#"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30" data-id="' + row.id + '"></a>';
+                            return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
+                                '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30"></a>';
                                 // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
                                 // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
                         }
@@ -1300,8 +1300,8 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
                         data: null,
                         width: "8%",
                         render: function (data, type, row) {
-                            return '<a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30" data-id="' + row.id + '"></a>&nbsp&nbsp&nbsp' +
-                                '<a href="#"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30" data-id="' + row.id + '"></a>';
+                            return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
+                                '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30"></a>';
                                 // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
                                 // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
                         }
@@ -1446,6 +1446,7 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
         http://localhost:[porta]/Cliente/List
 
 
+
 Parte 7. Escalando o uso do "DataTable"
 ---------------------------------------
 
@@ -1479,13 +1480,19 @@ Parte 7. Escalando o uso do "DataTable"
                         data: '',
                         width: "10%",
                         render: function (data, type, row) {
-                            return '<a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30" data-id="' + row.id + '"></a>&nbsp&nbsp&nbsp' +
-                                '<a href="#"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30" data-id="' + row.id + '"></a>';
+                            return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
+                                '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30"></a>';
                         }
                 }]);
             </script>
 
         }
+
+
+Melhorar a apresentação do botões (print, excel, etc) no tutorial, retirá-los abaixo e colocar num tópico próprio.
+Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4aajwYY2NxI&list=WL
+
+
 
     . Altere o arquivo "wwwroot/js/index.js" como abaixo:
 
@@ -1578,8 +1585,8 @@ Parte 7. Escalando o uso do "DataTable"
         $('#btnAdd').click(function () {
             $('#formModal').modal('show');
             $('#clienteForm')[0].reset(); // Clear the form
-            $('#formModalLabel').text('Novo cliente');
-            $('#saveCustomerBtn').text('Salvar');
+            $('#formModalLabel').text('Inclusão');
+            $('#btnSave').text('Salvar');
             $('#codigo').val(''); // Clear the hidden ID field
         });
 
@@ -1640,7 +1647,7 @@ Parte 7. Escalando o uso do "DataTable"
                     </div>
                     <div class="modal-body">
                         <form id="clienteForm">
-                            <input type="hidden" id="codigo" name="codigo">
+                            <input type="hidden" id="codigoCliente" name="codigoCliente">
 
                             <div class="row">
                                 <div class="col-3">
@@ -1763,9 +1770,9 @@ Parte 7. Escalando o uso do "DataTable"
                                         <select class="form-select form-select-sm" aria-label=".form-select-sm example"
                                             id="estadoCivil" name="estadoCivil" required>
                                             <option value="" selected>Selecione</option>
-                                            <option value="C">Casado</option>
-                                            <option value="S">Solteiro</option>
-                                            <option value="O">Outro</option>
+                                            <option value="CASADO">Casado</option>
+                                            <option value="SOLTEIRO">Solteiro</option>
+                                            <option value="OUTROS">Outro</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1952,425 +1959,556 @@ Parte 7. Escalando o uso do "DataTable"
 Parte 8. Realizando a validação dos campos
 ------------------------------------------
 
-    . Apague no "cliente.js" a função "click" do "#btnSave", o código contido neste evento foi movido para a função "Save" abaixo:
+    . Utilizando os recursos do Bootstrap:
 
-        // $('#btnSave').click(function () {
-        //    ...
-        // });
+        . Apague no "cliente.js" a função "click" do "#btnSave", o código contido neste evento foi movido para a função "Save" abaixo:
 
-    . Inclua o código abaixo no arquivo "cliente.js":
+            // $('#btnSave').click(function () {
+            //    ...
+            // });
 
-        $(document).ready(function(){
-            $("#cpf").mask("000.000.000-00");
-            $("#telefone").mask("(00) 00000-0000");
-            // $("#salario").mask("999.999.990,00", {reverse: true});
-            $("#cep").mask("00000-000");
-            
-            $("#rg").mask("999.999.999-W", {
-                translation: {
-                    'W': {
-                        pattern: /[X0-9]/
+        . Inclua o código abaixo no arquivo "cliente.js":
+
+            $(document).ready(function(){
+                $("#cpf").mask("000.000.000-00");
+                $("#telefone").mask("(00) 00000-0000");
+                // $("#salario").mask("999.999.990,00", {reverse: true});
+                $("#cep").mask("00000-000");
+                
+                $("#rg").mask("999.999.999-W", {
+                    translation: {
+                        'W': {
+                            pattern: /[X0-9]/
+                        }
+                    },
+                    reverse: true
+                });
+
+                $("#telefone").blur(function(event){
+                    if ($(this).val().length == 15){
+                        $("#telefone").mask("(00) 00000-0009")
+                    }else{
+                        $("#telefone").mask("(00) 0000-00009")
                     }
-                },
-                reverse: true
+                });
+
+                $('#salario').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+
+
+
+                // Evento incluido
+                $('#salario').on('focus', function() {  
+                    $(this).select();
+                });  
             });
 
-            $("#telefone").blur(function(event){
-                if ($(this).val().length == 15){
-                    $("#telefone").mask("(00) 00000-0009")
-                }else{
-                    $("#telefone").mask("(00) 0000-00009")
+
+
+            // Função Incluida
+            const Save = () => {
+                if (!validaCPF( $('#cpf').val() )) {
+                    alert('CPF inválido. Verifique o número digitado.');
+                    $('#cpf').focus();
+
+                    return;
                 }
-            });
 
-            $('#salario').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+                var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
+                var method = $('#codigo').val().trim() == '' ? 'POST' : 'PUT';
+                var sendInfo = {
+                    codigo: $('#codigo').val(),
+                    cpf: $('#cpf').val(),
+                    nome: $('#nome').val(),
+                    dataNascimento: $('#dataNascimento').val(),
+                    rg: removeNonNumeric( $('#rg').val() ),
+                    sexo: $('#sexo').val(),
+                    estadoCivil: $('#estadoCivil').val(),
+                    pai: $('#pai').val(),
+                    mae: $('#mae').val(),
+                    endereco: $('#endereco').val(),
+                    cidade: $('#cidade').val(),
+                    estado: $('#estado').val(),
+                    cep: removeNonNumeric($('#cep').val()),
+                    telefone: removeNonNumeric( $('#telefone').val() )
+                };
 
-
-
-
-            $('#salario').on('focus', function() {  // Evento incluido
-                $(this).select();
-            });  
-
-
-
-        });
-
-
-
-        // Função Incluida
-        const Save = () => {
-            if (!validaCPF( $('#cpf').val() )) {
-                alert('CPF inválido. Verifique o número digitado.');
-                $('#cpf').focus();
-
-                return;
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: JSON.stringify(sendInfo),
+                    contentType: "application/json; charset=utf-8",
+                    success: function () {
+                        alert('Cliente incluido com sucesso!!!');
+                        $('#formModal').modal('hide');
+                        $('#clienteTable').DataTable().ajax.reload();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.responseText);
+                    }
+                });
             }
 
-            var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
-            var method = $('#codigo').val().trim() == '' ? 'POST' : 'PUT';
-            var sendInfo = {
-                codigo: $('#codigo').val(),
-                cpf: $('#cpf').val(),
-                nome: $('#nome').val(),
-                dataNascimento: $('#dataNascimento').val(),
-                rg: removeNonNumeric( $('#rg').val() ),
-                sexo: $('#sexo').val(),
-                estadoCivil: $('#estadoCivil').val(),
-                pai: $('#pai').val(),
-                mae: $('#mae').val(),
-                endereco: $('#endereco').val(),
-                cidade: $('#cidade').val(),
-                estado: $('#estado').val(),
-                cep: removeNonNumeric($('#cep').val()),
-                telefone: removeNonNumeric( $('#telefone').val() )
-            };
+            // Função incluida
+            // Função associada ao Bootstrap para fazer o efeito de validação dos campos
+            (function () {
+                'use strict';
+                var form = document.getElementById('clienteForm');
+                var button = document.getElementById('btnSave');
 
+                button.addEventListener('click', function () {
+                    if (!form.checkValidity()) {
+                        form.classList.add('was-validated');
+                    } else {
+                        // alert('Formulário validado com sucesso!');
+                        Save();
+                    }
+                });
+            })();
+
+        . Coloque na partial view "_ClienteModal.cshtml" em cada campo com validação "required/email/..." a tag de validação "<div class='invalid-feedback'>...</div>" como abaixo:
+
+            <!-- Modal for adding/editing customers -->
+            <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="formModalLabel">Detalhes</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="clienteForm">
+                                <input type="hidden" id="codigoCliente" name="codigoCliente">
+
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label for="cpf">CPF</label>
+                                            <input type="text" class="form-control form-control-sm"
+                                                aria-label=".form-control-sm example" 
+                                                placeholder="123.456.789-00" id="cpf" name="cpf"
+                                                required>
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo CPF é Obrigatório
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-9">
+                                        <div class="form-group">
+                                            <label for="nome">Nome</label>
+                                            <input type="text" 
+                                                    class="form-control form-control-sm" 
+                                                    id="nome" 
+                                                    name="nome" 
+                                                    required            <!-- Incluido -->
+                                                    minlength="5"       <!-- Incluido -->
+                                                    maxlength="100">    <!-- Incluido -->
+
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Nome é Obrigatório e deve ter ao menos 5 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="endereco">Endereço</label>
+                                            <input type="text" class="form-control form-control-sm" 
+                                                    id="endereco" 
+                                                    name="endereco"
+                                                    required
+                                                    minlength="5"       <!-- Incluido -->
+                                                    maxlength="100">    <!-- Incluido -->
+
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Endereço é Obrigatório e deve ficar entre 5 a 100 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label for="cidade">Cidade</label>
+                                            <input type="text" 
+                                                    class="form-control form-control-sm" 
+                                                    id="cidade" 
+                                                    name="cidade"
+                                                    required
+                                                    minlength="5"       <!-- Incluido -->
+                                                    maxlength="50">     <!-- Incluido -->
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Cidade é Obrigatório e deve ficar entre 5 a 50 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="estado">UF</label>
+
+                                            <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                                id="estado" name="estado" required>
+                                                <option value="" selected>Selecione</option>
+                                                <option value="AC">Acre</option>
+                                                <option value="AL">Alagoas</option>
+                                                <option value="AP">Amapá</option>
+                                                <option value="AM">Amazonas</option>
+                                                <option value="BA">Bahia</option>
+                                                <option value="CE">Ceará</option>
+                                                <option value="DF">Distrito Federal</option>
+                                                <option value="ES">Espírito Santo</option>
+                                                <option value="GO">Goiás</option>
+                                                <option value="MA">Maranhão</option>
+                                                <option value="MT">Mato Grosso</option>
+                                                <option value="MS">Mato Grosso do Sul</option>
+                                                <option value="MG">Minas Gerais</option>
+                                                <option value="PA">Pará</option>
+                                                <option value="PB">Paraíba</option>
+                                                <option value="PR">Paraná</option>
+                                                <option value="PE">Pernambuco</option>
+                                                <option value="PI">Piauí</option>
+                                                <option value="RJ">Rio de Janeiro</option>
+                                                <option value="RN">Rio Grande do Norte</option>
+                                                <option value="RS">Rio Grande do Sul</option>
+                                                <option value="RO">Rondônia</option>
+                                                <option value="RR">Roraima</option>
+                                                <option value="SC">Santa Catarina</option>
+                                                <option value="SP">São Paulo</option>
+                                                <option value="SE">Sergipe</option>
+                                                <option value="TO">Tocantins</option>
+                                                <option value="EX">Estrangeiro</option>
+                                            </select>
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo UF é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="cep">CEP</label>
+                                            <input type="text" 
+                                                    class="form-control form-control-sm" 
+                                                    id="cep" 
+                                                    name="cep" 
+                                                    required
+                                                    minlength="8">  <!-- Incluido -->
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo CEP é Obrigatório e deve conter 8 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="sexo">Sexo</label>
+
+                                            <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                                id="sexo" name="sexo" required>
+                                                <option value="" selected>Selecione</option>
+                                                <option value="M">Masculino</option>
+                                                <option value="F">Feminino</option>
+                                                <option value="O">Outros</option>
+                                            </select>
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Sexo é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label for="telefone">Telefone</label>
+                                            <input type="tel" 
+                                                    class="form-control form-control-sm" 
+                                                    id="telefone" 
+                                                    name="telefone"
+                                                    placeholder="(99) 9999-9999"        <!-- Incluido -->
+                                                    required
+                                                    minlength="10">                     <!-- Incluido -->
+                                            
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Telefone é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="rg">RG</label>
+                                            <input type="text" class="form-control form-control-sm" id="rg" name="rg" required>
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo RG é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+                                            <input type="email" 
+                                                    class="form-control form-control-sm" 
+                                                    id="email" 
+                                                    name="email"
+                                                    aria-describedby="emailHelp" 
+                                                    placeholder="Seu email" 
+                                                    email                       <!-- Incluido -->
+                                                    required>
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo E-Mail Inválido
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="form-group">
+                                            <label for="estadoCivil">Estado Civil</label>
+
+                                            <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                                id="estadoCivil" name="estadoCivil" required>
+                                                <option value="" selected>Selecione</option>
+                                                <option value="CASADO">Casado</option>
+                                                <option value="SOLTEIRO">Solteiro</option>
+                                                <option value="OUTROS">Outro</option>
+                                            </select>
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Estado Civil é Obrigatório
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5">
+                                        <div class="form-group">
+                                            <label for="pai">Nome do Pai</label>
+                                            <input type="text" 
+                                                    class="form-control form-control-sm" 
+                                                    id="pai" 
+                                                    name="pai" 
+                                                    maxlength="100">        <!-- Incluido -->
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Nome do Pai deve ficar entre 0 a 100 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <div class="form-group">
+                                            <label for="mae">Nome da Mãe</label>
+                                            <input type="text" 
+                                                    class="form-control form-control-sm" 
+                                                    id="mae" 
+                                                    name="mae" 
+                                                    maxlength="100">
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Nome da Mãe deve ficar entre 0 a 100 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="dataNascimento">Data Nasc</label>
+                                            <input type="date" class="form-control form-control-sm" id="dataNascimento"
+                                                name="dataNascimento" required>
+
+                                            <!-- Tag Incluida -->    
+                                            <div class="invalid-feedback">
+                                                Campo Data Nasc é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label for="salario">Salário</label>
+                                            <input type="text" 
+                                                    class="form-control form-control-sm" 
+                                                    name="salario" 
+                                                    id="salario" 
+                                                    value="0,00"        <!-- Incluido -->
+                                                    required>           <!-- Incluido -->
+
+                                            <div class="invalid-feedback">
+                                                Campo Salário Inválido
+                                            </div>
+                                        </div>
+
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn btn-primary" id="btnSave">Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        . Execute o projeto na pasta raiz da solution:
+
+            dotnet run --project ./src/MvcDatatable.Web   
+
+        . Acesse a página do "DataTable" e teste as validações na inclusão:
+
+            http://localhost:[porta]/Cliente/List
+
+
+
+Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
+--------------------------------------------------------------
+
+    . Atualize o método abaixo na classe "ClienteRepository.cs":
+
+        ...
+        public async Task<Cliente> GetByIdAsync(int id)
+        {
+            try
+            {
+                var cliente = await _context.Clientes
+                                        .AsNoTracking()
+                                        .FirstOrDefaultAsync(x => x.Codigo == id);
+
+                return cliente;
+            }
+            catch (System.Exception)
+            {
+
+                throw;
+            }
+        }
+        ...
+
+    . Atualize o método baixo na classe "ClienteAPIController.cs":
+
+        ...
+        [HttpGet("v1/{codigo}")]
+        public async Task<ActionResult<Cliente>> GetByCodigo([FromRoute] int codigo)
+        {
+            try
+            {
+                var cliente = await _clienteRepository.GetByIdAsync(codigo);
+
+                return cliente == null ?
+                                NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {codigo}" }) :
+                                Ok(new ResultViewModel<Cliente>(cliente));
+
+
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
+        ...
+
+    . Insira o código abaixo no arquivo "cliente.js":
+
+        ...
+        // Edit Customer Button Click
+        $('#clienteTable tbody').on('click', '.editBtn', function () {
+            var clienteCodigo = $(this).data('id');
             $.ajax({
-                url: url,
-                type: method,
-                data: JSON.stringify(sendInfo),
-                contentType: "application/json; charset=utf-8",
-                success: function () {
-                    alert('Cliente incluido com sucesso!!!');
-                    $('#formModal').modal('hide');
-                    $('#clienteTable').DataTable().ajax.reload();
+                url: '/clienteAPI/api/v1/' + clienteCodigo, // Replace with your ASP.NET API endpoint
+                type: 'GET',
+                datatype: 'json',
+                success: function (data) {
+                    $('#formModal').modal('show');
+                    $('#formModalLabel').text('Alteração');
+                    $('#btnSave').text('Salvar');
+                    $('#codigoCliente').val(data.data.codigoCliente);
+                    $('#cpf').val(data.data.cpf);
+                    $('#nome').val(data.data.nome);
+                    $('#endereco').val(data.data.endereco);
+                    $('#cidade').val(data.data.cidade);
+                    $('#estado').val(data.data.estado);
+                    $('#cep').val(data.data.cep);
+                    $('#sexo').val(data.data.sexo);
+                    $('#telefone').val(data.data.telefone);
+                    $('#rg').val(data.data.rg);
+                    $('#email').val(data.data.email);
+                    $('#estadoCivil').val(data.data.estadoCivil);
+                    $('#pai').val(data.data.pai);
+                    $('#mae').val(data.data.mae);
+                    $('#dataNascimento').val(data.data.dataNascimento.substring(0,10));
                 },
                 error: function (request, status, error) {
                     alert(request.responseText);
                 }
             });
-        }
-
-        // Função incluida
-        // Função associada ao Bootstrap para fazer o efeito de validação dos campos
-        (function () {
-            'use strict';
-            var form = document.getElementById('clienteForm');
-            var button = document.getElementById('btnSave');
-
-            button.addEventListener('click', function () {
-                if (!form.checkValidity()) {
-                    form.classList.add('was-validated');
-                } else {
-                    // alert('Formulário validado com sucesso!');
-                    Save();
-                }
-            });
-        })();
-
-    . Coloque na partial view "_ClienteModal.cshtml" em cada campo com validação "required/email/..." a tag de validação "<div class='invalid-feedback'>...</div>" como abaixo:
-
-        <!-- Modal for adding/editing customers -->
-        <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="formModalLabel">Detalhes</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="clienteForm">
-                            <input type="hidden" id="codigo" name="codigo">
-
-                            <div class="row">
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        <label for="cpf">CPF</label>
-                                        <input type="text" class="form-control form-control-sm"
-                                            aria-label=".form-control-sm example" 
-                                            placeholder="123.456.789-00" id="cpf" name="cpf"
-                                            required>
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo CPF é Obrigatório
-                                        </div>
-
-                                    </div>
-                                </div>
-                                <div class="col-9">
-                                    <div class="form-group">
-                                        <label for="nome">Nome</label>
-                                        <input type="text" 
-                                                class="form-control form-control-sm" 
-                                                id="nome" 
-                                                name="nome" 
-                                                required            <!-- Incluido -->
-                                                minlength="5"       <!-- Incluido -->
-                                                maxlength="100">    <!-- Incluido -->
+        });
+        ...
 
 
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Nome é Obrigatório e deve ter ao menos 5 caracteres
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="form-group">
-                                        <label for="endereco">Endereço</label>
-                                        <input type="text" class="form-control form-control-sm" 
-                                                id="endereco" 
-                                                name="endereco"
-                                                required
-                                                minlength="5"       <!-- Incluido -->
-                                                maxlength="100">    <!-- Incluido -->
 
 
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Endereço é Obrigatório e deve ficar entre 5 a 100 caracteres
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-6">
-                                    <div class="form-group">
-                                        <label for="cidade">Cidade</label>
-                                        <input type="text" 
-                                                class="form-control form-control-sm" 
-                                                id="cidade" 
-                                                name="cidade"
-                                                required
-                                                minlength="5"       <!-- Incluido -->
-                                                maxlength="50">     <!-- Incluido -->
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Cidade é Obrigatório e deve ficar entre 5 a 50 caracteres
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="form-group">
-                                        <label for="estado">UF</label>
-
-                                        <select class="form-select form-select-sm" aria-label=".form-select-sm example"
-                                            id="estado" name="estado" required>
-                                            <option value="" selected>Selecione</option>
-                                            <option value="AC">Acre</option>
-                                            <option value="AL">Alagoas</option>
-                                            <option value="AP">Amapá</option>
-                                            <option value="AM">Amazonas</option>
-                                            <option value="BA">Bahia</option>
-                                            <option value="CE">Ceará</option>
-                                            <option value="DF">Distrito Federal</option>
-                                            <option value="ES">Espírito Santo</option>
-                                            <option value="GO">Goiás</option>
-                                            <option value="MA">Maranhão</option>
-                                            <option value="MT">Mato Grosso</option>
-                                            <option value="MS">Mato Grosso do Sul</option>
-                                            <option value="MG">Minas Gerais</option>
-                                            <option value="PA">Pará</option>
-                                            <option value="PB">Paraíba</option>
-                                            <option value="PR">Paraná</option>
-                                            <option value="PE">Pernambuco</option>
-                                            <option value="PI">Piauí</option>
-                                            <option value="RJ">Rio de Janeiro</option>
-                                            <option value="RN">Rio Grande do Norte</option>
-                                            <option value="RS">Rio Grande do Sul</option>
-                                            <option value="RO">Rondônia</option>
-                                            <option value="RR">Roraima</option>
-                                            <option value="SC">Santa Catarina</option>
-                                            <option value="SP">São Paulo</option>
-                                            <option value="SE">Sergipe</option>
-                                            <option value="TO">Tocantins</option>
-                                            <option value="EX">Estrangeiro</option>
-                                        </select>
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo UF é Obrigatório
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="form-group">
-                                        <label for="cep">CEP</label>
-                                        <input type="text" 
-                                                class="form-control form-control-sm" 
-                                                id="cep" 
-                                                name="cep" 
-                                                required
-                                                minlength="8">  <!-- Incluido -->
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo CEP é Obrigatório e deve conter 8 caracteres
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="form-group">
-                                        <label for="sexo">Sexo</label>
-
-                                        <select class="form-select form-select-sm" aria-label=".form-select-sm example"
-                                            id="sexo" name="sexo" required>
-                                            <option value="" selected>Selecione</option>
-                                            <option value="M">Masculino</option>
-                                            <option value="F">Feminino</option>
-                                            <option value="O">Outros</option>
-                                        </select>
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Sexo é Obrigatório
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        <label for="telefone">Telefone</label>
-                                        <input type="tel" 
-                                                class="form-control form-control-sm" 
-                                                id="telefone" 
-                                                name="telefone"
-                                                placeholder="(99) 9999-9999"        <!-- Incluido -->
-                                                required
-                                                minlength="10">                     <!-- Incluido -->
-                                        
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Telefone é Obrigatório
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="form-group">
-                                        <label for="rg">RG</label>
-                                        <input type="text" class="form-control form-control-sm" id="rg" name="rg" required>
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo RG é Obrigatório
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        <label for="email">Email</label>
-                                        <input type="email" 
-                                                class="form-control form-control-sm" 
-                                                id="email" 
-                                                name="email"
-                                                aria-describedby="emailHelp" 
-                                                placeholder="Seu email" 
-                                                email                       <!-- Incluido -->
-                                                required>
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo E-Mail Inválido
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <div class="form-group">
-                                        <label for="estadoCivil">Estado Civil</label>
-
-                                        <select class="form-select form-select-sm" aria-label=".form-select-sm example"
-                                            id="estadoCivil" name="estadoCivil" required>
-                                            <option value="" selected>Selecione</option>
-                                            <option value="C">Casado</option>
-                                            <option value="S">Solteiro</option>
-                                            <option value="O">Outro</option>
-                                        </select>
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Estado Civil é Obrigatório
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-5">
-                                    <div class="form-group">
-                                        <label for="pai">Nome do Pai</label>
-                                        <input type="text" 
-                                                class="form-control form-control-sm" 
-                                                id="pai" 
-                                                name="pai" 
-                                                maxlength="100">        <!-- Incluido -->
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Nome do Pai deve ficar entre 0 a 100 caracteres
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-5">
-                                    <div class="form-group">
-                                        <label for="mae">Nome da Mãe</label>
-                                        <input type="text" 
-                                                class="form-control form-control-sm" 
-                                                id="mae" 
-                                                name="mae" 
-                                                maxlength="100">
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Nome da Mãe deve ficar entre 0 a 100 caracteres
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <div class="form-group">
-                                        <label for="dataNascimento">Data Nasc</label>
-                                        <input type="date" class="form-control form-control-sm" id="dataNascimento"
-                                            name="dataNascimento" required>
-
-                                        <!-- Tag Incluida -->    
-                                        <div class="invalid-feedback">
-                                            Campo Data Nasc é Obrigatório
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-3">
-                                    <div class="form-group">
-                                        <label for="salario">Salário</label>
-                                        <input type="text" 
-                                                class="form-control form-control-sm" 
-                                                name="salario" 
-                                                id="salario" 
-                                                value="0,00"        <!-- Incluido -->
-                                                required>           <!-- Incluido -->
-
-                                        <div class="invalid-feedback">
-                                            Campo Salário Inválido
-                                        </div>
-                                    </div>
-
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                        <button type="button" class="btn btn-primary" id="btnSave">Salvar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-. Utilizar a biblioteca JQuery Validate para validações vindas do servidor. Testar para validar o CPF fazendo uso dessa
-    biblioteca junto com o validate do bootstrap
 
 
+    . Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./src/MvcDatatable.Web   
+
+    . Acesse a página do "DataTable" e teste as validações na inclusão:
+
+        http://localhost:[porta]/Cliente/List
+
+
+
+
+
+
+
+
+
+
+    . Utilizando a biblioteca JQuery Validation:
+
+        Desenvolver na segunda etapa do tutorial baseando-se nos exemplos:
+        
+            https://www.devmedia.com.br/validacao-com-jquery-como-usar-o-plugin-validation/33670
+            https://www.youtube.com/watch?v=Lf2-M8C4j-E&t=10s
+
+
+
+    . Utilizar a biblioteca JQuery Validate para validações vindas do servidor. Testar para validar o CPF fazendo uso dessa
+        biblioteca junto com o validate do bootstrap
+
+        Desenvolver na segunda etapa do tutorial 
+
+
+    . Criar os campos salario e email na tabela de cliente e adapatar o tutorial
+
+    . Alterar os alerts por algo que se assemelhe ao bootstrap
+        
+        https://www.youtube.com/watch?v=9JM2FRzifas
+        
 
 
 https://www.youtube.com/watch?v=bESQ7X_pMR0
 
 https://www.youtube.com/watch?v=fB1TmfaT6pg
-https://www.devmedia.com.br/validacao-com-jquery-como-usar-o-plugin-validation/33670
 
 https://designmodo.com/validate-forms-bootstrap/
 
