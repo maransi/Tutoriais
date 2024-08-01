@@ -2503,8 +2503,9 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
     . Alterar os alerts por algo que se assemelhe ao bootstrap
         
         https://www.youtube.com/watch?v=9JM2FRzifas
-        
-
+        https://notifyjs.jpillora.com/
+        https://www.jqueryscript.net/other/growl-notification-bootstrap-alert.html
+        https://bootboxjs.com/examples.html
 
 https://www.youtube.com/watch?v=bESQ7X_pMR0
 
