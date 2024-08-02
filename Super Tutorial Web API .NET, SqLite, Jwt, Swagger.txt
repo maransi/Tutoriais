@@ -203,6 +203,8 @@ Desenvolvimento de API com ASP.NET, EF Core e SQLite
         {
             public class CreateClienteViewModel
             {
+                public int Codigo { get; set; }
+
                 [Required(ErrorMessage = "Este campo é obrigatorio")]
                 public string cpf { get; set; }
 

@@ -535,8 +535,8 @@ Parte 4 - Montagem das APIs
 
         public interface IRepository<T, K, C> where T : AuditEntity
         {
-            Task<int> InsertAsync(C item);
-            Task<T> UpdateAsync(T item);
+            Task<int> InsertAsync(C model);
+            Task<T> UpdateAsync(C model);
             Task<bool> DeleteAsync(K id);
             Task<T> GetByIdAsync(K id);
             Task<List<T>> GetAllAsync();
@@ -692,7 +692,7 @@ Parte 4 - Montagem das APIs
                 // }
             }
 
-            public Task<Cliente> UpdateAsync(Cliente item)
+            public Task<Cliente> UpdateAsync(CreateClienteViewModel model)
             {
                 throw new NotImplementedException();
             }
@@ -1600,9 +1600,9 @@ Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4a
             }
 
             var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
-            var method = $('#codigo').val().trim() == '' ? 'POST' : 'PUT';
+            var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
             var sendInfo = {
-                codigo: $('#codigo').val(),
+                codigo: $('#codigoCliente').val(),
                 cpf: $('#cpf').val(),
                 nome: $('#nome').val(),
                 dataNascimento: $('#dataNascimento').val(),
@@ -1925,9 +1925,9 @@ Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4a
             // Save/Update Customer Button Click
             $('#btnSave').click(function () {
                 var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
-                var method = $('#codigo').val().trim() == '' ? 'POST' : 'PUT';
+                var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
                 var sendInfo = {
-                    codigo: $('#codigo').val(),
+                    codigo: $('#codigoCliente').val(),
                     cpf: $('#cpf').val(),
                     nome: $('#nome').val(),
                     dataNascimento: $('#dataNascimento').val(),         // Linha alterada
@@ -2000,6 +2000,24 @@ Parte 8. Realizando a validação dos campos
                 $('#salario').on('focus', function() {  
                     $(this).select();
                 });  
+
+                // Função incluida
+                // Função associada ao Bootstrap para fazer o efeito de validação dos campos
+                (function () {
+                    'use strict';
+                    var form = document.getElementById('clienteForm');
+                    var button = document.getElementById('btnSave');
+
+                    button.addEventListener('click', function () {
+                        if (!form.checkValidity()) {
+                            form.classList.add('was-validated');
+                        } else {
+                            // alert('Formulário validado com sucesso!');
+                            Save();
+                        }
+                    });
+                })();
+
             });
 
 
@@ -2014,9 +2032,9 @@ Parte 8. Realizando a validação dos campos
                 }
 
                 var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
-                var method = $('#codigo').val().trim() == '' ? 'POST' : 'PUT';
+                var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
                 var sendInfo = {
-                    codigo: $('#codigo').val(),
+                    codigo: $('#codigoCliente').val(),
                     cpf: $('#cpf').val(),
                     nome: $('#nome').val(),
                     dataNascimento: $('#dataNascimento').val(),
@@ -2048,22 +2066,6 @@ Parte 8. Realizando a validação dos campos
                 });
             }
 
-            // Função incluida
-            // Função associada ao Bootstrap para fazer o efeito de validação dos campos
-            (function () {
-                'use strict';
-                var form = document.getElementById('clienteForm');
-                var button = document.getElementById('btnSave');
-
-                button.addEventListener('click', function () {
-                    if (!form.checkValidity()) {
-                        form.classList.add('was-validated');
-                    } else {
-                        // alert('Formulário validado com sucesso!');
-                        Save();
-                    }
-                });
-            })();
 
         . Coloque na partial view "_ClienteModal.cshtml" em cada campo com validação "required/email/..." a tag de validação "<div class='invalid-feedback'>...</div>" como abaixo:
 
@@ -2424,8 +2426,9 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
         }
         ...
 
-    . Insira o código abaixo no arquivo "cliente.js":
+    . Realize as mudanças abaixo no arquivo "cliente.js":
 
+        // Bloco inserido
         ...
         // Edit Customer Button Click
         $('#clienteTable tbody').on('click', '.editBtn', function () {
@@ -2438,7 +2441,7 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
                     $('#formModal').modal('show');
                     $('#formModalLabel').text('Alteração');
                     $('#btnSave').text('Salvar');
-                    $('#codigoCliente').val(data.data.codigoCliente);
+                    $('#codigoCliente').val(data.data.codigo);
                     $('#cpf').val(data.data.cpf);
                     $('#nome').val(data.data.nome);
                     $('#endereco').val(data.data.endereco);
@@ -2461,10 +2464,83 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
         });
         ...
 
+        // Save/Update Customer Button Click
+        const Save = () => {
+            if (!validaCPF($('#cpf').val())) {
+                alert('CPF inválido. Verifique o número digitado.');
+                $('#cpf').focus();
+
+                return;
+            }
 
 
+            // Linha alterada
+            var url = $('#codigoCliente').val().trim() == '' ? 
+                        '/clienteAPI/api/v1' : 
+                        '/clienteAPI/api/v1/' + $('#codigoCliente').val().trim() ; 
+            ...
+        }                    
 
+    . Inclua o método abaixo na classe "ClienteRepository":
 
+        ...
+        public async Task<Cliente> UpdateAsync(CreateClienteViewModel model)
+        {
+            var cliente = await _context.Clientes
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(x => x.Codigo == model.Codigo );
+
+            cliente.Cpf = model.Cpf;
+            cliente.Nome = model.Nome;
+            cliente.DataNascimento = DateTime.Parse(model.DataNascimento);
+            cliente.Rg = model.Rg;
+            cliente.Sexo = model.Sexo;
+            cliente.EstadoCivil = model.EstadoCivil;
+            cliente.Pai = model.Pai;
+            cliente.Mae = model.Mae;
+            cliente.Endereco = model.Endereco;
+            cliente.Cidade = model.Cidade;
+            cliente.Estado = model.Estado;
+            cliente.Cep = model.Cep;
+            cliente.Telefone = model.Telefone;
+            cliente.DataAlteracao = DateTime.Now;
+
+            _context.Clientes.Update(cliente);
+
+            await _context.SaveChangesAsync();
+
+            // throw new NotImplementedException();
+            return cliente;
+        }
+        ...
+
+    . Inclua o método abaixo na classe "ClienteAPIController.cs":
+
+        ...
+        [HttpPut("v1/{codigo}")]
+        public async Task<ActionResult<Cliente>> Put( [FromBody] CreateClienteViewModel model,
+                                                        [FromRoute] int codigo)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new ResultViewModel<Cliente>(ModelState.GetErrors()));
+
+            try
+            {
+                var cliente = await _clienteRepository.GetByIdAsync(codigo);
+
+                if (cliente == null)
+                    return NotFound(new ResultViewModel<Cliente>("Cliente não encontrado"));
+
+                cliente = await _clienteRepository.UpdateAsync( model );
+
+                return StatusCode(201, cliente);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResultViewModel<Cliente>(ex.Message));
+            }
+        }
+        ...
 
     . Execute o projeto na pasta raiz da solution:
 
