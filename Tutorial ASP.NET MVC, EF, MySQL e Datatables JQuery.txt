@@ -115,6 +115,8 @@ Parte 1 - Instalação das ferramentas
                 Ctrl + K + U:                               descomenta um bloco de linhas;
                 Alt + Left Arrow:                           durante a programação, volta um método que você estava navegando;
                 Alt + Right Arrow:                          durante a programação, avança um método que você estava navegando;
+                Alt + M                                     ao editar uma página HTML e quiser cercar um bloco de tags com uma outra tag 
+                Alt + Shift + -                             se precisar apagar uma tag HTML que cerca um conjunto de outras tags
                 Ctrl + .:                                   implementa o método/classe inexistente que você acabou de escrever;
                 Ctrl + M + O:                               esconde todas as regions da classe atual;
                 Ctrl + Shift + B:                           compila todos os projetos;
@@ -144,6 +146,8 @@ Parte 2 - Criação do Projeto
 
         mkdir MvcDatatable
 
+        cd MvcDatatable
+
         dotnet new sln -n MvcDatatable
 
         dotnet new mvc -o ./src/MvcDatatable.Web -n MvcDatatable.Web -f net8.0
@@ -151,7 +155,7 @@ Parte 2 - Criação do Projeto
 
     2. Dentro da pasta do projeto Web adicione as bibliotecas necessárias para trabalharmos no projeto:
 
-        cd MvcDatatable/src/MvcDatatable
+        cd src/MvcDatatable
 
         dotnet add package Microsoft.EntityFrameworkCore --version 8.0.6
         dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.6
@@ -162,10 +166,11 @@ Parte 2 - Criação do Projeto
 
     3. Execute o projeto para ver se foi bem sucedido a contrução:
 
-        cd ~/workspace-dotnet/MvcDatatable
+        cd ~/workspace/dotnet/MvcDatatable
 
         dotnet run --project ./src/MvcDatatable.Web 
 
+PAREI AQUI
 
 Parte 3 - Criação do banco de dados
 -----------------------------------
@@ -1599,10 +1604,12 @@ Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4a
                 return;
             }
 
-            var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
-            var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
+            var url = $('#codigoCliente').val().trim() === '' ?
+                '/clienteAPI/api/v1' :
+                '/clienteAPI/api/v1/' + $('#codigoCliente').val().trim(); // Linha alterada
+            var method = $('#codigoCliente').val().trim() === '' ? 'POST' : 'PUT';
             var sendInfo = {
-                codigo: $('#codigoCliente').val().trim() == '' ? '0' : $('#codigoCliente').val(),
+                codigo: $('#codigoCliente').val().trim() === '' ? null : $('#codigoCliente').val(),
                 cpf: $('#cpf').val(),
                 nome: $('#nome').val(),
                 dataNascimento: $('#dataNascimento').val(),
@@ -1927,7 +1934,7 @@ Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4a
                 var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
                 var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
                 var sendInfo = {
-                    codigo: $('#codigoCliente').val().trim() == '' ? '0' : $('#codigoCliente').val(),
+                    codigo: $('#codigoCliente').val().trim() == '' ? null : $('#codigoCliente').val(),
                     cpf: $('#cpf').val(),
                     nome: $('#nome').val(),
                     dataNascimento: $('#dataNascimento').val(),         // Linha alterada
@@ -2033,7 +2040,7 @@ Parte 8. Realizando a validação dos campos
                     var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
                     var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
                     var sendInfo = {
-                        codigo: $('#codigoCliente').val().trim() == '' ? '0' : $('#codigoCliente').val(),
+                        codigo: $('#codigoCliente').val().trim() == '' ? null : $('#codigoCliente').val(),
                         cpf: $('#cpf').val(),
                         nome: $('#nome').val(),
                         dataNascimento: $('#dataNascimento').val(),
@@ -2546,6 +2553,29 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
         }
         ...
 
+    . Acesse o Postman e execute as URLs abaixo:
+
+        Method: PUT
+        Url: http://localhost:[porta]/clienteAPI/api/v1
+        Body.raw: 
+                {
+                    "codigo": 9262,
+                    "cpf": "106.523.608-58",
+                    "nome": "MARCO ANTONIO SILVA",
+                    "dataNascimento" : "1966-10-17",
+                    "rg" : "16.531.521",
+                    "sexo" : "M",
+                    "estadoCivil" : "Casado",
+                    "pai" : "LOURIVAL MARINHO SILVA",
+                    "mae" : "BENEDITA ABRANTES SILVA",
+                    "endereco" : "R Carioba 360",
+                    "cidade" : "São Paulo",
+                    "estado" : "SP",
+                    "cep" : "02423100",
+                    "telefone" : "11 98336-1336"
+                }       
+        Type: JSON
+
     . Execute o projeto na pasta raiz da solution:
 
         dotnet run --project ./src/MvcDatatable.Web   
@@ -2555,6 +2585,86 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
         http://localhost:[porta]/Cliente/List
 
 
+    . Atualize o método "DeleteAsync" com o código abaixo na classe "ClienteRepository":
+
+        ...
+        public async Task<bool> DeleteAsync(int id)
+        {
+
+            var cliente = await _context.Clientes
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(x => x.Codigo == id );
+
+            _context.Clientes.Remove(cliente);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+        ...
+
+    . Atualize o método "Delete" com o código abaixo na classe "ClienteAPIController":
+
+        ...
+        [HttpDelete("v1/{codigo}")]
+        public async Task<ActionResult> Delete([FromRoute] int codigo)
+        {
+            try
+            {
+                var cliente = await _clienteRepository.GetByIdAsync(codigo);
+
+                if (cliente == null)
+                    return NotFound(new ResultViewModel<Cliente>("Cliente não encontrado"));
+
+                await _clienteRepository.DeleteAsync( codigo );
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResultViewModel<Cliente>(ex.Message));
+            }
+        }
+        ...
+
+    . Acesse o Postman e execute as URLs abaixo:
+
+        Method: DELETE
+        Url: http://localhost:[porta]/clienteAPI/api/v1/9262
+
+
+    . Inclua o código abaixo no arquivo javascript "cliente.js" com o conteúdo abaixo:
+
+        $(document).ready(function () {
+
+            ....
+
+            // Função inserida
+
+            // Delete Customer Button Click
+            $('#clienteTable tbody').on('click', '.deleteBtn', function () {
+                var clienteCodigo = $(this).data('id');
+
+                if (confirm('Tem Certeza que quer Apagar o cliente ?')) {
+                    $.ajax({
+                        url: '/clienteAPI/api/v1/' + clienteCodigo,
+                        type: 'DELETE',
+                        success: function () {
+                            $('#clienteTable').DataTable().ajax.reload();
+                        }
+                    });
+                }
+            });
+
+        });
+
+    . Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./src/MvcDatatable.Web   
+
+    . Acesse a página do "DataTable" e teste a deleção dos clientes pelo botão de delete da datatable.
+
+        http://localhost:[porta]/Cliente/List
 
 
 
@@ -2562,6 +2672,24 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 
 
 
+. Desenvolvimento na segunda fase do tutorial:
+
+
+    . Inclusão dos campos email e salario na tabela de clientes.
+
+    . Mudar as msgs de alertas pelo "Toasty", ou "Alert" do Bootstrap:
+
+        # Alert
+        https://chatgpt.com/share/1ae423fd-120b-4c77-9c01-4c9c73aaeffc
+
+
+        # Toasty
+        https://www.youtube.com/watch?v=0-t4xHigyWk&list=PL7yxJa4Na-irux26rILnjv0G33DrTC3Jq&index=2
+        https://www.youtube.com/watch?v=A_B4DLz9k-Q&list=PL7yxJa4Na-irux26rILnjv0G33DrTC3Jq&index=3
+
+    . Desenvolver funcionalidade para mudar todos os caracteres minusculo para maiusculo e retirar caracateres especiais:
+
+        https://mail.google.com/mail/u/0/#inbox/KtbxLwgdgGSQwTlFBdHbCcnQZvNKjcXdtL
 
     . Utilizando a biblioteca JQuery Validation:
 
@@ -2570,15 +2698,18 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
             https://www.devmedia.com.br/validacao-com-jquery-como-usar-o-plugin-validation/33670
             https://www.youtube.com/watch?v=Lf2-M8C4j-E&t=10s
 
-
-
     . Utilizar a biblioteca JQuery Validate para validações vindas do servidor. Testar para validar o CPF fazendo uso dessa
         biblioteca junto com o validate do bootstrap
 
         Desenvolver na segunda etapa do tutorial 
 
-
     . Criar os campos salario e email na tabela de cliente e adapatar o tutorial
+
+
+    . Melhorar a disposição dos botões de export do Datatable:
+
+        https://www.youtube.com/watch?v=4aajwYY2NxI&list=PL7yxJa4Na-irux26rILnjv0G33DrTC3Jq&index=14
+
 
     . Alterar os alerts por algo que se assemelhe ao bootstrap
         
