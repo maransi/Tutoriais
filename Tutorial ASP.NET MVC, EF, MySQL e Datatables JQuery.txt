@@ -1602,7 +1602,7 @@ Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4a
             var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
             var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
             var sendInfo = {
-                codigo: $('#codigoCliente').val(),
+                codigo: $('#codigoCliente').val().trim() == '' ? '0' : $('#codigoCliente').val(),
                 cpf: $('#cpf').val(),
                 nome: $('#nome').val(),
                 dataNascimento: $('#dataNascimento').val(),
@@ -1927,7 +1927,7 @@ Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4a
                 var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
                 var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
                 var sendInfo = {
-                    codigo: $('#codigoCliente').val(),
+                    codigo: $('#codigoCliente').val().trim() == '' ? '0' : $('#codigoCliente').val(),
                     cpf: $('#cpf').val(),
                     nome: $('#nome').val(),
                     dataNascimento: $('#dataNascimento').val(),         // Linha alterada
@@ -2001,6 +2001,7 @@ Parte 8. Realizando a validação dos campos
                     $(this).select();
                 });  
 
+
                 // Função incluida
                 // Função associada ao Bootstrap para fazer o efeito de validação dos campos
                 (function () {
@@ -2018,53 +2019,56 @@ Parte 8. Realizando a validação dos campos
                     });
                 })();
 
+
+
+                // Função Incluida
+                const Save = () => {
+                    if (!validaCPF( $('#cpf').val() )) {
+                        alert('CPF inválido. Verifique o número digitado.');
+                        $('#cpf').focus();
+
+                        return;
+                    }
+
+                    var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
+                    var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
+                    var sendInfo = {
+                        codigo: $('#codigoCliente').val().trim() == '' ? '0' : $('#codigoCliente').val(),
+                        cpf: $('#cpf').val(),
+                        nome: $('#nome').val(),
+                        dataNascimento: $('#dataNascimento').val(),
+                        rg: removeNonNumeric( $('#rg').val() ),
+                        sexo: $('#sexo').val(),
+                        estadoCivil: $('#estadoCivil').val(),
+                        pai: $('#pai').val(),
+                        mae: $('#mae').val(),
+                        endereco: $('#endereco').val(),
+                        cidade: $('#cidade').val(),
+                        estado: $('#estado').val(),
+                        cep: removeNonNumeric($('#cep').val()),
+                        telefone: removeNonNumeric( $('#telefone').val() )
+                    };
+
+                    $.ajax({
+                        url: url,
+                        type: method,
+                        data: JSON.stringify(sendInfo),
+                        contentType: "application/json; charset=utf-8",
+                        success: function () {
+                            alert('Cliente incluido com sucesso!!!');
+                            $('#formModal').modal('hide');
+                            $('#clienteTable').DataTable().ajax.reload();
+                        },
+                        error: function (request, status, error) {
+                            alert(request.responseText);
+                        }
+                    });
+                }
+
             });
 
 
 
-            // Função Incluida
-            const Save = () => {
-                if (!validaCPF( $('#cpf').val() )) {
-                    alert('CPF inválido. Verifique o número digitado.');
-                    $('#cpf').focus();
-
-                    return;
-                }
-
-                var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
-                var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
-                var sendInfo = {
-                    codigo: $('#codigoCliente').val(),
-                    cpf: $('#cpf').val(),
-                    nome: $('#nome').val(),
-                    dataNascimento: $('#dataNascimento').val(),
-                    rg: removeNonNumeric( $('#rg').val() ),
-                    sexo: $('#sexo').val(),
-                    estadoCivil: $('#estadoCivil').val(),
-                    pai: $('#pai').val(),
-                    mae: $('#mae').val(),
-                    endereco: $('#endereco').val(),
-                    cidade: $('#cidade').val(),
-                    estado: $('#estado').val(),
-                    cep: removeNonNumeric($('#cep').val()),
-                    telefone: removeNonNumeric( $('#telefone').val() )
-                };
-
-                $.ajax({
-                    url: url,
-                    type: method,
-                    data: JSON.stringify(sendInfo),
-                    contentType: "application/json; charset=utf-8",
-                    success: function () {
-                        alert('Cliente incluido com sucesso!!!');
-                        $('#formModal').modal('hide');
-                        $('#clienteTable').DataTable().ajax.reload();
-                    },
-                    error: function (request, status, error) {
-                        alert(request.responseText);
-                    }
-                });
-            }
 
 
         . Coloque na partial view "_ClienteModal.cshtml" em cada campo com validação "required/email/..." a tag de validação "<div class='invalid-feedback'>...</div>" como abaixo:
