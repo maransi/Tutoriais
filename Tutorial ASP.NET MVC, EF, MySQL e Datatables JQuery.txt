@@ -222,7 +222,9 @@ Parte 3 - Criação do banco de dados
         global using MvcDatatable.Web.Models;
         global using MvcDatatable.Web.Data;
         global using MvcDatatable.Web.Utils;
-
+        global using MvcDatatable.Web.ViewModels;
+        global using MvcDatatable.Web.ViewModels.Cliente;
+        global using MvcDatatable.Web.Extensions;
 
     4. Crie a pasta "Utils" na raiz do projeto
 
@@ -541,7 +543,7 @@ Parte 4 - Montagem das APIs
 
     1. Crie dentro da pasta "Utils" a interface "IRepository" como abaixo:
 
-        namespace MvDatatable.Web.Utils;
+        namespace MvcDatatable.Web.Utils;
 
         public interface IRepository<T, K, C> where T : AuditEntity
         {
@@ -561,24 +563,26 @@ Parte 4 - Montagem das APIs
 
         public class CreateClienteViewModel
         {
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            public int? Codigo { get; set; }
+
+            [Required(ErrorMessage = "CPF é obrigatorio")]
             public string Cpf { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
-            [MinLength(5, ErrorMessage = "Este campo dever ter entre 5 a 100 caracateres")]
+            [Required(ErrorMessage = "Nome é obrigatorio")]
+            [MaxLength(150, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
+            [MinLength(5, ErrorMessage = "Este campo dever ter entre 5 a 150 caracateres")]
             public string Nome { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [Column("dataNascimento", TypeName = "DATE")]
-            public DateTime DataNascimento { get; set; }
+            [Required(ErrorMessage = "Data Nascimento é obrigatorio")]
+            // [Column("dataNascimento", TypeName = "DATE")]
+            public string DataNascimento { get; set; }
 
             public string Rg { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Sexo do cliente é obrigatorio")]
             public string Sexo { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Estado Civil é obrigatorio")]
             public string EstadoCivil { get; set; }
 
             [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
@@ -589,27 +593,39 @@ Parte 4 - Montagem das APIs
             [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
             public string Mae { get; set; }
 
-
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Endereço é obrigatorio")]
             [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
             [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
             public string Endereco { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Cidade é obrigatorio")]
             [MaxLength(50, ErrorMessage = "Este campo deve ter entre 5 a 50 caracateres")]
             [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 50 caracateres")]
             public string Cidade { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [StringLength(2, ErrorMessage = "Este campo deve ter 8 caracateres")]
+            [Required(ErrorMessage = "Estado é obrigatorio")]
+            [MaxLength(2, ErrorMessage = "Este campo deve ter 2 caracateres")]
+            [MinLength(2, ErrorMessage = "Este campo deve ter 2caracateres")]
             public string Estado { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "CEP é obrigatorio")]
+            // [MaxLength(8, ErrorMessage = "Este campo deve ter 8 caracateres")]
+            // [MinLength(8, ErrorMessage = "Este campo deve ter 8 caracateres")]
             [StringLength(8, ErrorMessage = "Este campo deve ter 8 caracateres")]
             public string Cep { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Telefone é obrigatorio")]
             public string Telefone { get; set; }
+
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [EmailAddress(ErrorMessage = "Invalido endereço de E-Mail")]
+            [Column("email", TypeName = "VARCHAR(100)")]
+            public string Email { get; set; }
+
+            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [DisplayFormat(DataFormatString = "{0:C}")]
+            [Column("salario", TypeName = "DECIMAL(13,2)")]
+            public decimal Salario { get; set; }
         }
 
     . Crie a classe "ClienteViewModel.cs" dentro da pasta "ViewModels.Cliente"
@@ -626,7 +642,7 @@ Parte 4 - Montagem das APIs
 
     3. Crie dentro da pasta "Models" a interface "IClienteRepository.cs" como abaixo:
 
-        namespace MvcDatatable.Web.Models.Pessoa;
+        namespace MvcDatatable.Web.Models;
 
         public interface IClienteRepository: IRepository<Cliente,int, CreateClienteViewModel>
         {
@@ -677,7 +693,7 @@ Parte 4 - Montagem das APIs
                     {
                         Cpf = model.Cpf,
                         Nome = model.Nome,
-                        DataNascimento = model.DataNascimento,
+                        DataNascimento = DateTime.Parse(model.DataNascimento),
                         Rg = model.Rg,
                         Sexo = model.Sexo,
                         EstadoCivil = model.EstadoCivil,
@@ -687,7 +703,9 @@ Parte 4 - Montagem das APIs
                         Cidade = model.Cidade,
                         Estado = model.Estado,
                         Cep = model.Cep,
-                        Telefone = model.Telefone
+                        Telefone = model.Telefone,
+                        Email = model.Email,
+                        Salario = model.Salario
                     };
 
                     await _context.AddAsync( cliente );
@@ -787,6 +805,8 @@ Parte 4 - Montagem das APIs
 
     . Crie a pasta "Extensions" na raiz do projeto e crie a classe "ModelStateExtension.cs" abaixo:
 
+        using Microsoft.AspNetCore.Mvc.ModelBinding;
+
         namespace MvcDatatable.Web.Extensions;
 
         public static class ModelStateExtension
@@ -884,19 +904,22 @@ Parte 4 - Montagem das APIs
         Url: http://localhost:[porta]/clienteAPI/api/v1
         Body.raw: 
                 {
-                    "cpf": "106.523.608-58",
-                    "nome": "MARCO ANTONIO SILVA",
-                    "dataNascimento" : "1966-10-17",
-                    "rg" : "16.531.521",
-                    "sexo" : "M",
-                    "estadoCivil" : "Casado",
-                    "pai" : "LOURIVAL MARINHO SILVA",
-                    "mae" : "BENEDITA ABRANTES SILVA",
+                    "codigo": null,
+                    "cpf": "088.722.138-60",
+                    "nome": "CATIA LOUISE F R SILVA",
+                    "dataNascimento" : "1964-10-18",
+                    "rg" : "15.541.821",
+                    "sexo" : "F",
+                    "estadoCivil" : "Casada",
+                    "pai" : "VITOR FERREIRA ROCHA",
+                    "mae" : "ANGELITA FONSECA BARROS FERREIRA ROCHA",
                     "endereco" : "R Carioba 360",
                     "cidade" : "São Paulo",
                     "estado" : "SP",
                     "cep" : "02423100",
-                    "telefone" : "11 98336-1336"
+                    "telefone" : "11 98336-1336",
+                    "email": "catia.louise@gmail.com",
+                    "salario": 600.00
                 }       
         Type: JSON
 
@@ -968,6 +991,7 @@ Parte 4 - Montagem das APIs
 
             . Clique no botão "Execute"
 
+// PAREI AQUI
 
 Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no client
 ---------------------------------------------------------------------------------
