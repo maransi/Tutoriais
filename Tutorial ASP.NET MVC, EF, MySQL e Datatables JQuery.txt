@@ -262,28 +262,28 @@ Parte 3 - Criação do banco de dados
             [Column("codigo")]
             public int Codigo { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "CPF é obrigatorio")]
             [Column("cpf", TypeName = "VARCHAR(15)")]
             public string Cpf { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Nome é obrigatorio")]
             [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
             [MinLength(5, ErrorMessage = "Este campo dever ter entre 5 a 100 caracateres")]
             [Column("nome", TypeName = "VARCHAR(100)")]
             public string Nome { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Data de Nascimento é obrigatorio")]
             [Column("dataNascimento", TypeName = "DATE")]
             public DateTime? DataNascimento { get; set; }
 
             [Column("rg", TypeName = "VARCHAR(14)")]
             public string Rg { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Gênero é obrigatorio")]
             [Column("sexo", TypeName = "CHAR(1)")]
             public string Sexo { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Estado Civil é obrigatorio")]
             [Column("estadoCivil", TypeName = "VARCHAR(25)")]
             public string EstadoCivil { get; set; }
 
@@ -293,38 +293,38 @@ Parte 3 - Criação do banco de dados
             [Column("mae", TypeName = "VARCHAR(100)")]
             public string Mae { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
-            [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+            [Required(ErrorMessage = "Endereço é obrigatorio")]
+            [MaxLength(100, ErrorMessage = "Endereço deve ter entre 5 a 100 caracateres")]
+            [MinLength(5, ErrorMessage = "Endereço deve ter entre 5 a 100 caracateres")]
             [Column("endereco", TypeName = "VARCHAR(100)")]
             public string Endereco { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
-            [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+            [Required(ErrorMessage = "Cidade é obrigatorio")]
+            [MaxLength(100, ErrorMessage = "Cidade deve ter entre 5 a 100 caracateres")]
+            [MinLength(5, ErrorMessage = "Cidade deve ter entre 5 a 100 caracateres")]
             [Column("cidade", TypeName = "VARCHAR(50)")]
             public string Cidade { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
-            [MaxLength(2, ErrorMessage = "Este campo deve ter 2 caracateres")]
-            [MinLength(2, ErrorMessage = "Este campo deve ter 2caracateres")]
+            [Required(ErrorMessage = "UF é obrigatorio")]
+            [MaxLength(2, ErrorMessage = "UF deve ter 2 caracateres")]
+            [MinLength(2, ErrorMessage = "UF deve ter 2 caracateres")]
             [Column("estado", TypeName = "CHAR(2)")]
             public string Estado { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "CEP é obrigatorio")]
             [Column("cep", TypeName = "CHAR(8)")]
             public string Cep { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Telefone é obrigatorio")]
             [Column("telefone", TypeName = "VARCHAR(20)")]
             public string Telefone { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "E-Mail é obrigatorio")]
             [EmailAddress(ErrorMessage = "Invalido endereço de E-Mail")]
             [Column("email", TypeName = "VARCHAR(100)")]
             public string Email { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Salário é obrigatorio")]
             [DisplayFormat(DataFormatString = "{0:C}")]
             [DefaultValue(0)]
             [Column("salario", TypeName = "DECIMAL(13,2)")]
@@ -535,8 +535,6 @@ Parte 3 - Criação do banco de dados
 
         mysql -u root -p -h 127.0.0.1 < insertCliente.sql 
 
-PAREI AQUI
-
 
 Parte 4 - Montagem das APIs
 ----------------------------
@@ -565,70 +563,70 @@ Parte 4 - Montagem das APIs
         {
             public int? Codigo { get; set; }
 
-            [Required(ErrorMessage = "CPF é obrigatorio")]
+            [Required(ErrorMessage = "CPF é obrigatório")]
             public string Cpf { get; set; }
 
-            [Required(ErrorMessage = "Nome é obrigatorio")]
+            [Required(ErrorMessage = "Nome é obrigatório")]
             [MaxLength(150, ErrorMessage = "Este campo deve ter entre 5 a 150 caracateres")]
             [MinLength(5, ErrorMessage = "Este campo dever ter entre 5 a 150 caracateres")]
             public string Nome { get; set; }
 
-            [Required(ErrorMessage = "Data Nascimento é obrigatorio")]
+            [Required(ErrorMessage = "Data Nascimento é obrigatório")]
             // [Column("dataNascimento", TypeName = "DATE")]
             public string DataNascimento { get; set; }
 
             public string Rg { get; set; }
 
-            [Required(ErrorMessage = "Sexo do cliente é obrigatorio")]
+            [Required(ErrorMessage = "Gênero do cliente é obrigatório")]
             public string Sexo { get; set; }
 
-            [Required(ErrorMessage = "Estado Civil é obrigatorio")]
+            [Required(ErrorMessage = "Estado Civil é obrigatório")]
             public string EstadoCivil { get; set; }
 
-            [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
-            [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+            [MaxLength(100, ErrorMessage = "Campo Pai deve ter entre 5 a 100 caracateres")]
+            [MinLength(5, ErrorMessage = "Campo Pai deve ter entre 5 a 100 caracateres")]
             public string Pai { get; set; }
 
-            [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
-            [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+            [MaxLength(100, ErrorMessage = "Campo Mãe deve ter entre 5 a 100 caracateres")]
+            [MinLength(5, ErrorMessage = "Campo Mãe deve ter entre 5 a 100 caracateres")]
             public string Mae { get; set; }
 
-            [Required(ErrorMessage = "Endereço é obrigatorio")]
-            [MaxLength(100, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
-            [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 100 caracateres")]
+            [Required(ErrorMessage = "Endereço é obrigatório")]
+            [MaxLength(100, ErrorMessage = "Endereço deve ter entre 5 a 100 caracateres")]
+            [MinLength(5, ErrorMessage = "Endereço deve ter entre 5 a 100 caracateres")]
             public string Endereco { get; set; }
 
-            [Required(ErrorMessage = "Cidade é obrigatorio")]
-            [MaxLength(50, ErrorMessage = "Este campo deve ter entre 5 a 50 caracateres")]
-            [MinLength(5, ErrorMessage = "Este campo deve ter entre 5 a 50 caracateres")]
+            [Required(ErrorMessage = "Cidade é obrigatório")]
+            [MaxLength(50, ErrorMessage = "Cidade deve ter entre 5 a 50 caracateres")]
+            [MinLength(5, ErrorMessage = "Cidade deve ter entre 5 a 50 caracateres")]
             public string Cidade { get; set; }
 
-            [Required(ErrorMessage = "Estado é obrigatorio")]
-            [MaxLength(2, ErrorMessage = "Este campo deve ter 2 caracateres")]
-            [MinLength(2, ErrorMessage = "Este campo deve ter 2caracateres")]
+            [Required(ErrorMessage = "Estado é obrigatório")]
+            [MaxLength(2, ErrorMessage = "Estado deve ter 2 caracateres")]
+            [MinLength(2, ErrorMessage = "Estado deve ter 2caracateres")]
             public string Estado { get; set; }
 
-            [Required(ErrorMessage = "CEP é obrigatorio")]
+            [Required(ErrorMessage = "CEP é obrigatório")]
             // [MaxLength(8, ErrorMessage = "Este campo deve ter 8 caracateres")]
             // [MinLength(8, ErrorMessage = "Este campo deve ter 8 caracateres")]
-            [StringLength(8, ErrorMessage = "Este campo deve ter 8 caracateres")]
+            [StringLength(8, ErrorMessage = "CEP deve ter 8 caracateres")]
             public string Cep { get; set; }
 
-            [Required(ErrorMessage = "Telefone é obrigatorio")]
+            [Required(ErrorMessage = "Telefone é obrigatório")]
             public string Telefone { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "E-Mail é obrigatório")]
             [EmailAddress(ErrorMessage = "Invalido endereço de E-Mail")]
             [Column("email", TypeName = "VARCHAR(100)")]
             public string Email { get; set; }
 
-            [Required(ErrorMessage = "Este campo é obrigatorio")]
+            [Required(ErrorMessage = "Salário é obrigatório")]
             [DisplayFormat(DataFormatString = "{0:C}")]
             [Column("salario", TypeName = "DECIMAL(13,2)")]
             public decimal Salario { get; set; }
         }
 
-    . Crie a classe "ClienteViewModel.cs" dentro da pasta "ViewModels.Cliente"
+    4. Crie a classe "ClienteViewModel.cs" dentro da pasta "ViewModels.Cliente"
 
         namespace MvcDatatable.Web.ViewModels.Cliente;
 
@@ -640,7 +638,7 @@ Parte 4 - Montagem das APIs
         }
 
 
-    3. Crie dentro da pasta "Models" a interface "IClienteRepository.cs" como abaixo:
+    5. Crie dentro da pasta "Models" a interface "IClienteRepository.cs" como abaixo:
 
         namespace MvcDatatable.Web.Models;
 
@@ -649,7 +647,7 @@ Parte 4 - Montagem das APIs
             
         }
 
-    . Crie dentro da pasta "Models" a classe "ClienteRepository.cs" como abaixo:
+    6. Crie dentro da pasta "Models" a classe "ClienteRepository.cs" como abaixo:
 
         namespace MvcDatatable.Web.Models;
 
@@ -727,7 +725,7 @@ Parte 4 - Montagem das APIs
 
         }
 
-    . Inclua as linhas abaixo na classe "Program.cs":
+    7. Inclua as linhas abaixo na classe "Program.cs":
 
         var builder = WebApplication.CreateBuilder(args);
 
@@ -749,9 +747,9 @@ Parte 4 - Montagem das APIs
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
-    . Crie a pasta "ViewModels" na raiz do projeto.
+    8. Crie a pasta "ViewModels" na raiz do projeto.
 
-    . Crie a classe "ResultViewModel.cs" dentro da pasta "ViewModels" como abaixo:
+    9. Crie a classe "ResultViewModel.cs" dentro da pasta "ViewModels" como abaixo:
 
         namespace MvcDatatable.Web.ViewModels;
 
@@ -781,7 +779,7 @@ Parte 4 - Montagem das APIs
             public List<string> Errors { get; private set; } = new();
         }
 
-    . Crie a classe "DataResponse" abaixo na pasta "MvcDatatable.Utils":
+    10. Crie a classe "DataResponse" abaixo na pasta "MvcDatatable.Utils":
 
         namespace MvcDatatable.Web.Utils;
 
@@ -790,7 +788,7 @@ Parte 4 - Montagem das APIs
             public List<T> Data { get; set; }
         }
 
-    . Configure a injeção de dependência da classe acima no "Program.cs":
+    11. Configure a injeção de dependência da classe acima no "Program.cs":
 
         ...
         var builder = WebApplication.CreateBuilder(args);
@@ -803,7 +801,7 @@ Parte 4 - Montagem das APIs
         ...
 
 
-    . Crie a pasta "Extensions" na raiz do projeto e crie a classe "ModelStateExtension.cs" abaixo:
+    12. Crie a pasta "Extensions" na raiz do projeto e crie a classe "ModelStateExtension.cs" abaixo:
 
         using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -822,7 +820,7 @@ Parte 4 - Montagem das APIs
         }
 
 
-    . Crie a pasta "Controllers.Api" e dentro dela a classe "ClienteAPIController.cs" como abaixo:
+    13. Crie a pasta "Controllers.Api" e dentro dela a classe "ClienteAPIController.cs" como abaixo:
 
         namespace MvcDatatable.Web.Controllers.Api;
 
@@ -831,12 +829,13 @@ Parte 4 - Montagem das APIs
         public class ClienteAPIController : ControllerBase
         {
             private readonly IClienteRepository _clienteRepository;
-            private readonly DataResponse<Cliente> _dataResponse;
+            // private readonly DataResponse<Cliente> _dataResponse;
 
-            public ClienteAPIController(IClienteRepository clienteRepository, DataResponse<Cliente> dataResponse)
+            // public ClienteAPIController(IClienteRepository clienteRepository, DataResponse<Cliente> dataResponse)
+            public ClienteAPIController(IClienteRepository clienteRepository)
             {
                 _clienteRepository = clienteRepository;
-                _dataResponse = dataResponse;
+                // _dataResponse = dataResponse;
             }
 
             [HttpGet("v1")]
@@ -846,9 +845,14 @@ Parte 4 - Montagem das APIs
                 {
                     var clientes = await _clienteRepository.GetAllAsync();
 
-                    _dataResponse.Data = clientes;
+                    // _dataResponse.Data = clientes;
 
-                    return Ok(_dataResponse);
+                    // return Ok(_dataResponse);
+
+                    return Ok(new
+                    {
+                        Data = clientes
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -884,7 +888,7 @@ Parte 4 - Montagem das APIs
             }
         }
 
-    . Acesse a pasta raiz da "Solution" e Levante a aplicação:
+    14. Acesse a pasta raiz da "Solution" e Levante a aplicação:
 
         dotnet clean
 
@@ -894,7 +898,7 @@ Parte 4 - Montagem das APIs
 
         dotnet run
 
-    . Acesse o Postman e execute as URLs abaixo:
+    15. Acesse o Postman e execute as URLs abaixo:
 
         Method: GET
         Url: http://localhost:[porta]/clienteAPI/api/v1
@@ -923,7 +927,171 @@ Parte 4 - Montagem das APIs
                 }       
         Type: JSON
 
-    . Adicionando o Swagger na aplicação:
+    16. Inclua o método abaixo na classe "ClienteRepository":
+
+        ...
+        // Método Alterado
+        public async Task<Cliente> GetByIdAsync(int id)
+        {
+            try
+            {
+                var cliente = await _context.Clientes
+                                        .AsNoTracking()
+                                        .FirstOrDefaultAsync(x => x.Codigo == id);
+
+                return cliente;
+            }
+            catch (System.Exception)
+            {
+
+                throw;
+            }
+        }
+
+
+        ...
+        // Método Alterado
+        public async Task<Cliente> UpdateAsync(CreateClienteViewModel model)
+        {
+            var cliente = await _context.Clientes
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(x => x.Codigo == model.Codigo );
+
+            cliente.Cpf = model.Cpf;
+            cliente.Nome = model.Nome;
+            cliente.DataNascimento = DateTime.Parse(model.DataNascimento);
+            cliente.Rg = model.Rg;
+            cliente.Sexo = model.Sexo;
+            cliente.EstadoCivil = model.EstadoCivil;
+            cliente.Pai = model.Pai;
+            cliente.Mae = model.Mae;
+            cliente.Endereco = model.Endereco;
+            cliente.Cidade = model.Cidade;
+            cliente.Estado = model.Estado;
+            cliente.Cep = model.Cep;
+            cliente.Telefone = model.Telefone;
+            cliente.DataAlteracao = DateTime.Now;
+
+            _context.Clientes.Update(cliente);
+
+            await _context.SaveChangesAsync();
+
+            // throw new NotImplementedException();
+            return cliente;
+        }
+        ...
+
+    17. Inclua o método abaixo na classe "ClienteAPIController.cs":
+
+        ...
+        [HttpPut("v1/{codigo}")]
+        public async Task<ActionResult<Cliente>> Put( [FromBody] CreateClienteViewModel model,
+                                                        [FromRoute] int codigo)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new ResultViewModel<Cliente>(ModelState.GetErrors()));
+
+            try
+            {
+                var cliente = await _clienteRepository.GetByIdAsync(codigo);
+
+                if (cliente == null)
+                    return NotFound(new ResultViewModel<Cliente>("Cliente não encontrado"));
+
+                cliente = await _clienteRepository.UpdateAsync( model );
+
+                return StatusCode(201, cliente);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResultViewModel<Cliente>(ex.Message));
+            }
+        }
+        ...
+
+    18. Acesse o Postman e execute as URLs abaixo:
+
+        Method: PUT
+        Url: http://localhost:[porta]/clienteAPI/api/v1/9262
+        Body.raw: 
+                {
+                    "codigo": 9262,
+                    "cpf": "106.523.608-58",
+                    "nome": "MARCO ANTONIO SILVA",
+                    "dataNascimento" : "1966-10-17",
+                    "rg" : "16.531.521",
+                    "sexo" : "M",
+                    "estadoCivil" : "Casado",
+                    "pai" : "LOURIVAL MARINHO SILVA",
+                    "mae" : "BENEDITA ABRANTES SILVA",
+                    "endereco" : "R Carioba 360",
+                    "cidade" : "São Paulo",
+                    "estado" : "SP",
+                    "cep" : "02423100",
+                    "telefone" : "11 98336-1336",
+                    "email": "teste@gmail.com",
+                    "salario": 1540.00
+                }       
+        Type: JSON
+
+    19. Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./src/MvcDatatable.Web   
+
+    20. Acesse a página do "DataTable" e teste as validações na inclusão:
+
+        http://localhost:[porta]/Cliente/List
+
+
+    21. Atualize o método "DeleteAsync" com o código abaixo na classe "ClienteRepository":
+
+        ...
+        public async Task<bool> DeleteAsync(int id)
+        {
+
+            var cliente = await _context.Clientes
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(x => x.Codigo == id );
+
+            _context.Clientes.Remove(cliente);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+        ...
+
+    22. Atualize o método "Delete" com o código abaixo na classe "ClienteAPIController":
+
+        ...
+        [HttpDelete("v1/{codigo}")]
+        public async Task<ActionResult> Delete([FromRoute] int codigo)
+        {
+            try
+            {
+                var cliente = await _clienteRepository.GetByIdAsync(codigo);
+
+                if (cliente == null)
+                    return NotFound(new ResultViewModel<Cliente>("Cliente não encontrado"));
+
+                await _clienteRepository.DeleteAsync( codigo );
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResultViewModel<Cliente>(ex.Message));
+            }
+        }
+        ...
+
+    23. Acesse o Postman e execute as URLs abaixo:
+
+        Method: DELETE
+        Url: http://localhost:[porta]/clienteAPI/api/v1/9262
+
+
+    24. Adicionando o Swagger na aplicação:
 
         . Execute o comando abaixo na pasta do projeto "MvcDatatable.Web":
 
@@ -991,12 +1159,12 @@ Parte 4 - Montagem das APIs
 
             . Clique no botão "Execute"
 
-// PAREI AQUI
-
 Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no client
 ---------------------------------------------------------------------------------
 
-    . Crie o controller abaixo dentro da pasta "Controllers":
+    1. Crie o controller "ClienteController.cs" abaixo dentro da pasta "Controllers":
+
+        using Microsoft.AspNetCore.Mvc;
 
         namespace MvcDatatable.Web.Controllers; 
 
@@ -1017,84 +1185,23 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
             }
         }
 
-    . Crie a pasta "Controller/Api" e dentro dela insira a classe abaixo:
-
-        namespace MvcDatatable.Web.Controllers.Api;
-
-        [ApiController]
-        [Route("[controller]/api/")]
-        public class ClienteAPIController : ControllerBase
-        {
-            private readonly IClienteRepository _clienteRepository;
-
-            public ClienteAPIController(IClienteRepository clienteRepository)
-            {
-                _clienteRepository = clienteRepository;
-            }
-
-            [HttpGet("v1")]
-            public async Task<ActionResult<List<Cliente>>> GetAllAsync()
-            {
-                try
-                {
-                    var clientes = await _clienteRepository.GetAllAsync();
-
-
-                    return Ok(new { 
-                                Data = clientes
-                    });
-                }
-                catch (Exception ex)
-                {
-                    return StatusCode(500, new ResultViewModel<List<Cliente>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
-                }
-            }
-
-            [HttpPost("v1")]
-            public async Task<ActionResult<Cliente>> PostAsync([FromBody] CreateClienteViewModel model)
-            {
-                if (!ModelState.IsValid)
-                    return BadRequest(new ResultViewModel<Cliente>(ModelState.GetErrors()));
-
-                try
-                {
-                    var resultRet = await _clienteRepository.InsertAsync(model);
-
-                    if (resultRet > 0)
-                    {
-                        return Created($"cliente/v1/cpf/{model.Cpf}", new ResultViewModel<CreateClienteViewModel>(model));
-                    }
-                    else
-                    {
-                        return StatusCode(500, new ResultViewModel<Cliente>($"Ocorreu o seguinte erro "));  // Linha alterada
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    return StatusCode(500, new ResultViewModel<Cliente>($"Ocorreu o seguinte erro [ {ex.Message} ]"));  // Linha alterada
-
-                }
-            }
-        }
-
-
-
-    . Crie a pasta "Views/Cliente" e dentro dela a view abaixo  "List.cshtml":
+    2. Crie a pasta "Views/Cliente" e dentro dela a view abaixo  "List.cshtml":
 
         @{
             ViewData["Title"] = "Cadastro de Clientes";
         }
 
         @section Links {
-            <link   rel="stylesheet" 
-                    href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.css"
-                    integrity="sha512-d0jyKpM/KPRn5Ys8GmjfSZSN6BWmCwmPiGZJjiRAycvLY5pBoYeewUi2+u6zMyW0D/XwQIBHGk2coVM+SWgllw=="
-                    crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.css">
             <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+
+
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-            <link   href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-                    rel="stylesheet">
+            <link
+                href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                rel="stylesheet">
+            <link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.1.0/css/buttons.dataTables.css">
+            <link rel="stylesheet" href="https://cdn.datatables.net/2.1.2/css/dataTables.dataTables.css">
         }
 
         <div class="col-md-12"> 
@@ -1128,17 +1235,15 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
         @section Scripts {
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.min.js"
-                integrity="sha512-Cwi0jz7fz7mrX990DlJ1+rmiH/D9/rjfOoEex8C9qrPRDDqwMPdWV7pJFKzhM10gAAPlufZcWhfMuPN699Ej0w=="
-                crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.min.js"></script>
             <script src="~/js/index.js"></script>
         }
 
-    . Crie a pasta "/wwwroot/image" e insira dois icones/imagens, um para edição e outro para deleção:
+    3. Crie a pasta "/wwwroot/image" e insira dois icones/imagens, um para edição e outro para deleção:
 
         . Localize no google imagens "jpeg" com tamanho pequeno
 
-    . Crie o arquivo "index.js" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
+    4. Crie o arquivo "index.js" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
 
         $(document).ready(function () {
             $('#clienteTable').DataTable({
@@ -1170,20 +1275,20 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
                     type: 'GET'
                 },
                 columns: [
-                    { data: 'cpf', width: "10%", className : "dt-center" },
-                    { data: 'nome', width: "25%"},
+                    { data: 'cpf', width: "12%", className: "dt-center" },
+                    { data: 'nome', width: "25%" },
                     { data: 'endereco', width: "20%" },
                     { data: 'cidade', width: "15%" },
                     { data: 'estado', width: "5%" },
-                    { data: 'telefone', width: "15%" },
+                    { data: 'telefone', width: "13%" },
                     {
                         data: null,
-                        width: "8%",
+                        width: "10%",
                         render: function (data, type, row) {
                             return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
                                 '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30"></a>';
-                                // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
-                                // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
+                            // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
+                            // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
                         }
                     }
                 ],
@@ -1196,7 +1301,7 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
             });
         });
 
-    . Crie o arquivo "Portuguese.json" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
+    5. Crie o arquivo "Portuguese.json" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
 
         {
             "sProcessing":   "Carregando...",
@@ -1216,13 +1321,20 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
             }
         }    
 
-    . Acrescente o link na página principal, alterando o arquivo "_Layout.cshtml" da pasta "Views/Shared" como abaixo:
+    6. Acrescente o link na página principal, alterando o arquivo "_Layout.cshtml" da pasta "Views/Shared" como abaixo:
 
         ...
         <head>
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>@ViewData["Title"] - MVC Datatable</title>
+
+            <!-- Linha Eliminada -->
+            @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
+
+            <!-- Linha Inserida -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.1/css/bootstrap.min.css" integrity="sha512-Ez0cGzNzHR1tYAv56860NLspgUGuQw16GiOOp/I2LuTmpSK9xDXlgJz3XN4cnpXWDmkNBKXR/VDMTCnAaEooxA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
             <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
             <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
             <link rel="stylesheet" href="~/MvcDatatable.Web.styles.css" asp-append-version="true" />
@@ -1266,6 +1378,15 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
                 </nav>
             </header>
 
+            
+            <!-- Linha Alterada (Alterado p/"container-fluid") -->
+
+            <div class="container-fluid">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+
             ...
         </body>
        
@@ -1278,6 +1399,16 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
 
 
         </html>
+
+    7. Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./src/MvcDatatable.Web   
+
+    8. Acesse a página "Cliente" e teste:
+
+        http://localhost:[porta]/Cliente/List
+
+
 
 Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no server
 ---------------------------------------------------------------------------------
@@ -1387,6 +1518,18 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
             public string Dir { get; set; }
         }
 
+    . Crie a classe "DataTableResponse" na pasta "MvcDatatable.Web.Utils" com o conteúdo abaixo:
+
+        namespace MvcDatatable.Web.Utils;
+
+        public class DataTableResponse<T>
+        {
+            public int Draw { get; set; }
+            public int RecordsTotal { get; set; }
+            public int RecordsFiltered { get; set; }
+            public List<T> Data { get; set; }
+        }
+
     . Insira o método abaixo na interface "IRepository":
 
         ...
@@ -1480,6 +1623,8 @@ Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no se
         http://localhost:[porta]/Cliente/List
 
 
+// PAREI AQUI
+
 
 Parte 7. Escalando o uso do "DataTable"
 ---------------------------------------
@@ -1523,8 +1668,8 @@ Parte 7. Escalando o uso do "DataTable"
         }
 
 
-Melhorar a apresentação do botões (print, excel, etc) no tutorial, retirá-los abaixo e colocar num tópico próprio.
-Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4aajwYY2NxI&list=WL
+    Melhorar a apresentação do botões (print, excel, etc) no tutorial, retirá-los abaixo e colocar num tópico próprio.
+    Testar a inclusão dos botões conforme video https://www.youtube.com/watch?v=4aajwYY2NxI&list=WL
 
 
 
@@ -2521,90 +2666,6 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
             ...
         }                    
 
-    . Inclua o método abaixo na classe "ClienteRepository":
-
-        ...
-        public async Task<Cliente> UpdateAsync(CreateClienteViewModel model)
-        {
-            var cliente = await _context.Clientes
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(x => x.Codigo == model.Codigo );
-
-            cliente.Cpf = model.Cpf;
-            cliente.Nome = model.Nome;
-            cliente.DataNascimento = DateTime.Parse(model.DataNascimento);
-            cliente.Rg = model.Rg;
-            cliente.Sexo = model.Sexo;
-            cliente.EstadoCivil = model.EstadoCivil;
-            cliente.Pai = model.Pai;
-            cliente.Mae = model.Mae;
-            cliente.Endereco = model.Endereco;
-            cliente.Cidade = model.Cidade;
-            cliente.Estado = model.Estado;
-            cliente.Cep = model.Cep;
-            cliente.Telefone = model.Telefone;
-            cliente.DataAlteracao = DateTime.Now;
-
-            _context.Clientes.Update(cliente);
-
-            await _context.SaveChangesAsync();
-
-            // throw new NotImplementedException();
-            return cliente;
-        }
-        ...
-
-    . Inclua o método abaixo na classe "ClienteAPIController.cs":
-
-        ...
-        [HttpPut("v1/{codigo}")]
-        public async Task<ActionResult<Cliente>> Put( [FromBody] CreateClienteViewModel model,
-                                                        [FromRoute] int codigo)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(new ResultViewModel<Cliente>(ModelState.GetErrors()));
-
-            try
-            {
-                var cliente = await _clienteRepository.GetByIdAsync(codigo);
-
-                if (cliente == null)
-                    return NotFound(new ResultViewModel<Cliente>("Cliente não encontrado"));
-
-                cliente = await _clienteRepository.UpdateAsync( model );
-
-                return StatusCode(201, cliente);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ResultViewModel<Cliente>(ex.Message));
-            }
-        }
-        ...
-
-    . Acesse o Postman e execute as URLs abaixo:
-
-        Method: PUT
-        Url: http://localhost:[porta]/clienteAPI/api/v1
-        Body.raw: 
-                {
-                    "codigo": 9262,
-                    "cpf": "106.523.608-58",
-                    "nome": "MARCO ANTONIO SILVA",
-                    "dataNascimento" : "1966-10-17",
-                    "rg" : "16.531.521",
-                    "sexo" : "M",
-                    "estadoCivil" : "Casado",
-                    "pai" : "LOURIVAL MARINHO SILVA",
-                    "mae" : "BENEDITA ABRANTES SILVA",
-                    "endereco" : "R Carioba 360",
-                    "cidade" : "São Paulo",
-                    "estado" : "SP",
-                    "cep" : "02423100",
-                    "telefone" : "11 98336-1336"
-                }       
-        Type: JSON
-
     . Execute o projeto na pasta raiz da solution:
 
         dotnet run --project ./src/MvcDatatable.Web   
@@ -2614,52 +2675,6 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
         http://localhost:[porta]/Cliente/List
 
 
-    . Atualize o método "DeleteAsync" com o código abaixo na classe "ClienteRepository":
-
-        ...
-        public async Task<bool> DeleteAsync(int id)
-        {
-
-            var cliente = await _context.Clientes
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(x => x.Codigo == id );
-
-            _context.Clientes.Remove(cliente);
-
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-        ...
-
-    . Atualize o método "Delete" com o código abaixo na classe "ClienteAPIController":
-
-        ...
-        [HttpDelete("v1/{codigo}")]
-        public async Task<ActionResult> Delete([FromRoute] int codigo)
-        {
-            try
-            {
-                var cliente = await _clienteRepository.GetByIdAsync(codigo);
-
-                if (cliente == null)
-                    return NotFound(new ResultViewModel<Cliente>("Cliente não encontrado"));
-
-                await _clienteRepository.DeleteAsync( codigo );
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new ResultViewModel<Cliente>(ex.Message));
-            }
-        }
-        ...
-
-    . Acesse o Postman e execute as URLs abaixo:
-
-        Method: DELETE
-        Url: http://localhost:[porta]/clienteAPI/api/v1/9262
 
 
     . Inclua o código abaixo no arquivo javascript "cliente.js" com o conteúdo abaixo:
