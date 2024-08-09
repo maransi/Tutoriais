@@ -1333,7 +1333,7 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
             @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
 
             <!-- Linha Inserida -->
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.1/css/bootstrap.min.css" integrity="sha512-Ez0cGzNzHR1tYAv56860NLspgUGuQw16GiOOp/I2LuTmpSK9xDXlgJz3XN4cnpXWDmkNBKXR/VDMTCnAaEooxA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"/>
 
             <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
             <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -1390,7 +1390,12 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
             ...
         </body>
        
-        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Linha eliminada -->
+        <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+
+        <!-- Linha inserida -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+
         <script src="~/js/site.js" asp-append-version="true"></script>
 
 
@@ -1915,6 +1920,8 @@ Parte 7. Escalando o uso do "DataTable"
 
         // Adiciona novo cliente pelo click do botão
         $('#btnAdd').click(function () {
+            document.getElementById('clienteForm').classList.remove("was-validated");
+
             $('#formModal').modal('show');
             $('#clienteForm')[0].reset(); // Clear the form
             $('#formModalLabel').text('Inclusão');
@@ -2218,6 +2225,8 @@ Parte 7. Escalando o uso do "DataTable"
                 // BLOCO INCLUIDO DENTRO DO IF
                 // Add New Customer Button Click
                 $('#btnAdd').click(function () {
+                    document.getElementById('clienteForm').classList.remove("was-validated");
+
                     $('#formModal').modal('show');
                     ...
 
@@ -2266,7 +2275,7 @@ Parte 7. Escalando o uso do "DataTable"
 Parte 8. Realizando a validação dos campos
 ------------------------------------------
 
-    . Utilizando os recursos do Bootstrap:
+    . Utilizando os recursos do Bootstrap para validar:
 
         . Apague no "cliente.js" a função "click" do "#btnSave", o código contido neste evento foi movido para a função "Save" abaixo:
 
@@ -2686,15 +2695,466 @@ Parte 8. Realizando a validação dos campos
 
             http://localhost:[porta]/Cliente/List
 
+    . Retirando os acentos e "ç" da digitação dos input["text"]
+
+        . Inclua a função abaixo no arquivo "wwwroot/js/index.js":
+
+            const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
+                var table;
+
+                $(document).ready(function () {
+                    ...
+                });
+
+            });
+
+            // Evento Incluido
+            document.querySelectorAll('.remove-acento').forEach(function(input) {
+                input.addEventListener('input', function(event) {
+                    let texto = event.target.value;
+
+                    // Substituir acentos e "ç"
+                    texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+                    texto = texto.replace(/ç/g, 'c').replace(/Ç/g, 'C'); // Substitui "ç" por "c"
+                    
+                    // Forçar texto em maiúsculas
+                    // texto = texto.toUpperCase();
+
+                    event.target.value = texto;
+                });
+            });    
+
+        . Altere o arquivo "_ClienteModal.cshtml" inserindo o style "text-transform: uppercase/lowercase" e a classe "remove-acento" como abaixo:
+
+            <!-- Modal for adding/editing customers -->
+            <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="formModalLabel">Detalhes</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="clienteForm">
+                                <input type="hidden" id="codigoCliente" name="codigoCliente">
+
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label for="cpf">CPF</label>
+                                            <input type="text" class="form-control form-control-sm"
+                                                aria-label=".form-control-sm example" placeholder="123.456.789-00" id="cpf"
+                                                name="cpf" required>
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo CPF é Obrigatório
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="col-9">
+                                        <div class="form-group">
+                                            <label for="nome">Nome</label>
+
+                                            <!-- Inserido as classes remove-acento e style-->
+                                            <input type="text" 
+                                                class="form-control form-control-sm remove-acento" 
+                                                style="text-transform: uppercase"
+                                                id="nome" 
+                                                name="nome" 
+                                                required
+                                                minlength="5" 
+                                                maxlength="100">
+
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Nome é Obrigatório e deve ter ao menos 5 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="endereco">Endereço</label>
+
+                                            <!-- Inserido as classes remove-acento e style-->
+                                            <input type="text" 
+                                                class="form-control form-control-sm remove-acento" 
+                                                style="text-transform: uppercase"
+                                                id="endereco" 
+                                                name="endereco"
+                                                required 
+                                                minlength="5" 
+                                            maxlength="100"> 
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Endereço é Obrigatório e deve ficar entre 5 a 100 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="form-group">
+                                            <label for="cidade">Cidade</label>
+
+                                            <!-- Inserido as classes remove-acento e style-->
+                                            <input type="text" 
+                                                    class="form-control form-control-sm remove-acento" 
+                                                    style="text-transform: uppercase"
+                                                    id="cidade" 
+                                                    name="cidade"
+                                                    required 
+                                                    minlength="5"
+                                            maxlength="50"> 
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Cidade é Obrigatório e deve ficar entre 5 a 50 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="estado">UF</label>
+
+                                            <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                                id="estado" name="estado" required>
+                                                <option value="" selected>Selecione</option>
+                                                <option value="AC">Acre</option>
+                                                <option value="AL">Alagoas</option>
+                                                <option value="AP">Amapá</option>
+                                                <option value="AM">Amazonas</option>
+                                                <option value="BA">Bahia</option>
+                                                <option value="CE">Ceará</option>
+                                                <option value="DF">Distrito Federal</option>
+                                                <option value="ES">Espírito Santo</option>
+                                                <option value="GO">Goiás</option>
+                                                <option value="MA">Maranhão</option>
+                                                <option value="MT">Mato Grosso</option>
+                                                <option value="MS">Mato Grosso do Sul</option>
+                                                <option value="MG">Minas Gerais</option>
+                                                <option value="PA">Pará</option>
+                                                <option value="PB">Paraíba</option>
+                                                <option value="PR">Paraná</option>
+                                                <option value="PE">Pernambuco</option>
+                                                <option value="PI">Piauí</option>
+                                                <option value="RJ">Rio de Janeiro</option>
+                                                <option value="RN">Rio Grande do Norte</option>
+                                                <option value="RS">Rio Grande do Sul</option>
+                                                <option value="RO">Rondônia</option>
+                                                <option value="RR">Roraima</option>
+                                                <option value="SC">Santa Catarina</option>
+                                                <option value="SP">São Paulo</option>
+                                                <option value="SE">Sergipe</option>
+                                                <option value="TO">Tocantins</option>
+                                                <option value="EX">Estrangeiro</option>
+                                            </select>
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo UF é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="cep">CEP</label>
+                                            <input type="text" class="form-control form-control-sm" id="cep" name="cep" required
+                                                minlength="8"> 
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo CEP é Obrigatório e deve conter 8 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="sexo">Sexo</label>
+
+                                            <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                                id="sexo" name="sexo" required>
+                                                <option value="" selected>Selecione</option>
+                                                <option value="M">Masculino</option>
+                                                <option value="F">Feminino</option>
+                                                <option value="O">Outros</option>
+                                            </select>
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Sexo é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label for="telefone">Telefone</label>
+                                            <input type="tel" class="form-control form-control-sm" id="telefone" name="telefone"
+                                                placeholder="(99) 9999-9999" 
+                                            required
+                                            minlength="10"> 
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Telefone é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="rg">RG</label>
+                                            <input type="text" class="form-control form-control-sm" id="rg" name="rg" required>
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo RG é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label for="email">Email</label>
+
+                                            <!-- Inserido as classes remove-acento e style-->
+                                            <input type="email" 
+                                                    class="form-control form-control-sm remove-acento" 
+                                                    style="text-transform: lowercase"
+                                                    id="email" 
+                                                    name="email"
+                                                    aria-describedby="emailHelp" 
+                                                    placeholder="Seu email" 
+                                                    email 
+                                            required>
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo E-Mail Inválido
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="form-group">
+                                            <label for="estadoCivil">Estado Civil</label>
+
+                                            <select class="form-select form-select-sm" aria-label=".form-select-sm example"
+                                                id="estadoCivil" name="estadoCivil" required>
+                                                <option value="" selected>Selecione</option>
+                                                <option value="CASADO">Casado</option>
+                                                <option value="SOLTEIRO">Solteiro</option>
+                                                <option value="OUTROS">Outro</option>
+                                            </select>
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Estado Civil é Obrigatório
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-5">
+                                        <div class="form-group">
+                                            <label for="pai">Nome do Pai</label>
+
+                                            <!-- Inserido as classes remove-acento e style-->
+                                            <input type="text" 
+                                                class="form-control form-control-sm remove-acento" 
+                                                style="text-transform: uppercase"
+                                                id="pai" 
+                                                name="pai"
+                                                maxlength="100">
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Nome do Pai deve ficar entre 0 a 100 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-5">
+                                        <div class="form-group">
+                                            <label for="mae">Nome da Mãe</label>
+
+                                            <!-- Inserido as classes remove-acento e style-->
+                                            <input type="text" 
+                                                    class="form-control form-control-sm remove-acento" 
+                                                    style="text-transform: uppercase"
+                                                    id="mae" 
+                                                    name="mae"
+                                                    maxlength="100">
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Nome da Mãe deve ficar entre 0 a 100 caracteres
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-2">
+                                        <div class="form-group">
+                                            <label for="dataNascimento">Data Nasc</label>
+                                            <input type="date" class="form-control form-control-sm" id="dataNascimento"
+                                                name="dataNascimento" required>
+
+                                            
+                                            <div class="invalid-feedback">
+                                                Campo Data Nasc é Obrigatório
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-3">
+                                        <div class="form-group">
+                                            <label for="salario">Salário</label>
+                                            <input type="text" class="form-control form-control-sm" name="salario" id="salario"
+                                                value="0,00" 
+                                            required> 
+
+                                            <div class="invalid-feedback">
+                                                Campo Salário Inválido
+                                            </div>
+                                        </div>
+
+                                    </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn btn-primary" id="btnSave">Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        . Execute o projeto na pasta raiz da solution:
+
+            dotnet run --project ./src/MvcDatatable.Web   
+
+        . Acesse a página do "DataTable" e teste se as entradas do Nome, Endereço, Cidade, Nome do Pai, Mãe estão aceitando somente letras maiúsculas e sem "ç".
+
+            http://localhost:[porta]/Cliente/List
+
+    . Incluindo mensagens customizadas:
+
+        . Inclua as linhas abaixo no arquivo "wwwroot/css/site.css":
+
+            #notification {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                display: none;
+                z-index: 1060; 
+            }
+
+        . Inclua a função abaixo no arquivo "wwwroot/js/index.js":
+
+            const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
+                var table;
+
+                $(document).ready(function () {
+                    ...
+                });
+
+            });
+
+            // função Incluida
+            function showNotification(type, msg) {
+                var message = msg;
+                var notification = $('#notification');
+
+                // Define a classe da notificação com base no tipo
+                notification
+                    .removeClass('alert-success alert-warning alert-danger')
+                    .addClass('alert-' + type)
+                    .text(message)
+                    .fadeIn(500, function() {
+                        setTimeout(function() {
+                            notification.fadeOut(500);
+                        }, 2000);
+                    });
+            }
+
+        . Altere todos os alert do arquivo "cliente.js" pela função "showNotification":
+
+            ...
+            const Save = () => {
+                if (!validaCPF( $('#cpf').val() )) {
+                    
+                    // Linha apagada
+                    // alert('CPF inválido. Verifique o número digitado.');    
+
+                    // Linha inserida
+                    showToast('Erro', 'CPF Inválido, verifique o no. digitado', 'danger');
+
+                    // showNotification("danger", "CPF Inválido, verifique o No. Digitado");
+
+                    $('#cpf').focus();
+
+                    return;
+                }
+
+                var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
+                var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
+                var sendInfo = {
+                    codigo: $('#codigoCliente').val().trim() == '' ? null : $('#codigoCliente').val(),
+                    cpf: $('#cpf').val(),
+                    nome: $('#nome').val(),
+                    dataNascimento: $('#dataNascimento').val(),
+                    rg: removeNonNumeric( $('#rg').val() ),
+                    sexo: $('#sexo').val(),
+                    estadoCivil: $('#estadoCivil').val(),
+                    pai: $('#pai').val(),
+                    mae: $('#mae').val(),
+                    endereco: $('#endereco').val(),
+                    cidade: $('#cidade').val(),
+                    estado: $('#estado').val(),
+                    cep: removeNonNumeric($('#cep').val()),
+                    telefone: removeNonNumeric( $('#telefone').val() ),
+                    email: $('#email').val(),
+                    salario: cleanCurrency($('#salario').val())
+                };
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: JSON.stringify(sendInfo),
+                    contentType: "application/json; charset=utf-8",
+                    success: function () {
+
+                        // Linha eliminada
+                        // alert('Cliente incluido com sucesso!!!');
+
+                        // Linha inserida
+                        showToast('Sucesso', 'Operação realizada com sucesso!', 'success');
+
+                        // showNotification( 'success', 'Operação Realizada com Sucesso');
+
+                        $('#formModal').modal('hide');
+                        $('#clienteTable').DataTable().ajax.reload();
+                    },
+                    error: function (request, status, error) {
+                        
+                        // Linha eliminada
+                        // alert(request.responseText);
+
+                        // Linha inserida
+                        showToast('Erro', 'Ocorreu o seguinte erro: \r\n\r\n" + request.responseText', 'danger');
+
+                        // showNotification("danger","Ocorreu o seguinte erro: \n\n" + request.responseText );
+
+
+                    }
+                });
+            }
 
 // PAREI AQUI
-
-. Alterar a forma dos alertas
-
-. Colocar em maiusculo as letras
-
-
-
 Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 --------------------------------------------------------------
 
@@ -2850,7 +3310,9 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 . Desenvolvimento na segunda fase do tutorial:
 
 
+    OK
     . Inclusão dos campos email e salario na tabela de clientes.
+
 
     . Mudar as msgs de alertas pelo "Toasty", ou "Alert" do Bootstrap:
 
