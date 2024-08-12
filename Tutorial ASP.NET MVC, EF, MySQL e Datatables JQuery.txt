@@ -970,6 +970,8 @@ Parte 4 - Montagem das APIs
             cliente.Estado = model.Estado;
             cliente.Cep = model.Cep;
             cliente.Telefone = model.Telefone;
+            cliente.Email = model.Email;
+            cliente.Salario = model.Salario;
             cliente.DataAlteracao = DateTime.Now;
 
             _context.Clientes.Update(cliente);
@@ -3158,148 +3160,207 @@ Parte 8. Realizando a validação dos campos
 Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 --------------------------------------------------------------
 
-    . Atualize o método abaixo na classe "ClienteRepository.cs":
+    . Função de Alteração:
 
-        ...
-        public async Task<Cliente> GetByIdAsync(int id)
-        {
-            try
-            {
-                var cliente = await _context.Clientes
-                                        .AsNoTracking()
-                                        .FirstOrDefaultAsync(x => x.Codigo == id);
+        . Atualize o método abaixo na classe "ClienteRepository.cs":
 
-                return cliente;
-            }
-            catch (System.Exception)
-            {
-
-                throw;
-            }
-        }
-        ...
-
-    . Atualize o método baixo na classe "ClienteAPIController.cs":
-
-        ...
-        [HttpGet("v1/{codigo}")]
-        public async Task<ActionResult<Cliente>> GetByCodigo([FromRoute] int codigo)
-        {
-            try
-            {
-                var cliente = await _clienteRepository.GetByIdAsync(codigo);
-
-                return cliente == null ?
-                                NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {codigo}" }) :
-                                Ok(new ResultViewModel<Cliente>(cliente));
-
-
-            }
-            catch (System.Exception)
-            {
-                throw;
-            }
-        }
-        ...
-
-    . Realize as mudanças abaixo no arquivo "cliente.js":
-
-        // Bloco inserido
-        ...
-        // Edit Customer Button Click
-        $('#clienteTable tbody').on('click', '.editBtn', function () {
-            var clienteCodigo = $(this).data('id');
-            $.ajax({
-                url: '/clienteAPI/api/v1/' + clienteCodigo, // Replace with your ASP.NET API endpoint
-                type: 'GET',
-                datatype: 'json',
-                success: function (data) {
-                    $('#formModal').modal('show');
-                    $('#formModalLabel').text('Alteração');
-                    $('#btnSave').text('Salvar');
-                    $('#codigoCliente').val(data.data.codigo);
-                    $('#cpf').val(data.data.cpf);
-                    $('#nome').val(data.data.nome);
-                    $('#endereco').val(data.data.endereco);
-                    $('#cidade').val(data.data.cidade);
-                    $('#estado').val(data.data.estado);
-                    $('#cep').val(data.data.cep);
-                    $('#sexo').val(data.data.sexo);
-                    $('#telefone').val(data.data.telefone);
-                    $('#rg').val(data.data.rg);
-                    $('#email').val(data.data.email);
-                    $('#estadoCivil').val(data.data.estadoCivil);
-                    $('#pai').val(data.data.pai);
-                    $('#mae').val(data.data.mae);
-                    $('#dataNascimento').val(data.data.dataNascimento.substring(0,10));
-                },
-                error: function (request, status, error) {
-                    alert(request.responseText);
-                }
-            });
-        });
-        ...
-
-        // Save/Update Customer Button Click
-        const Save = () => {
-            if (!validaCPF($('#cpf').val())) {
-                alert('CPF inválido. Verifique o número digitado.');
-                $('#cpf').focus();
-
-                return;
-            }
-
-
-            // Linha alterada
-            var url = $('#codigoCliente').val().trim() == '' ? 
-                        '/clienteAPI/api/v1' : 
-                        '/clienteAPI/api/v1/' + $('#codigoCliente').val().trim() ; 
             ...
-        }                    
+            public async Task<Cliente> GetByIdAsync(int id)
+            {
+                try
+                {
+                    var cliente = await _context.Clientes
+                                            .AsNoTracking()
+                                            .FirstOrDefaultAsync(x => x.Codigo == id);
 
-    . Execute o projeto na pasta raiz da solution:
-
-        dotnet run --project ./src/MvcDatatable.Web   
-
-    . Acesse a página do "DataTable" e teste as validações na inclusão:
-
-        http://localhost:[porta]/Cliente/List
-
-
-
-
-    . Inclua o código abaixo no arquivo javascript "cliente.js" com o conteúdo abaixo:
-
-        $(document).ready(function () {
-
-            ....
-
-            // Função inserida
-
-            // Delete Customer Button Click
-            $('#clienteTable tbody').on('click', '.deleteBtn', function () {
-                var clienteCodigo = $(this).data('id');
-
-                if (confirm('Tem Certeza que quer Apagar o cliente ?')) {
-                    $.ajax({
-                        url: '/clienteAPI/api/v1/' + clienteCodigo,
-                        type: 'DELETE',
-                        success: function () {
-                            $('#clienteTable').DataTable().ajax.reload();
-                        }
-                    });
+                    return cliente;
                 }
+                catch (System.Exception)
+                {
+
+                    throw;
+                }
+            }
+            ...
+
+        . Atualize o método baixo na classe "ClienteAPIController.cs":
+
+            ...
+            [HttpGet("v1/{codigo}")]
+            public async Task<ActionResult<Cliente>> GetByCodigo([FromRoute] int codigo)
+            {
+                try
+                {
+                    var cliente = await _clienteRepository.GetByIdAsync(codigo);
+
+                    return cliente == null ?
+                                    NotFound(new { Id = 1, error = $"Não foi encontrado cliente com o cpf {codigo}" }) :
+                                    Ok(new ResultViewModel<Cliente>(cliente));
+
+
+                }
+                catch (System.Exception)
+                {
+                    throw;
+                }
+            }
+            ...
+
+        . Realize as mudanças abaixo no arquivo "cliente.js":
+
+            // Bloco inserido
+            ...
+            // Edit Customer Button Click
+            $('#clienteTable tbody').on('click', '.editBtn', function () {
+                var clienteCodigo = $(this).data('id');
+                $.ajax({
+                    url: '/clienteAPI/api/v1/' + clienteCodigo, // Replace with your ASP.NET API endpoint
+                    type: 'GET',
+                    datatype: 'json',
+                    success: function (data) {
+                        $('#formModal').modal('show');
+                        $('#formModalLabel').text('Alteração');
+                        $('#btnSave').text('Salvar');
+                        $('#codigoCliente').val(data.data.codigo);
+                        $('#cpf').val(data.data.cpf);
+                        $('#nome').val(data.data.nome);
+                        $('#endereco').val(data.data.endereco);
+                        $('#cidade').val(data.data.cidade);
+                        $('#estado').val(data.data.estado);
+                        $('#cep').val(data.data.cep);
+                        $('#sexo').val(data.data.sexo);
+                        $('#telefone').val(data.data.telefone);
+                        $('#rg').val(data.data.rg);
+                        $('#email').val(data.data.email);
+                        $('#estadoCivil').val(data.data.estadoCivil);
+                        $('#pai').val(data.data.pai);
+                        $('#mae').val(data.data.mae);
+                        $('#salario').val(Number(data.data.salario).toFixed(2).replace(/\./g,","));
+                        $('#dataNascimento').val(data.data.dataNascimento.substring(0,10));
+                    },
+                    error: function (request, status, error) {
+                        showToast('Erro', 'Ocorreu o seguinte erro: \r\n\r\n" + request.responseText', 'danger');
+                    }
+                });
+            });
+            ...
+
+            // Save/Update Customer Button Click
+            const Save = () => {
+                if (!validaCPF($('#cpf').val())) {
+                    showToast('Erro', 'CPF Inválido, verifique o no. digitado', 'danger');
+
+                    $('#cpf').focus();
+
+                    return;
+                }
+
+
+                // Linha alterada
+                var url = $('#codigoCliente').val().trim() == '' ? 
+                            '/clienteAPI/api/v1' : 
+                            '/clienteAPI/api/v1/' + $('#codigoCliente').val().trim() ; 
+                ...
+            }                    
+
+        . Execute o projeto na pasta raiz da solution:
+
+            dotnet run --project ./src/MvcDatatable.Web   
+
+        . Acesse a página do "DataTable" e teste as validações na alteração:
+
+            http://localhost:[porta]/Cliente/List
+
+
+
+    . Função de Deleção:
+
+        . Crie a linha abaixo no arquivo "List.html":
+
+            ...
+
+            <input type="hidden" id="id-delete" name="id-delete"/>  <!-- Linha inserida -->
+
+            <partial name="_ClienteModal" />
+
+            ...
+
+        . Insira as linhas abaixo no arquivo _Layout.cshtml
+
+            ...
+            <div class="toast-container">
+                ...
+            </div>
+
+
+            <!-- Trecho incluido -->
+            <!-- Modal de Confirmação -->
+            <div class="modal fade" id="confirmacaoModal" tabindex="-1" aria-labelledby="confirmacaoModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="confirmacaoModalLabel">Confirmação</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="modalMensagem">
+                            <!-- Mensagem configurável -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancela</button>
+                            <button type="button" class="btn btn-primary" id="confirmarEnvio">Confirma</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ...
+
+        . Inclua o código abaixo no arquivo javascript "cliente.js" com o conteúdo abaixo:
+
+            $(document).ready(function () {
+
+                ....
+
+                // Função inserida
+
+                // Delete Customer Button Click
+                $('#clienteTable tbody').on('click', '.deleteBtn', function () {
+                    $('#id-delete').val($(this).data('id'));
+
+                    modalConfirmacao.show();
+                });
+
+                // Função inserida
+                $('#confirmarEnvio').click(function(){
+                    if ( $('#id-delete').val() != '' ){
+                        const clienteCodigo = $('#id-delete').val();
+
+                        modalConfirmacao.hide();
+
+                        $.ajax({
+                            url: '/clienteAPI/api/v1/' + clienteCodigo,
+                            type: 'DELETE',
+                            success: function () {
+                                $('#clienteTable').DataTable().ajax.reload();
+                                showToast('Aviso', 'Eliminação realizada com sucesso', 'success');
+                            },
+                            error: function(){
+                                showToast('Erro', 'Ocorreu o seguinte erro: \r\n\r\n' + request.responseText, 'danger');
+                            }
+                        });
+
+                        $('#id-delete').val('');
+                    }
+                });
             });
 
-        });
+        . Execute o projeto na pasta raiz da solution:
 
-    . Execute o projeto na pasta raiz da solution:
+            dotnet run --project ./src/MvcDatatable.Web   
 
-        dotnet run --project ./src/MvcDatatable.Web   
+        . Acesse a página do "DataTable" e teste a deleção dos clientes pelo botão de delete da datatable.
 
-    . Acesse a página do "DataTable" e teste a deleção dos clientes pelo botão de delete da datatable.
-
-        http://localhost:[porta]/Cliente/List
+            http://localhost:[porta]/Cliente/List
 
 
 
@@ -3310,23 +3371,27 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 . Desenvolvimento na segunda fase do tutorial:
 
 
-    OK
-    . Inclusão dos campos email e salario na tabela de clientes.
-
 
     . Mudar as msgs de alertas pelo "Toasty", ou "Alert" do Bootstrap:
 
+        # Testado Ok
         # Alert
         https://chatgpt.com/share/1ae423fd-120b-4c77-9c01-4c9c73aaeffc
 
 
+        # Ok
         # Toasty
         https://www.youtube.com/watch?v=0-t4xHigyWk&list=PL7yxJa4Na-irux26rILnjv0G33DrTC3Jq&index=2
         https://www.youtube.com/watch?v=A_B4DLz9k-Q&list=PL7yxJa4Na-irux26rILnjv0G33DrTC3Jq&index=3
 
-    . Desenvolver funcionalidade para mudar todos os caracteres minusculo para maiusculo e retirar caracateres especiais:
 
-        https://mail.google.com/mail/u/0/#inbox/KtbxLwgdgGSQwTlFBdHbCcnQZvNKjcXdtL
+        # Testar
+        # Toastr
+        https://codeseven.github.io/toastr/
+
+        # Notifyjs
+        https://notifyjs.jpillora.com/
+
 
     . Utilizando a biblioteca JQuery Validation:
 
@@ -3340,42 +3405,9 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 
         Desenvolver na segunda etapa do tutorial 
 
-    . Criar os campos salario e email na tabela de cliente e adapatar o tutorial
-
-
-    . Melhorar a disposição dos botões de export do Datatable:
-
-        https://www.youtube.com/watch?v=4aajwYY2NxI&list=PL7yxJa4Na-irux26rILnjv0G33DrTC3Jq&index=14
-
-
     . Alterar os alerts por algo que se assemelhe ao bootstrap
         
         https://www.youtube.com/watch?v=9JM2FRzifas
-        https://notifyjs.jpillora.com/
         https://www.jqueryscript.net/other/growl-notification-bootstrap-alert.html
         https://bootboxjs.com/examples.html
 
-https://www.youtube.com/watch?v=bESQ7X_pMR0
-
-https://www.youtube.com/watch?v=fB1TmfaT6pg
-
-https://designmodo.com/validate-forms-bootstrap/
-
-https://chinhplq.wordpress.com/2016/05/18/dynamic-error-message-in-jquery-validation/
-
-
-https://codepen.io/akalkhair/pen/dyPaozZ
-
-
-https://datatables.net/extensions/buttons/examples/initialisation/simple.html
-
-https://www.ezzylearning.net/tutorial/jquery-datatables-paging-sorting-and-filtering-in-asp-net-core-using-dapper-orm
-
-    # Icons
-    https://getbootstrap.com/docs/5.0/extend/icons/
-
-    # Ver a instalação das ferramentas dotnet-ef e dotnet-aspnet-codegenerator. Este último pesquisar
-    https://medium.com/@Mohammed_Taherali/mysql-connection-in-net-core-8-mvc-86c71c3613fd
-
-    https://datatables.net/examples/data_sources/server_side.html
-    https://www.w3schools.com/bootstrap/bootstrap_ver.asp
