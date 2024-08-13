@@ -822,6 +822,8 @@ Parte 4 - Montagem das APIs
 
     13. Crie a pasta "Controllers.Api" e dentro dela a classe "ClienteAPIController.cs" como abaixo:
 
+        using Microsoft.AspNetCore.Mvc;
+
         namespace MvcDatatable.Web.Controllers.Api;
 
         [ApiController]
@@ -896,7 +898,7 @@ Parte 4 - Montagem das APIs
 
         dotnet build
 
-        dotnet run
+        dotnet run --project ./src/MvcDatatable.Web
 
     15. Acesse o Postman e execute as URLs abaixo:
 
@@ -1011,6 +1013,17 @@ Parte 4 - Montagem das APIs
         }
         ...
 
+    18. Acesse a pasta raiz da "Solution" e Levante a aplicação:
+
+        dotnet clean
+
+        dotnet restore
+
+        dotnet build
+
+        dotnet run --project ./src/MvcDatatable.Web
+
+
     18. Acesse o Postman e execute as URLs abaixo:
 
         Method: PUT
@@ -1035,15 +1048,6 @@ Parte 4 - Montagem das APIs
                     "salario": 1540.00
                 }       
         Type: JSON
-
-    19. Execute o projeto na pasta raiz da solution:
-
-        dotnet run --project ./src/MvcDatatable.Web   
-
-    20. Acesse a página do "DataTable" e teste as validações na inclusão:
-
-        http://localhost:[porta]/Cliente/List
-
 
     21. Atualize o método "DeleteAsync" com o código abaixo na classe "ClienteRepository":
 
@@ -1337,7 +1341,6 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
             <!-- Linha Inserida -->
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"/>
 
-            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
             <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
             <link rel="stylesheet" href="~/MvcDatatable.Web.styles.css" asp-append-version="true" />
             
@@ -1401,7 +1404,6 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
         <script src="~/js/site.js" asp-append-version="true"></script>
 
 
-        @* Seção alterada *@
         @await RenderSectionAsync("Scripts", required: false)
 
 
@@ -1416,7 +1418,7 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
         http://localhost:[porta]/Cliente/List
 
 
-
+// PAREI AQUI
 Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no server
 ---------------------------------------------------------------------------------
 
@@ -3156,7 +3158,6 @@ Parte 8. Realizando a validação dos campos
                 });
             }
 
-// PAREI AQUI
 Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 --------------------------------------------------------------
 
