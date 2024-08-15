@@ -621,6 +621,7 @@ Parte 4 - Montagem das APIs
             public string Email { get; set; }
 
             [Required(ErrorMessage = "Salário é obrigatório")]
+            [Range(1540, 1000000, ErrorMessage= "Salário deve ser maior que R$ 1.540,00")]
             [DisplayFormat(DataFormatString = "{0:C}")]
             [Column("salario", TypeName = "DECIMAL(13,2)")]
             public decimal Salario { get; set; }
@@ -1418,7 +1419,6 @@ Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no cl
         http://localhost:[porta]/Cliente/List
 
 
-// PAREI AQUI
 Parte 6 - Criando página web utilizando  Datatable JQuery com paginação no server
 ---------------------------------------------------------------------------------
 
@@ -1642,8 +1642,8 @@ Parte 7. Escalando o uso do "DataTable"
             <!--    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
-            @* <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.min.js"></script> *@
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.0.1/dataTables.bootstrap5.min.js"></script>    
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables.net-bs5/2.1.0/dataTables.bootstrap5.min.js"></script> 
+            <script src="~/js/index.js"></script>
 
 
             <!-- Linhas Inseridas -->
@@ -1655,30 +1655,31 @@ Parte 7. Escalando o uso do "DataTable"
             <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 
-            <script src="~/js/index.js"></script>
             <script src="~/js/cliente.js"></script>
 
             <script>
-                LoadDataTable('clienteTable',
-                    7,
-                    {
-                        url: '/ClienteAPI/api/pageable/v1',
-                        type: 'POST'
-                    },
-                    [{ data: 'cpf', width: "12%", className: "dt-center" },
-                    { data: 'nome', width: "25%" },
-                    { data: 'endereco', width: "20%" },
-                    { data: 'cidade', width: "15%" },
-                    { data: 'estado', width: "5%" },
-                    { data: 'telefone', width: "13%" },
-                    {
-                        data: '',
-                        width: "10%",
-                        render: function (data, type, row) {
-                            return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
-                                '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30"></a>';
-                        }
-                }]);
+                $(document).ready(function () {
+                    LoadDataTable('clienteTable',
+                        7,
+                        {
+                            url: '/ClienteAPI/api/pageable/v1',
+                            type: 'POST'
+                        },
+                        [{ data: 'cpf', width: "12%", className: "dt-center" },
+                        { data: 'nome', width: "25%" },
+                        { data: 'endereco', width: "20%" },
+                        { data: 'cidade', width: "15%" },
+                        { data: 'estado', width: "5%" },
+                        { data: 'telefone', width: "13%" },
+                        {
+                            data: '',
+                            width: "10%",
+                            render: function (data, type, row) {
+                                return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
+                                    '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/image/Delete-Button.jpg" alt="Excluir" width="30" height="30"></a>';
+                            }
+                    }]);
+                });
             </script>
 
             <!-- Fim -->
@@ -1695,82 +1696,79 @@ Parte 7. Escalando o uso do "DataTable"
         const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
             var table;
 
-            $(document).ready(function () {
-                table = $('#' + tableId).DataTable({
-                    processing: true,
-                    serverSide: true,                                           // Linha inserida
-                    destroy: false,
-                    searching: true,
-                    ordering: true,
-                    paging: true,
-                    dom: 'Blfrtip',
-                    // dom: 'Blp',
-                    buttons: [{ extend: 'print', text: 'Imprimir' },
-                                { extend: 'copy', text: 'Copy to clipboard' },
-                                { extend: 'pdf', text: 'Criar PDF' },
-                                { extend: 'excel', text: 'Excel' },
-                                { extend: 'csv', text: 'Exportar para Excel' }
-                    ],
-                    layout:{
-                        topEnd: {
-                            search: {
-                                placeholder: 'Pelo CPF, ou Nome...'
-                            }
+            table = $('#' + tableId).DataTable({
+                processing: true,
+                serverSide: true,                                       
+                destroy: false,
+                searching: true,
+                ordering: true,
+                paging: true,
+                dom: 'Blfrtip',
+                // dom: 'Blp',
+                buttons: [{ extend: 'print', text: 'Imprimir' },
+                            { extend: 'copy', text: 'Copy to clipboard' },
+                            { extend: 'pdf', text: 'Criar PDF' },
+                            { extend: 'excel', text: 'Excel' },
+                            { extend: 'csv', text: 'Exportar para Excel' }
+                ],
+                layout:{
+                    topEnd: {
+                        search: {
+                            placeholder: 'Pelo CPF, ou Nome...'
                         }
-                    },
-                    // layout: {
-                        // topStart: {
-                        //     pageLength: {
-                        //         menu: [ 7, 25, 50, 100 ]
-                        //     }
-                        // },
-                        // top1B: $('<div class="toolbar"><a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a></div>'),
-                        // topStart: "pageLength",
-                        // topEnd: {
-                        //     search: {
-                        //         placeholder: 'Pelo CPF, ou Nome...'
-                        //     }
-                        // },
-                        // bottomStart: {
-                        //     buttons: {
-                        //         buttons: [ 'copy', 'csv', 'excel' ]
-                        //     }
-                        // },
-                        // bottomStart: {
-                        //     paging: {
-                        //         buttons: 6
-                        //     }
-                        // }
+                    }
+                },
+                // layout: {
+                    // topStart: {
+                    //     pageLength: {
+                    //         menu: [ 7, 25, 50, 100 ]
+                    //     }
                     // },
-                    scrollY: "320px",
-                    // scrollX: true,
-                    // scrollCollapse: true,
-                    select: true,
-                    sAjaxDataProp: "data",
-                    info: false,
-                    language: {
-                        decimal: ",",
-                        thousands: "."
-                    },
-                    pagingType: "full_numbers",
-                    language: {
-                        "url": "/js/Portuguese.json"
-                    },
-                    sPaginationType: "bootstrap",
-                    contentType: "application/json; charset=utf-8",
-                    aLengthMenu: [[pageLength, 10, 20, 100, -1],
-                    [pageLength, 10, 20, 100, "Todos"]],
-                    pageLength: pageLength,
-                    lengthChange: true,
-                    ajax: ajaxConfig,
-                    columns: columnConfig,
-                    "columnDefs": [{
-                        "className": "small",
-                        "targets": "_all"
-                    }]
-                    // colReorder: true
-
-                });
+                    // top1B: $('<div class="toolbar"><a href="#"><img src="/image/Edit-Button.jpg"   alt="Editar"  width="30" height="30"></a></div>'),
+                    // topStart: "pageLength",
+                    // topEnd: {
+                    //     search: {
+                    //         placeholder: 'Pelo CPF, ou Nome...'
+                    //     }
+                    // },
+                    // bottomStart: {
+                    //     buttons: {
+                    //         buttons: [ 'copy', 'csv', 'excel' ]
+                    //     }
+                    // },
+                    // bottomStart: {
+                    //     paging: {
+                    //         buttons: 6
+                    //     }
+                    // }
+                // },
+                scrollY: "320px",
+                // scrollX: true,
+                // scrollCollapse: true,
+                select: true,
+                sAjaxDataProp: "data",
+                info: false,
+                language: {
+                    decimal: ",",
+                    thousands: "."
+                },
+                pagingType: "full_numbers",
+                language: {
+                    "url": "/js/Portuguese.json"
+                },
+                sPaginationType: "bootstrap",
+                contentType: "application/json; charset=utf-8",
+                aLengthMenu: [[pageLength, 10, 20, 100, -1],
+                [pageLength, 10, 20, 100, "Todos"]],
+                pageLength: pageLength,
+                lengthChange: true,
+                ajax: ajaxConfig,
+                columns: columnConfig,
+                "columnDefs": [{
+                    "className": "small",
+                    "targets": "_all"
+                }]
+                // colReorder: true
 
             });
         }
@@ -1821,29 +1819,28 @@ Parte 7. Escalando o uso do "DataTable"
             const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
                 var table;
 
-                $(document).ready(function () {
-                    table = $('#' + tableId).DataTable({
-                        processing: true,
-                        serverSide: true,                                           
-                        destroy: false,
-                        searching: true,
-                        ordering: true,
-                        paging: true,
-                        // dom: 'Blfrtip',                                              // Linha apagada
-                        // dom: 'Blp',                                                  // Linha apagada
-                        buttons: [{ extend: 'print',    class:'buttons-print' },        // Linha alterada
-                                    { extend: 'pdf',    class:'buttons-pdf' },          // Linha alterada
-                                    { extend: 'excel',  class:'buttons-excel' },        // Linha alterada    
-                                    { extend: 'csv',    class:'buttons-csv' }           // Linha alterada
-                        ],
-                        ...
-                
-        . Inclua as linhas abaixo no arquivo "index.js":
-
-            $(document).ready(function () {
                 table = $('#' + tableId).DataTable({
+                    processing: true,
+                    serverSide: true,                                           
+                    destroy: false,
+                    searching: true,
+                    ordering: true,
+                    paging: true,
+                    // dom: 'Blfrtip',                                              // Linha apagada
+                    // dom: 'Blp',                                                  // Linha apagada
+                    buttons: [{ extend: 'print',    class:'buttons-print' },        // Linha alterada
+                                { extend: 'pdf',    class:'buttons-pdf' },          // Linha alterada
+                                { extend: 'excel',  class:'buttons-excel' },        // Linha alterada    
+                                { extend: 'csv',    class:'buttons-csv' }           // Linha alterada
+                    ],
                     ...
                 });
+            };
+
+        . Inclua as linhas abaixo no arquivo "index.js":
+
+            table = $('#' + tableId).DataTable({
+                ...
 
                 // Linhas incluidas
 
@@ -1862,10 +1859,10 @@ Parte 7. Escalando o uso do "DataTable"
                 $('#btnPdf').on('click', function(){
                     table.button('.buttons-pdf').trigger();
                 });
-
-                // Fim
-
             });
+
+            // Fim
+
 
         . Execute o projeto na pasta raiz da solution:
 
@@ -1875,109 +1872,120 @@ Parte 7. Escalando o uso do "DataTable"
 
             http://localhost:[porta]/Cliente/List
 
-    . Adicione a função abaixo no arquivo "index.js":
+    . Adicione as funções abaixo no arquivo "index.js":
 
-        ...
-        // Remover qq caractere diferente de número
-        function removeNonNumeric(str) {
-            return str.replace(/\D/g, '');
-        }
+            table = $('#' + tableId).DataTable({
+                ...
+            });
 
-        // Validação do CPF
-        function validaCPF(cpf) {
-            cpf = removeNonNumeric(cpf);
-            if (cpf.length !== 11) return false;
+            ...
 
-            let soma = 0;
-            let resto;
-            if (/^(\d)\1{10}$/.test(cpf)) return false;
+            // Funções adicionadas 
 
-            for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
-            resto = (soma * 10) % 11;
-            if ((resto === 10) || (resto === 11)) resto = 0;
-            if (resto !== parseInt(cpf.substring(9, 10))) return false;
+            // Remover qq caractere diferente de número
+            function removeNonNumeric(str) {
+                return str.replace(/\D/g, '');
+            }
 
-            soma = 0;
-            for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
-            resto = (soma * 10) % 11;
-            if ((resto === 10) || (resto === 11)) resto = 0;
-            if (resto !== parseInt(cpf.substring(10, 11))) return false;
+            // Validação do CPF
+            function validaCPF(cpf) {
+                cpf = removeNonNumeric(cpf);
+                if (cpf.length !== 11) return false;
 
-            return true;
-        }
+                let soma = 0;
+                let resto;
+                if (/^(\d)\1{10}$/.test(cpf)) return false;
 
-        function cleanCurrency(valor) {
-            // Remove o símbolo "R$"
-            valor = valor.replace("R$", "");
-            
-            // Remove pontos e vírgulas
-            valor = valor.replace(/\./g, "").replace(/\,/g,".");
+                for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+                resto = (soma * 10) % 11;
+                if ((resto === 10) || (resto === 11)) resto = 0;
+                if (resto !== parseInt(cpf.substring(9, 10))) return false;
 
-            // Remove espaços em branco extras (caso existam)
-            valor = valor.trim();
-            
-            return valor;
-        }
+                soma = 0;
+                for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+                resto = (soma * 10) % 11;
+                if ((resto === 10) || (resto === 11)) resto = 0;
+                if (resto !== parseInt(cpf.substring(10, 11))) return false;
 
+                return true;
+            }
+
+            function cleanCurrency(valor) {
+                // Remove o símbolo "R$"
+                valor = valor.replace("R$", "");
+                
+                // Remove pontos e vírgulas
+                valor = valor.replace(/\./g, "").replace(/\,/g,".");
+
+                // Remove espaços em branco extras (caso existam)
+                valor = valor.trim();
+                
+                return valor;
+            }
+
+
+            // Fim
 
     . Crie o arquivo "wwwroot/js/cliente.js" como abaixo:
 
-        // Adiciona novo cliente pelo click do botão
-        $('#btnAdd').click(function () {
-            document.getElementById('clienteForm').classList.remove("was-validated");
+        $(document).ready(function () {
+            // Adiciona novo cliente pelo click do botão
+            $('#btnAdd').click(function () {
+                document.getElementById('clienteForm').classList.remove("was-validated");
 
-            $('#formModal').modal('show');
-            $('#clienteForm')[0].reset(); // Clear the form
-            $('#formModalLabel').text('Inclusão');
-            $('#btnSave').text('Salvar');
-            $('#codigo').val(''); // Clear the hidden ID field
-        });
+                $('#formModal').modal('show');
+                $('#clienteForm')[0].reset(); // Clear the form
+                $('#formModalLabel').text('Inclusão');
+                $('#btnSave').text('Salvar');
+                $('#codigo').val(''); // Clear the hidden ID field
+            });
 
-        // Save o cliente pelo click do botão
-        $('#btnSave').click(function () {
-            if (!validaCPF( $('#cpf').val() )) {
-                alert('CPF inválido. Verifique o número digitado.');
-                $('#cpf').focus();
+            // Save o cliente pelo click do botão
+            $('#btnSave').click(function () {
+                if (!validaCPF( $('#cpf').val() )) {
+                    alert('CPF inválido. Verifique o número digitado.');
+                    $('#cpf').focus();
 
-                return;
-            }
-
-            var url = $('#codigoCliente').val().trim() === '' ?
-                '/clienteAPI/api/v1' :
-                '/clienteAPI/api/v1/' + $('#codigoCliente').val().trim(); // Linha alterada
-            var method = $('#codigoCliente').val().trim() === '' ? 'POST' : 'PUT';
-            var sendInfo = {
-                codigo: $('#codigoCliente').val().trim() === '' ? null : $('#codigoCliente').val(),
-                cpf: $('#cpf').val(),
-                nome: $('#nome').val(),
-                dataNascimento: $('#dataNascimento').val(),
-                rg: removeNonNumeric($('#rg').val()),
-                sexo: $('#sexo').val(),
-                estadoCivil: $('#estadoCivil').val(),
-                pai: $('#pai').val(),
-                mae: $('#mae').val(),
-                endereco: $('#endereco').val(),
-                cidade: $('#cidade').val(),
-                estado: $('#estado').val(),
-                cep: removeNonNumeric($('#cep').val()),
-                telefone: removeNonNumeric($('#telefone').val()),
-                email: $('#email').val(),
-                salario: cleanCurrency($('#salario').val())
-            };
-
-            $.ajax({
-                url: url,
-                type: method,
-                data: JSON.stringify(sendInfo),
-                contentType: "application/json; charset=utf-8",
-                success: function () {
-                    alert('Cliente incluido com sucesso!!!');
-                    $('#formModal').modal('hide');
-                    $('#clienteTable').DataTable().ajax.reload();
-                },
-                error: function (request, status, error) {
-                    alert(request.responseText);
+                    return;
                 }
+
+                var url = $('#codigoCliente').val().trim() === '' ?
+                    '/clienteAPI/api/v1' :
+                    '/clienteAPI/api/v1/' + $('#codigoCliente').val().trim(); // Linha alterada
+                var method = $('#codigoCliente').val().trim() === '' ? 'POST' : 'PUT';
+                var sendInfo = {
+                    codigo: $('#codigoCliente').val().trim() === '' ? null : $('#codigoCliente').val(),
+                    cpf: $('#cpf').val(),
+                    nome: $('#nome').val(),
+                    dataNascimento: $('#dataNascimento').val(),
+                    rg: removeNonNumeric($('#rg').val()),
+                    sexo: $('#sexo').val(),
+                    estadoCivil: $('#estadoCivil').val(),
+                    pai: $('#pai').val(),
+                    mae: $('#mae').val(),
+                    endereco: $('#endereco').val(),
+                    cidade: $('#cidade').val(),
+                    estado: $('#estado').val(),
+                    cep: removeNonNumeric($('#cep').val()),
+                    telefone: removeNonNumeric($('#telefone').val()),
+                    email: $('#email').val(),
+                    salario: cleanCurrency($('#salario').val())
+                };
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: JSON.stringify(sendInfo),
+                    contentType: "application/json; charset=utf-8",
+                    success: function () {
+                        alert('Cliente incluido com sucesso!!!');
+                        $('#formModal').modal('hide');
+                        $('#clienteTable').DataTable().ajax.reload();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.responseText);
+                    }
+                });
             });
         });
 
@@ -2178,7 +2186,7 @@ Parte 7. Escalando o uso do "DataTable"
 
         dotnet run --project ./src/MvcDatatable.Web   
 
-    . Acesse a página do "DataTable" e teste o comportamento da funcionalidade se ficou como era antes:
+    . Acesse a página do "DataTable" e teste o comportamento da paginação e se a inclusão estão funcionando:
 
         http://localhost:[porta]/Cliente/List
 
@@ -2199,8 +2207,10 @@ Parte 7. Escalando o uso do "DataTable"
 
         . Inclua e altere o código abaixo no arquivo "cliente.js":
 
-            // Bloco incluido
             $(document).ready(function(){
+                
+                // Bloco incluido
+
                 $("#cpf").mask("000.000.000-00");
                 $("#telefone").mask("(00) 00000-0000");
                 // $("#salario").mask("999.999.990,00", {reverse: true});
@@ -2224,47 +2234,11 @@ Parte 7. Escalando o uso do "DataTable"
                 });
 
                 $('#salario').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+    
+                // Fim
 
-
-                // BLOCO INCLUIDO DENTRO DO IF
-                // Add New Customer Button Click
-                $('#btnAdd').click(function () {
-                    document.getElementById('clienteForm').classList.remove("was-validated");
-
-                    $('#formModal').modal('show');
-                    ...
-
-
-                // BLOCO INCLUIDO DENTRO DO IF
-                // Save/Update Customer Button Click
-                $('#btnSave').click(function () {
-                    var url = $('#codigoCliente').val().trim() === '' ?
-                        '/clienteAPI/api/v1' :
-                        '/clienteAPI/api/v1/' + $('#codigoCliente').val().trim(); // Linha alterada
-                    var method = $('#codigoCliente').val().trim() === '' ? 'POST' : 'PUT';
-                    var sendInfo = {
-                        codigo: $('#codigoCliente').val().trim() === '' ? null : $('#codigoCliente').val(),
-                        cpf: $('#cpf').val(),
-                        nome: $('#nome').val(),
-                        dataNascimento: $('#dataNascimento').val(),
-                        rg: removeNonNumeric($('#rg').val()),
-                        sexo: $('#sexo').val(),
-                        estadoCivil: $('#estadoCivil').val(),
-                        pai: $('#pai').val(),
-                        mae: $('#mae').val(),
-                        endereco: $('#endereco').val(),
-                        cidade: $('#cidade').val(),
-                        estado: $('#estado').val(),
-                        cep: removeNonNumeric($('#cep').val()),
-                        telefone: removeNonNumeric($('#telefone').val()),
-                        email: $('#email').val(),
-                        salario: cleanCurrency($('#salario').val())
-                    };
-
-                    ...
-                });
+                ...
             });
-            // FIM
 
     . Execute o projeto na pasta raiz da solution:
 
@@ -2275,7 +2249,7 @@ Parte 7. Escalando o uso do "DataTable"
         http://localhost:[porta]/Cliente/List
 
 
-
+// PAREI AQUI
 Parte 8. Realizando a validação dos campos
 ------------------------------------------
 
@@ -2314,13 +2288,12 @@ Parte 8. Realizando a validação dos campos
 
                 $('#salario').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
 
-
-
                 // Evento incluido
                 $('#salario').on('focus', function() {  
                     $(this).select();
                 });  
 
+                ...
 
                 // Função incluida
                 // Função associada ao Bootstrap para fazer o efeito de validação dos campos
@@ -2704,29 +2677,28 @@ Parte 8. Realizando a validação dos campos
         . Inclua a função abaixo no arquivo "wwwroot/js/index.js":
 
             const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
-                var table;
+                ...
 
-                $(document).ready(function () {
-                    ...
+                $('#btnPdf').on('click', function () {
+                    table.button('.buttons-pdf').trigger();
                 });
 
-            });
+                // Evento Incluido
+                document.querySelectorAll('.remove-acento').forEach(function (input) {
+                    input.addEventListener('input', function (event) {
+                        let texto = event.target.value;
 
-            // Evento Incluido
-            document.querySelectorAll('.remove-acento').forEach(function(input) {
-                input.addEventListener('input', function(event) {
-                    let texto = event.target.value;
+                        // Substituir acentos e "ç"
+                        texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+                        texto = texto.replace(/ç/g, 'c').replace(/Ç/g, 'C'); // Substitui "ç" por "c"
 
-                    // Substituir acentos e "ç"
-                    texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos
-                    texto = texto.replace(/ç/g, 'c').replace(/Ç/g, 'C'); // Substitui "ç" por "c"
-                    
-                    // Forçar texto em maiúsculas
-                    // texto = texto.toUpperCase();
+                        // Forçar texto em maiúsculas
+                        // texto = texto.toUpperCase();
 
-                    event.target.value = texto;
+                        event.target.value = texto;
+                    });
                 });
-            });    
+            }
 
         . Altere o arquivo "_ClienteModal.cshtml" inserindo o style "text-transform: uppercase/lowercase" e a classe "remove-acento" como abaixo:
 
@@ -2764,7 +2736,7 @@ Parte 8. Realizando a validação dos campos
                                             <!-- Inserido as classes remove-acento e style-->
                                             <input type="text" 
                                                 class="form-control form-control-sm remove-acento" 
-                                                style="text-transform: uppercase"
+                                                style="text-transform: uppercase"       <!-- Incluido -->
                                                 id="nome" 
                                                 name="nome" 
                                                 required
@@ -2787,7 +2759,7 @@ Parte 8. Realizando a validação dos campos
                                             <!-- Inserido as classes remove-acento e style-->
                                             <input type="text" 
                                                 class="form-control form-control-sm remove-acento" 
-                                                style="text-transform: uppercase"
+                                                style="text-transform: uppercase"       <!-- Incluido -->
                                                 id="endereco" 
                                                 name="endereco"
                                                 required 
@@ -2809,7 +2781,7 @@ Parte 8. Realizando a validação dos campos
                                             <!-- Inserido as classes remove-acento e style-->
                                             <input type="text" 
                                                     class="form-control form-control-sm remove-acento" 
-                                                    style="text-transform: uppercase"
+                                                    style="text-transform: uppercase"       <!-- Incluido -->
                                                     id="cidade" 
                                                     name="cidade"
                                                     required 
@@ -2971,7 +2943,7 @@ Parte 8. Realizando a validação dos campos
                                             <!-- Inserido as classes remove-acento e style-->
                                             <input type="text" 
                                                 class="form-control form-control-sm remove-acento" 
-                                                style="text-transform: uppercase"
+                                                style="text-transform: uppercase"       <!-- Incluido -->
                                                 id="pai" 
                                                 name="pai"
                                                 maxlength="100">
@@ -2989,7 +2961,7 @@ Parte 8. Realizando a validação dos campos
                                             <!-- Inserido as classes remove-acento e style-->
                                             <input type="text" 
                                                     class="form-control form-control-sm remove-acento" 
-                                                    style="text-transform: uppercase"
+                                                    style="text-transform: uppercase"       <!-- Incluido -->
                                                     id="mae" 
                                                     name="mae"
                                                     maxlength="100">
@@ -3047,117 +3019,122 @@ Parte 8. Realizando a validação dos campos
 
     . Incluindo mensagens customizadas:
 
-        . Inclua as linhas abaixo no arquivo "wwwroot/css/site.css":
+        . Inclua as linhas abaixo no arquivo "_Layout.cshtml":
 
-            #notification {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                display: none;
-                z-index: 1060; 
-            }
+            <head>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>@ViewData["Title"] - MvcDatatable.Web</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
 
-        . Inclua a função abaixo no arquivo "wwwroot/js/index.js":
+                <!-- Linha Incluida -->
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />
 
-            const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
-                var table;
 
-                $(document).ready(function () {
-                    ...
-                });
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+                <link rel="stylesheet" href="~/MvcDatatable.Web.styles.css" asp-append-version="true" />
 
-            });
+                @await RenderSectionAsync("Links", required: false)
 
-            // função Incluida
-            function showNotification(type, msg) {
-                var message = msg;
-                var notification = $('#notification');
-
-                // Define a classe da notificação com base no tipo
-                notification
-                    .removeClass('alert-success alert-warning alert-danger')
-                    .addClass('alert-' + type)
-                    .text(message)
-                    .fadeIn(500, function() {
-                        setTimeout(function() {
-                            notification.fadeOut(500);
-                        }, 2000);
-                    });
-            }
-
-        . Altere todos os alert do arquivo "cliente.js" pela função "showNotification":
-
+            </head>
+            
             ...
-            const Save = () => {
-                if (!validaCPF( $('#cpf').val() )) {
-                    
-                    // Linha apagada
-                    // alert('CPF inválido. Verifique o número digitado.');    
 
-                    // Linha inserida
-                    showToast('Erro', 'CPF Inválido, verifique o no. digitado', 'danger');
+            <body>
 
-                    // showNotification("danger", "CPF Inválido, verifique o No. Digitado");
+                ...
+                <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
-                    $('#cpf').focus();
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
 
-                    return;
+                <!-- Linha Incluida -->
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" ></script>
+
+                <script src="~/js/site.js" asp-append-version="true"></script>
+
+                @await RenderSectionAsync("Scripts", required: false)
+
+            </body>
+
+        . Inclua a linha abaixo no arquivo "cliente.js":
+
+            $(document).ready(function () {
+
+                // Linha inserida 
+                toastr.options = {
+                    "closeButton": true,
+                    "debug": false,
+                    "newestOnTop": false,
+                    "progressBar": true,
+                    "positionClass": "toast-bottom-right",
+                    "preventDuplicates": false,
+                    "onclick": null,
+                    "showDuration": "300",
+                    "hideDuration": "1000",
+                    "timeOut": "5000",
+                    "extendedTimeOut": "1000",
+                    "showEasing": "swing",
+                    "hideEasing": "linear",
+                    "showMethod": "fadeIn",
+                    "hideMethod": "fadeOut"
                 }
 
-                var url = '/clienteAPI/api/v1'; // customerId ? 'api/customers/' + customerId : 'api/customers'; // Update or Create
-                var method = $('#codigoCliente').val().trim() == '' ? 'POST' : 'PUT';
-                var sendInfo = {
-                    codigo: $('#codigoCliente').val().trim() == '' ? null : $('#codigoCliente').val(),
-                    cpf: $('#cpf').val(),
-                    nome: $('#nome').val(),
-                    dataNascimento: $('#dataNascimento').val(),
-                    rg: removeNonNumeric( $('#rg').val() ),
-                    sexo: $('#sexo').val(),
-                    estadoCivil: $('#estadoCivil').val(),
-                    pai: $('#pai').val(),
-                    mae: $('#mae').val(),
-                    endereco: $('#endereco').val(),
-                    cidade: $('#cidade').val(),
-                    estado: $('#estado').val(),
-                    cep: removeNonNumeric($('#cep').val()),
-                    telefone: removeNonNumeric( $('#telefone').val() ),
-                    email: $('#email').val(),
-                    salario: cleanCurrency($('#salario').val())
-                };
+                ...
 
-                $.ajax({
-                    url: url,
-                    type: method,
-                    data: JSON.stringify(sendInfo),
-                    contentType: "application/json; charset=utf-8",
-                    success: function () {
+                const Save = () => {
+                    if (!validaCPF($('#cpf').val())) {
 
-                        // Linha eliminada
-                        // alert('Cliente incluido com sucesso!!!');
+                        // Linha apagada
+                        // alert("CPF inválido");
 
-                        // Linha inserida
-                        showToast('Sucesso', 'Operação realizada com sucesso!', 'success');
+                        // Linha incluida
+                        toastr["info"]("CPF Inválido", "Atenção");
 
-                        // showNotification( 'success', 'Operação Realizada com Sucesso');
+                        $('#cpf').focus();
 
-                        $('#formModal').modal('hide');
-                        $('#clienteTable').DataTable().ajax.reload();
-                    },
-                    error: function (request, status, error) {
-                        
-                        // Linha eliminada
-                        // alert(request.responseText);
-
-                        // Linha inserida
-                        showToast('Erro', 'Ocorreu o seguinte erro: \r\n\r\n" + request.responseText', 'danger');
-
-                        // showNotification("danger","Ocorreu o seguinte erro: \n\n" + request.responseText );
-
-
+                        return;
                     }
-                });
-            }
 
+                    ...
+
+                    $.ajax({
+                        url: url,
+                        type: method,
+                        data: JSON.stringify(sendInfo),
+                        contentType: "application/json; charset=utf-8",
+                        success: function () {
+                            
+                            // Linha apagada
+                            // alert('Operacao realizada com sucesso');
+
+                            // Linha inserida
+                            toastr["success"]("Operação realizada com sucesso", "Aviso");
+
+                            $('#formModal').modal('hide');
+                            $('#clienteTable').DataTable().ajax.reload();
+                        },
+                        error: function (request, status, error) {
+                            
+                            // Linha apgada
+                            // alert("Ocorreu o seguinte erro: \r\n\r\n" + request.responseText);
+
+                            // Linha inserida
+                            toastr["error"]("Ocorreu o seguinte erro: \r\n\r\n" + request.responseText, "Atenção");
+
+                        }
+                    });
+                };
+            });
+
+        . Execute o projeto na pasta raiz da solution:
+
+            dotnet run --project ./src/MvcDatatable.Web   
+
+        . Acesse a página do "DataTable" e teste se as mensagens após a inclusão estão funcionando.
+
+            http://localhost:[porta]/Cliente/List
+
+// PAREI AQUI
 Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 --------------------------------------------------------------
 
