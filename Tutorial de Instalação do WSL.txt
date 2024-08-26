@@ -227,6 +227,12 @@ Tutorial WSL ( Windows Subsystem Linux )
 
                 . Altere para "Hack Nerd Font"
 
+        . No caso do VSCode:
+
+            . Acesse as configurações e localize "Terminal > Integrated > Font Family", se quiser digite na busca "Terminal Font"
+
+            . Altere para "Hack Nerd Font"
+
         . Feche e abra o terminal
 
     . Alteração do tema do terminal:

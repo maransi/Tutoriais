@@ -2249,7 +2249,6 @@ Parte 7. Escalando o uso do "DataTable"
         http://localhost:[porta]/Cliente/List
 
 
-// PAREI AQUI
 Parte 8. Realizando a validação dos campos
 ------------------------------------------
 
@@ -2373,7 +2372,10 @@ Parte 8. Realizando a validação dos campos
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="clienteForm">
+
+                            <!-- Inclusão do novalidate -->
+
+                            <form id="clienteForm" novalidate>
                                 <input type="hidden" id="codigoCliente" name="codigoCliente">
 
                                 <div class="row">
@@ -2698,9 +2700,38 @@ Parte 8. Realizando a validação dos campos
                         event.target.value = texto;
                     });
                 });
+
+                // Evento incluido
+                document.querySelectorAll(".maiusculo").forEach( function( input ) {
+                    input.addEventListener('blur', function(){
+                        input.value = input.value.toUpperCase();
+                    });
+                });
+
+                // Evento incluido
+                document.querySelectorAll(".minusculo").forEach( function( input ) {
+                    input.addEventListener('blur', function(){
+                        input.value = input.value.toLowerCase();
+                    });
+                });
             }
 
-        . Altere o arquivo "_ClienteModal.cshtml" inserindo o style "text-transform: uppercase/lowercase" e a classe "remove-acento" como abaixo:
+        . Inclua as linhas abaixo no arquivo "site.css":
+
+            .maiusculo {
+                text-transform: uppercase;
+            }
+
+            .minusculo {
+                text-transform: lowercase;
+            }
+
+            /* Primeira letra de cada palavra maiúscula */
+            .capitalize {
+                text-transform: capitalize;
+            }
+
+        . Altere o arquivo "_ClienteModal.cshtml" inserindo a classe "remove-acento", "maisculo" e "minusculo" como abaixo:
 
             <!-- Modal for adding/editing customers -->
             <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
@@ -2711,7 +2742,7 @@ Parte 8. Realizando a validação dos campos
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="clienteForm">
+                            <form id="clienteForm" novalidate>
                                 <input type="hidden" id="codigoCliente" name="codigoCliente">
 
                                 <div class="row">
@@ -2733,10 +2764,9 @@ Parte 8. Realizando a validação dos campos
                                         <div class="form-group">
                                             <label for="nome">Nome</label>
 
-                                            <!-- Inserido as classes remove-acento e style-->
+                                            <!-- Inserido as classes remove-acento e maisculo-->
                                             <input type="text" 
-                                                class="form-control form-control-sm remove-acento" 
-                                                style="text-transform: uppercase"       <!-- Incluido -->
+                                                class="form-control form-control-sm remove-acento maisculo" 
                                                 id="nome" 
                                                 name="nome" 
                                                 required
@@ -2756,10 +2786,9 @@ Parte 8. Realizando a validação dos campos
                                         <div class="form-group">
                                             <label for="endereco">Endereço</label>
 
-                                            <!-- Inserido as classes remove-acento e style-->
+                                            <!-- Inserido as classes remove-acento e maisculo -->
                                             <input type="text" 
-                                                class="form-control form-control-sm remove-acento" 
-                                                style="text-transform: uppercase"       <!-- Incluido -->
+                                                class="form-control form-control-sm remove-acento maisculo" 
                                                 id="endereco" 
                                                 name="endereco"
                                                 required 
@@ -2778,10 +2807,9 @@ Parte 8. Realizando a validação dos campos
                                         <div class="form-group">
                                             <label for="cidade">Cidade</label>
 
-                                            <!-- Inserido as classes remove-acento e style-->
+                                            <!-- Inserido as classes remove-acento e maisculo-->
                                             <input type="text" 
-                                                    class="form-control form-control-sm remove-acento" 
-                                                    style="text-transform: uppercase"       <!-- Incluido -->
+                                                    class="form-control form-control-sm remove-acento maisculo" 
                                                     id="cidade" 
                                                     name="cidade"
                                                     required 
@@ -2898,10 +2926,9 @@ Parte 8. Realizando a validação dos campos
                                         <div class="form-group">
                                             <label for="email">Email</label>
 
-                                            <!-- Inserido as classes remove-acento e style-->
+                                            <!-- Inserido as classes remove-acento e minusculo -->
                                             <input type="email" 
-                                                    class="form-control form-control-sm remove-acento" 
-                                                    style="text-transform: lowercase"
+                                                    class="form-control form-control-sm remove-acento minusculo" 
                                                     id="email" 
                                                     name="email"
                                                     aria-describedby="emailHelp" 
@@ -2940,10 +2967,9 @@ Parte 8. Realizando a validação dos campos
                                         <div class="form-group">
                                             <label for="pai">Nome do Pai</label>
 
-                                            <!-- Inserido as classes remove-acento e style-->
+                                            <!-- Inserido as classes remove-acento e maisculo-->
                                             <input type="text" 
-                                                class="form-control form-control-sm remove-acento" 
-                                                style="text-transform: uppercase"       <!-- Incluido -->
+                                                class="form-control form-control-sm remove-acento maisculo" 
                                                 id="pai" 
                                                 name="pai"
                                                 maxlength="100">
@@ -2958,10 +2984,9 @@ Parte 8. Realizando a validação dos campos
                                         <div class="form-group">
                                             <label for="mae">Nome da Mãe</label>
 
-                                            <!-- Inserido as classes remove-acento e style-->
+                                            <!-- Inserido as classes remove-acento e maisculo -->
                                             <input type="text" 
-                                                    class="form-control form-control-sm remove-acento" 
-                                                    style="text-transform: uppercase"       <!-- Incluido -->
+                                                    class="form-control form-control-sm remove-acento maisculo" 
                                                     id="mae" 
                                                     name="mae"
                                                     maxlength="100">
@@ -3134,9 +3159,8 @@ Parte 8. Realizando a validação dos campos
 
             http://localhost:[porta]/Cliente/List
 
-// PAREI AQUI
 
-// document.querySelectorAll("#nome").forEach( (f) => f.value = f.value.toUpperCase() );
+// PAREI AQUI
 
 Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 --------------------------------------------------------------
