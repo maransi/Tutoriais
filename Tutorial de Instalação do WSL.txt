@@ -244,7 +244,7 @@ Tutorial WSL ( Windows Subsystem Linux )
 
         . No caso do WSL:
         
-            . Copie as fontes do arquivo "Hack.zip" para a pasta do windows "C:\Windows\Fonts"
+            . Descompacte o arquivo zip, selecione todos os arquivos de fontes, dê um clique direito e faça a instalação das fontes
 
             . Acesse as configurações do terminal WSL da distribuição sendo 
                 usada "WSL -> Configurações -> <Distribuição> -> Aparência -> Tipo de Fonte":
