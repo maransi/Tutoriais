@@ -109,6 +109,7 @@ Parte 1 - Instalação das ferramentas
 
             . Atalhos:
 
+                Ctrl + Shift + L                            Selecione o texto, pressione as teclas e ao fazer a alteração será replicado para todo arquivo
                 Ctrl + K + D ou Shit + Alt + F:             Identa todo o seu código automaticamente;
                 Ctrl + K + C:                               comenta um bloco de linhas;
                 Ctrl + /                                    Comenta a linha
@@ -3328,10 +3329,14 @@ Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 
                 // Função inserida
 
+                var modalConfirmacao = new bootstrap.Modal(document.getElementById('confirmacaoModal'));
+
                 // Delete Customer Button Click
                 $('#clienteTable tbody').on('click', '.deleteBtn', function () {
                     $('#id-delete').val($(this).data('id'));
 
+                    $('#modalMensagem').text("Deseja realmente eliminar este cliente?");
+                    
                     modalConfirmacao.show();
                 });
 
