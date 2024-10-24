@@ -373,3 +373,36 @@ Tutoriais em Delphi
             }
         end;
 
+    4.4. Obtendo uma ocorrência especifica com método GET
+    -----------------------------------------------------
+
+        var
+            RESTClient: TRESTClient;
+            RESTRequest: TRESTRequest;
+            RESTResponse: TRESTResponse;
+            AuthToken: string;
+            ClienteID: string;
+        begin
+            RESTClient := TRESTClient.Create('http://localhost:3000/posts/'); // URL da API
+            RESTRequest := TRESTRequest.Create(nil);
+            RESTResponse := TRESTResponse.Create(nil);
+
+            try
+                AuthToken := 'seu_token_aqui'; // Substitua pelo seu token
+                ClienteID := '2'; // Substitua pelo ID do cliente desejado
+
+                RESTRequest.Client := RESTClient;
+                RESTRequest.Response := RESTResponse;
+                RESTRequest.Resource := '{id}'; // Endpoint da API com placeholder para ID
+                RESTRequest.Params.ParameterByName('id').Value := ClienteID;
+                RESTRequest.Method := TRESTRequestMethod.rmGET;
+                RESTRequest.Params.AddHeader('Authorization', 'Bearer ' + AuthToken);
+
+                RESTRequest.Execute;
+                ShowMessage(RESTResponse.Content); // Exibe o conteúdo da resposta
+            finally
+                RESTRequest.Free;
+                RESTResponse.Free;
+                RESTClient.Free;
+            end;
+        end;
