@@ -1,0 +1,51 @@
+Tutoriais em Delphi
+-------------------
+
+1. Utilização da biblioteca FireDac
+-----------------------------------
+
+    var
+        fdqConection: TFDConnection;
+        fdqQuery: TFDQuery;
+        strNome: string;
+    begin
+        // Crie uma conexão com o banco de dados
+
+        fdqConection := TFDConnection.Create(nil);
+
+        with fdqConection do
+        begin
+            DriverName := 'MySQL'; // ou outro driver de banco de dados
+            LoginPrompt := False;
+            Params.Values['Server'] := 'eris';
+            Params.Values['Database'] := 'jb28082024';
+            Params.Values['User_Name'] := 'desenvolvedor';
+            Params.Values['Password'] := 'jb1155';
+            Connected := True;
+        end;
+
+        fdqQuery := TFDQuery.Create(nil);
+
+        with fdqQuery do
+        begin
+            Connection := fdqConection;
+
+            SQL.Text := 'SELECT nome FROM clientes WHERE cpfCnpj=:cpfCnpj ';
+
+            ParamByName('cpfCnpj').AsString := '106.523.608-58'; // substitua pelo ID desejado
+
+            // Execute a consulta
+            Open;
+
+            showmessage( FieldByName('nome').AsString );
+        end;
+
+
+        // Faça o que você quiser com o XML
+        // ...
+
+        // Libere os recursos
+        fdqQuery.Close;
+        fdqQuery.Free;
+        fdqConection.Free;
+    end;
