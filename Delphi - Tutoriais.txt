@@ -1,7 +1,65 @@
 Tutoriais em Delphi
 -------------------
 
-1. Utilização da biblioteca FireDac
+1. Configurando o ambiente de desenvolvimento
+---------------------------------------------
+
+    . Instalação do Nodejs
+
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | $SHELL
+        nvm --version
+
+        # Para instalar a versão lts mais recente
+        nvm install --lts
+
+        # Se quiser instalar uma versão especifica, utilize:
+        # nvm install 18.20.4
+
+        # Se quiser listar as versões do node disponivel no repositorio remoto
+        # nvm ls-remote
+
+        # Se quiser listar as versões instalada na máquina atual
+        # nvm ls
+
+        # Para usar uma versão instalada na máquina atual
+        # nvm use 20.17.0
+
+        # Para desinstalar uma versão do node js
+        # nvm uninstall 18.20.4
+
+        node -v
+        npm -v
+
+    . Instalação do JSon Server
+
+        # Instalação do JSon Server
+        npm install json-server
+
+        # Crie o arquivo json abaixo com o nome de db.json
+        {
+            "posts": [
+                { "id": "1", "title": "a title", "views": 100 },
+                { "id": "2", "title": "another title", "views": 200 }
+            ],
+            "comments": [
+                { "id": "1", "text": "a comment about post 1", "postId": "1" },
+                { "id": "2", "text": "another comment about post 1", "postId": "1" }
+            ],
+            "profile": {
+                "name": "typicode"
+            }
+        }
+
+
+        # Execute o comando abaixo
+        npx json-server db.json
+
+        # Testando as rotas
+        curl http://localhost:3000/posts/1
+
+        curl http://localhost:3000/posts
+
+2. Utilização da biblioteca FireDac
 -----------------------------------
 
     var
@@ -49,3 +107,269 @@ Tutoriais em Delphi
         fdqQuery.Free;
         fdqConection.Free;
     end;
+
+
+
+
+3. Utilizando JSon
+------------------
+
+    3.1. Exemplo de uma ocorrência
+    ------------------------------
+
+        var
+            jsonStr: string;
+            jsonValue, endereco: TJSONObject;
+            //   endereco: string;
+
+        begin
+            // Defina a string JSON
+            jsonStr := '{"nome":"João","idade":30,"endereco":{"rua":"Rua 1","cidade":"Cidade 1"}}';
+
+            // Crie um objeto JSON a partir da string
+            jsonValue := TJSONObject.ParseJSONValue(jsonStr) as TJSONObject;
+
+            // Acesse os valores do objeto JSON
+            ShowMessage('Nome: ' + jsonValue.GetValue('nome').ToString);
+            ShowMessage('Idade: ' + jsonValue.GetValue('idade').ToString);
+
+            // Acesse os valores de um objeto JSON aninhado
+            endereco := jsonValue.GetValue('endereco') as TJSONObject;
+            ShowMessage('Rua: ' + endereco.GetValue('rua').ToString);
+            ShowMessage('Cidade: ' + endereco.GetValue('cidade').ToString);
+        end;
+
+    3.2. Exemplo de "n" ocorrências
+    -------------------------------
+
+        var
+            JsonString: string;
+            JsonArray: TJSONArray;
+            JsonObject: TJSONObject;
+            I: Integer;
+            Nome: string;
+            Idade: Integer;
+            Lista: TList<string>;
+        begin
+            JsonString := '[{"nome": "João", "idade": 30}, {"nome": "Maria", "idade": 25}, {"nome": "Carlos", "idade": 28}]';
+
+            // Criar a lista para armazenar os nomes
+            try
+                // Converter a string JSON para um array JSON
+                JsonArray := TJSONObject.ParseJSONValue(JsonString) as TJSONArray;
+
+                try
+                // Iterar sobre o array JSON
+                for I := 0 to JsonArray.Count - 1 do
+                begin
+                    JsonObject := JsonArray.Items[I] as TJSONObject;
+
+                    // Obter os valores do objeto JSON
+                    Nome := JsonObject.GetValue<string>('nome');
+                    Idade := JsonObject.GetValue<Integer>('idade');
+
+                    // Exibir os dados
+                    ShowMessage('Nome: ' + Nome + ', Idade: ' + Idade.ToString);
+                end;
+                finally
+                // Liberar o array JSON
+                JsonArray.Free;
+                end;
+            finally
+
+            end;
+        end;
+
+4. Acessando APIs restful
+-------------------------
+
+    4.1. Exemplo para acessar uma ocorrência
+    ----------------------------------------
+
+        var
+            restClient: TRestClient;
+            restRequest: TRestRequest;
+            restResponse: TRestResponse;
+            jsonValue: TJSONObject;
+            parametros: TJSONObject;
+            conteudo: string;
+            Id, Title: string;
+            Views: Integer;
+
+        begin
+            // Crie um cliente Rest
+            restClient := TRestClient.Create(Nil);
+            restClient.BaseURL := 'http://localhost:3000/posts/1';
+
+            // Crie uma requisição Rest
+            restRequest := TRestRequest.Create(Nil);
+            restRequest.Client := restClient;
+            restRequest.Method := rmGET;
+            // restRequest.Resource := 'users';
+            // restRequest.Params.AddHeader('Authorization', 'Bearer ' + 'AuthToken');
+
+            restResponse := TRestResponse.Create(Nil);
+            restRequest.Response := restResponse;
+
+            // Execute a requisição
+            restRequest.Execute;
+
+            // Verifique se a requisição foi bem-sucedida
+            if restResponse.StatusCode = 200 then
+            begin
+                // Obtenha o conteúdo da resposta
+                conteudo := StringReplace(restResponse.Content, #$A, '', [rfReplaceAll]);
+
+            //      conteudo := '{"nome": "João", "idade": 30, "cidade": "São Paulo"}';
+
+                // Converta o conteúdo para um objeto JSON
+                jsonValue := TJSONObject.ParseJSONValue(conteudo) as TJSONObject;
+
+                    // Podemos obter os valores sem o tipo genérico <T>
+                    Id := jsonValue.GetValue<string>('id');
+                    Title := jsonValue.GetValue<string>('title');
+                    Views := jsonValue.GetValue<Integer>('views');
+
+                    ShowMessage('Id: ' + Id + ', Title: ' + Title + ', Views: ' + Views.toString);
+
+            end
+
+            else
+            begin
+                writeln('Erro: ' + restResponse.StatusCode.ToString);
+            end;
+
+            // Libere os recursos
+            restRequest.Free;
+            restResponse.Free;
+            restClient.Free;
+        end;
+
+    4.2. Exemplo para acessar "n" ocorrências
+    -----------------------------------------
+
+        var
+            restClient: TRestClient;
+            restRequest: TRestRequest;
+            restResponse: TRestResponse;
+            jsonValue: TJSONObject;
+            parametros: TJSONObject;
+            jsonString: string;
+            jsonCollection: TJSONArray;
+            JsonArray: TJSONArray;
+            JsonObject: TJSONObject;
+            I: Integer;
+            Id: string;
+            Title: string;
+            Views: Integer;
+            Lista: TList<string>;
+        begin
+            // Crie um cliente Rest
+            restClient := TRestClient.Create(Nil);
+            restRequest := TRestRequest.Create(Nil);
+            restResponse := TRestResponse.Create(Nil);
+
+
+            restClient.BaseURL := 'http://localhost:3000/';
+            restClient.ContentType := 'application/json;';
+
+            // Crie uma requisição Rest
+            restRequest.Response := restResponse;
+            restRequest.Client := restClient;
+            restRequest.Method := rmGET;
+            restRequest.Resource := 'posts';
+
+            // Execute a requisição
+            restRequest.Execute;
+
+            // Verifique se a requisição foi bem-sucedida
+            if restResponse.StatusCode in [ 200, 201 ] then
+            begin
+                // Obtenha o conteúdo da resposta
+                jsonString := StringReplace(restResponse.Content, #$A, '', [rfReplaceAll]);
+                JsonArray := TJSONObject.ParseJSONValue(JsonString) as TJSONArray;
+
+                for I := 0 to JsonArray.Count - 1 do
+                begin
+                    JsonObject := JsonArray.Items[I] as TJSONObject;
+
+                    Id := JsonObject.GetValue<string>('id');
+                    Title := JsonObject.GetValue<string>('title');
+                    Views := JsonObject.GetValue<Integer>('views');
+
+                    ShowMessage('Id: ' + Id + ', Title: ' + Title + ', Views: ' + Views.toString);
+                end;
+
+            end;
+        end;
+
+
+    4.3. Utilizando método POST
+    ---------------------------
+
+        var
+            restClient: TRestClient;
+            restRequest: TRestRequest;
+            restResponse: TRestResponse;
+            jsonValue: TJSONObject;
+            jsonString: string;
+            JsonArray: TJSONArray;
+            JsonObject: TJSONObject;
+            objPost: TPost;
+
+            parametros:  TJSONObject;
+        begin
+            // Componente responsável pelos parâmetros de envio
+            objPost := TPost.Create;
+
+            objPost.Id := '19';
+            objPost.Title := 'MARCO ANTONIO';
+            objPost.Views := 180;
+
+
+            // Criação dos objetos de acessa a API
+            restClient := TRestClient.Create(Nil);
+            restRequest := TRestRequest.Create(Nil);
+            restResponse := TRestResponse.Create(Nil);
+
+            // Configuração do objeto Cliente
+            restClient.BaseURL := 'http://localhost:3000/';
+            restClient.ContentType := 'application/json;';
+
+            // Crie uma requisição Rest
+            restRequest.Client := restClient;
+            restRequest.Method := rmPOST;
+            restRequest.Resource := 'posts';
+
+            restRequest.Response := restResponse;
+
+            // Adicione os parâmetros ao body da requisição, através de classes delphi
+            //   restRequest.AddBody(objPost);
+
+            // Crie um objeto JSON para os parâmetros
+            parametros := TJSONObject.Create;
+
+            parametros.AddPair('id', '27');
+            parametros.AddPair('title', 'Marco e Antonio');
+            parametros.AddPair('views', '30');
+
+            restRequest.AddBody(parametros.ToString, TRESTContentType.ctAPPLICATION_JSON);
+
+            // Execute a requisição
+            restRequest.Execute;
+
+            // Verifique se a requisição foi bem-sucedida
+            if restResponse.StatusCode in [200, 201] then
+            begin
+                // Obtenha o conteúdo da resposta
+                jsonString := StringReplace(restResponse.Content, #$A, '', [rfReplaceAll]);
+            end;
+
+
+            {
+            restRequest.Params.AddItem;
+            restRequest.Params.Items[i].Kind := TRESTRequestParameterKind.pkREQUESTBODY;
+            restRequest.Params.Items[i].ContentType := ctAPPLICATION_JSON;
+            }
+        end;
+
