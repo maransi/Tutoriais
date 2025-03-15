@@ -1,0 +1,385 @@
+ASP.NET WebApi JWT Refresh Token
+--------------------------------
+
+. Acesse a pasta central de projetos e execute o comando abaixo:
+
+    # dotnet new webapi -o superRefreshTokenApp -n superRefreshTokenApp -f net8.0
+    dotnet new webapi -o superRefreshTokenApp -n superRefreshTokenApp -f net8.0 --https
+
+    # ATENÇÃO: Verificar o comportamento do projeto, pois estamos fazendo uso do HTTPS
+
+. Acesse a pasta do projeto criado e execute os comandos abaixo:
+
+    dotnet add package Microsoft.AspNetCore.Authentication --version 2.3.0
+
+    # dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.3
+    dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.0.14
+
+
+. Altere o atributo "<Nullable>" para "disable" para impedir os "Warnings" de objeto nulo
+
+    <Project Sdk="Microsoft.NET.Sdk.Web">
+
+        <PropertyGroup>
+            <TargetFramework>net8.0</TargetFramework>
+            <Nullable>disable</Nullable>                <!-- linha alterada -->
+            <ImplicitUsings>enable</ImplicitUsings>
+        </PropertyGroup>
+
+        ...
+    </Project>
+
+. Crie a pasta "Models" na raiz do projeto e dentro dela crie a classe abaixo:
+
+    namespace superRefreshTokenApp.Models;
+
+    public class User
+    {
+        public int Id { get; set; }
+
+        public string Username { get; set; }
+
+        public string Password { get; set; }
+
+        public string Role { get; set; }
+
+    }
+
+. Crie a pasta "Repositories" na raiz do projeto e dentro dela crie a classe abaixo:
+
+    using superRefreshTokenApp.Models;
+
+    namespace superRefreshTokenApp.Repositories;
+
+    public class UserRepository
+    {
+        public static User Get(string username, string password)
+        {
+            var users = new List<User>
+                    {
+
+                        new() { Id = 1, Username = "batman", Password = "batman", Role = "manager" } ,
+                        new() { Id = 2, Username = "robin", Password = "robin", Role = "employee" }
+                    };
+
+            return users.FirstOrDefault(x => x.Username == username && x.Password == password);
+        }
+    }
+
+. Na raiz do projeto crie a classe "Settings":
+
+    namespace superRefreshTokenApp;
+
+    public static class Settings
+    {
+        public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
+    }
+
+
+. Crie a pasta "Services" e dentro dela a classe abaixo:
+
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Security.Claims;
+    using System.Security.Cryptography;
+    using System.Text;
+    using Microsoft.IdentityModel.Tokens;
+    using superRefreshTokenApp.Models;
+
+    namespace superRefreshTokenApp.Services;
+
+    public class TokenService
+    {
+        private List<(string, string)> _refreshTokens; 
+
+        public TokenService()
+        {
+            _refreshTokens = new();
+        }
+
+        public string GenerateToken(User user)
+        {
+            // Classe responsável por gerar o token
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            // Nossa chave de validação do token
+            var key = Encoding.ASCII.GetBytes(Settings.JwtKey);
+
+            // Informações contidas no nosso token
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                // Perfis dos usuários
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                            new Claim( ClaimTypes.Name, user.Username ),    // Aponta para User.Identity.Name
+                            new Claim( ClaimTypes.Role, user.Role )         // Aponta para User.InRole
+                }),
+                // Tempo de expiração do nosso token
+                Expires = DateTime.UtcNow.AddHours(8),
+                // Credenciais para incriptar e desincriptar nosso token
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                                                                SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            // Faz a criação do token
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
+
+        }
+
+        // 7.52
+        public string GenerateToken(IEnumerable<Claim> claims)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var key = Encoding.ASCII.GetBytes(Settings.JwtKey);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(2),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                                        SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
+        }
+
+        // 8.24
+        public string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+
+            using var rng = RandomNumberGenerator.Create();
+
+            rng.GetBytes(randomNumber);
+
+            return Convert.ToBase64String(randomNumber);
+        }
+
+        // 9.20
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Settings.JwtKey)),
+                ValidateLifetime = false
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                    !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                                                            StringComparison.InvariantCultureIgnoreCase))
+                throw new SecurityTokenException("Invalid Token");
+
+            return principal;
+        }
+
+        // 11.26
+        public void SaveRefreshToken(string username, string refreshToken)
+        {
+            int index = _refreshTokens.FindIndex(x => x.Item1 == username);
+
+            if (index == -1)
+                _refreshTokens.Add(new(username, refreshToken));
+            else
+                _refreshTokens[index] = new(username, refreshToken);
+        }
+
+        public string GetRefreshToken(string username)
+        {
+            return _refreshTokens.FirstOrDefault(x => x.Item1 == username).Item2;
+        }
+
+        public void DeleteRefreshToken(string username, string refreshToken)
+        {
+
+            // ATENÇÃO: Verificar se "x.items2 == refreshToken ).item2;" está correto
+
+            var item = _refreshTokens.FirstOrDefault(x => x.Item1 == username &&
+                                                        x.Item2 == refreshToken);
+
+            _refreshTokens.Remove(item);
+        }
+    }
+
+
+    . Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
+        no nosso projeto, obrigatório ser nessa ordem:
+
+        using System.Text;                                          // Linha inserida
+        using superRefreshTokenApp;                                 // Linha inserida
+        using Microsoft.AspNetCore.Authentication.JwtBearer;        // Linha inserida
+        using Microsoft.IdentityModel.Tokens;                       // Linha inserida
+
+        ...
+        var builder - WebApplication.CreateBuilder( args );
+
+        builder.Services.AddSingleton<TokenService>();  // Linha inserida
+
+        builder.Services.AddControllers();               // Linha inserida
+        builder.Services.AddAuthorization();             // Linha inserida
+
+        var key = Encoding.ASCII.GetBytes( Settings.JwtKey );   // Linha inserida
+
+        // Linha abaixo inserida, não é para alterar
+        builder
+            .Services
+            .AddAuthentication(x =>
+                                    {
+                                        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                                        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                                    })
+            .AddJwtBearer(x =>
+                                    {
+                                        x.RequireHttpsMetadata = false;             
+                                        x.SaveToken = true;
+                                        x.TokenValidationParameters = new TokenValidationParameters
+                                        {
+                                            ValidateIssuerSigningKey = true,
+                                            IssuerSigningKey = new SymmetricSecurityKey(key),
+                                            ValidateIssuer = false,
+                                            ValidateAudience = false
+                                        };
+                                    });
+
+        // Linha Inserida
+        builder.Services.Configure<RouteOptions>(options =>
+        {
+            options.LowercaseUrls = true; // Força URLs em minúsculas
+        });
+
+        ...
+        var app = builder.Build();
+
+        app.UseAuthentication();    // Linha inserida   "Nessa ordem"
+        app.UseAuthorization();     // Linha inserida   "Nessa ordem"
+
+        app.MapControllers();       // Linha inserida
+
+        ...
+
+        app.UseHttpsRedirection();
+
+        // Apague o bloco de código abaixo
+        /*  
+        var summaries = new[]
+        {
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+        };
+
+        app.MapGet("/weatherforecast", () =>
+        {
+            var forecast = Enumerable.Range(1, 5).Select(index =>
+                new WeatherForecast
+                (
+                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                    Random.Shared.Next(-20, 55),
+                    summaries[Random.Shared.Next(summaries.Length)]
+                ))
+                .ToArray();
+            return forecast;
+        })
+        .WithName("GetWeatherForecast")
+        .WithOpenApi();
+        */
+
+        app.Run();
+
+        // Apague o bloco de código abaixo
+        /*
+        record WeatherForecast(DateOnly Date, int TemperatureC, string Summary)
+        {
+            public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        }
+        */
+
+. Crie a pasta "Controllers" e crie a classe "LoginController" dentro dela:
+
+    using System.Web;
+    using Microsoft.AspNetCore.Mvc;
+    using superRefreshTokenApp.Models;
+    using superRefreshTokenApp.Repositories;
+    using superRefreshTokenApp.Services;
+
+    namespace superAuthApp.Controllers;
+    [ApiController]
+    [Route("[controller]")]
+    public class LoginController : ControllerBase
+    {
+
+        [HttpPost("v1/getToken")]
+        public ActionResult<dynamic> Authenticate([FromServices] TokenService tokenService,
+                                                                    [FromBody] User model)
+        {
+            var user = UserRepository.Get(model.Username, model.Password);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "Usuário, ou senha, inválido" });
+            }
+
+            var token = tokenService.GenerateToken(user);
+
+            var refreshToken = tokenService.GenerateRefreshToken();
+
+            // tokenService.SaveRefreshToken(user.Username, HttpUtility.UrlDecode(refreshToken));
+            tokenService.SaveRefreshToken(user.Username, refreshToken);
+
+            user.Password = "";
+
+            return new
+            {
+                user = user,
+                token = token,
+                refreshToken = refreshToken
+            };
+        }
+
+        // 14.50
+        [HttpPost("v1/getRefreshToken")]
+        public IActionResult Refresh([FromServices] TokenService tokenService,
+                                    [FromQuery] string token,
+                                        [FromQuery] string refreshToken)
+        {
+
+            var principal = tokenService.GetPrincipalFromExpiredToken(token);
+
+            var username = principal.Identity.Name;
+
+            var savedRefreshToken = tokenService.GetRefreshToken(username);
+
+            if (savedRefreshToken != refreshToken)
+                // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
+                return Unauthorized(new { Error = "RefreshToken Inválido" });
+            //  throw new SecurityTokenException("Invalid Token");  // Ao invés de levantar um exception, devolver um StatusCode
+
+            var newJwtToken = tokenService.GenerateToken(principal.Claims);
+            var newRefreshToken = tokenService.GenerateRefreshToken();
+
+            tokenService.DeleteRefreshToken(username, refreshToken);
+            tokenService.SaveRefreshToken(username, newRefreshToken);   // Salvar a data de criação/expiração para invalida-lo
+
+            return new ObjectResult(new
+            {
+                token = newJwtToken,
+                refreshToken = newRefreshToken
+
+                // Retornar a data de expiração do refreshToken
+            });
+        }
+
+        // TODO  1. No método "tokenService.GenerateRefreshToken" deve guardar a data de expiração do refreshToken
+        //       2. Criar método que gera novo token somente com o refreshToken
+        //       3. Esse método deve validar a expiração do refreshToken
+
+
+    }

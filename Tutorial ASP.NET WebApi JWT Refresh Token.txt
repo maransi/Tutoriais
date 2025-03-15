@@ -263,7 +263,7 @@ https://github.com/muhammadelhelaly/JWTRefreshTokenInDotNet6
         ...
         var builder - WebApplication.CreateBuilder( args );
 
-        var key = Encoding.ASCII.GetBytes( Configuration.JwtKey );   // Linha inserida
+        var key = Encoding.ASCII.GetBytes( Settings.JwtKey );   // Linha inserida
 
         // Linha abaixo inserida, não é para alterar
         builder.Services.AddAuthentication(x =>
