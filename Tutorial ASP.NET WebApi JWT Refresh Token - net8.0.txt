@@ -5,8 +5,6 @@ ASP.NET WebApi JWT Refresh Token
 
     dotnet new webapi -o superRefreshTokenApp -n superRefreshTokenApp -f net8.0 --use-controllers
 
-    # ATENÇÃO: Verificar o comportamento do projeto, pois estamos fazendo uso do HTTPS
-
 . Acesse a pasta do projeto criado e execute os comandos abaixo:
 
     dotnet add package Microsoft.AspNetCore.Authentication --version 2.3.0
