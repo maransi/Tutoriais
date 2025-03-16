@@ -3,8 +3,7 @@ ASP.NET WebApi JWT Refresh Token
 
 . Acesse a pasta central de projetos e execute o comando abaixo:
 
-    # dotnet new webapi -o superRefreshTokenApp -n superRefreshTokenApp -f net8.0
-    dotnet new webapi -o superRefreshTokenApp -n superRefreshTokenApp -f net8.0 --https
+    dotnet new webapi -o superRefreshTokenApp -n superRefreshTokenApp -f net8.0 --use-controllers
 
     # ATENÇÃO: Verificar o comportamento do projeto, pois estamos fazendo uso do HTTPS
 
