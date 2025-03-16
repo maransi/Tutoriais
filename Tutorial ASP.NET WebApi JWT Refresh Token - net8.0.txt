@@ -73,8 +73,13 @@ ASP.NET WebApi JWT Refresh Token
     public static class Settings
     {
         public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
-    }
 
+        public static string ApiKeyName = "api_key";
+        public static string ApiKey = "curso_api_IlTevUM/z0ey3NwCV/unWg==";
+        public static int TokenExpireIn = 10800;
+        public static string TokenExpireInUnit = "seconds";
+
+    }
 
 . Crie a pasta "Services" e dentro dela a classe abaixo:
 
@@ -89,7 +94,7 @@ ASP.NET WebApi JWT Refresh Token
 
     public class TokenService
     {
-        private List<(string, string)> _refreshTokens; 
+        private List<(string, string, string)> _refreshTokens; //  = new();
 
         public TokenService()
         {
@@ -114,7 +119,10 @@ ASP.NET WebApi JWT Refresh Token
                             new Claim( ClaimTypes.Role, user.Role )         // Aponta para User.InRole
                 }),
                 // Tempo de expiração do nosso token
-                Expires = DateTime.UtcNow.AddHours(8),
+                // Expires = DateTime.UtcNow.AddHours(8),
+                // Tempo de expiração do nosso token
+                Expires = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds( Settings.TokenExpireIn ):
+                                                                            DateTime.UtcNow.AddHours(   Settings.TokenExpireIn ),
                 // Credenciais para incriptar e desincriptar nosso token
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                                                                 SecurityAlgorithms.HmacSha256Signature)
@@ -173,28 +181,41 @@ ASP.NET WebApi JWT Refresh Token
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
 
-            if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-                    !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                                                            StringComparison.InvariantCultureIgnoreCase))
+                if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                        !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                                                                StringComparison.InvariantCultureIgnoreCase))
+                    throw new SecurityTokenException("Invalid Token");
+
+                return principal;
+            }
+            catch (Exception ex)
+            {
                 throw new SecurityTokenException("Invalid Token");
-
-            return principal;
+            }            
         }
 
         // 11.26
-        public void SaveRefreshToken(string username, string refreshToken)
+        public void SaveRefreshToken(string username, string token, string refreshToken)
         {
+
             int index = _refreshTokens.FindIndex(x => x.Item1 == username);
 
             if (index == -1)
-                _refreshTokens.Add(new(username, refreshToken));
+                _refreshTokens.Add(new(username, token, refreshToken));
             else
-                _refreshTokens[index] = new(username, refreshToken);
+                _refreshTokens[index] = new(username, token, refreshToken);
         }
 
         public string GetRefreshToken(string username)
+        {
+            return _refreshTokens.FirstOrDefault(x => x.Item1 == username).Item3;
+        }
+
+        public string GetToken(string username)
         {
             return _refreshTokens.FirstOrDefault(x => x.Item1 == username).Item2;
         }
@@ -205,7 +226,7 @@ ASP.NET WebApi JWT Refresh Token
             // ATENÇÃO: Verificar se "x.items2 == refreshToken ).item2;" está correto
 
             var item = _refreshTokens.FirstOrDefault(x => x.Item1 == username &&
-                                                        x.Item2 == refreshToken);
+                                                        x.Item3 == refreshToken);
 
             _refreshTokens.Remove(item);
         }
@@ -306,6 +327,7 @@ ASP.NET WebApi JWT Refresh Token
 
     using System.Web;
     using Microsoft.AspNetCore.Mvc;
+    using superRefreshTokenApp;
     using superRefreshTokenApp.Models;
     using superRefreshTokenApp.Repositories;
     using superRefreshTokenApp.Services;
@@ -322,26 +344,27 @@ ASP.NET WebApi JWT Refresh Token
         {
             var user = UserRepository.Get(model.Username, model.Password);
 
+
             if (user == null)
             {
                 return NotFound(new { message = "Usuário, ou senha, inválido" });
             }
 
-            var token = tokenService.GenerateToken(user);
+            string token = tokenService.GenerateToken(user);
 
-            var refreshToken = tokenService.GenerateRefreshToken();
-
-            // tokenService.SaveRefreshToken(user.Username, HttpUtility.UrlDecode(refreshToken));
-            tokenService.SaveRefreshToken(user.Username, refreshToken);
+            string refreshToken = tokenService.GenerateRefreshToken();
 
             user.Password = "";
 
-            return new
-            {
-                user = user,
-                token = token,
-                refreshToken = refreshToken
-            };
+            return new // ObjectResult(new
+                                    {
+                                        user = user,
+                                        token = HttpUtility.UrlDecode(token),
+                                        tokenType = "Bearer",
+                                        tokenExpireIn = Settings.TokenExpireIn,
+                                        tokenExpireInUnit = Settings.TokenExpireInUnit,
+                                        refreshToken = HttpUtility.UrlDecode(refreshToken)
+                                    };
         }
 
         // 14.50
@@ -355,9 +378,17 @@ ASP.NET WebApi JWT Refresh Token
 
             var username = principal.Identity.Name;
 
+            // TODO: Fazer a validação do Token como é feito com o RefreshToken
+
+            var savedToken = tokenService.GetToken(username);
+
             var savedRefreshToken = tokenService.GetRefreshToken(username);
 
-            if (savedRefreshToken != refreshToken)
+            if ( savedToken != token ) 
+                // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
+                return Unauthorized(new { Error = "Token Inválido" });
+
+            if  (savedRefreshToken != refreshToken)
                 // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
                 return Unauthorized(new { Error = "RefreshToken Inválido" });
             //  throw new SecurityTokenException("Invalid Token");  // Ao invés de levantar um exception, devolver um StatusCode
@@ -365,21 +396,195 @@ ASP.NET WebApi JWT Refresh Token
             var newJwtToken = tokenService.GenerateToken(principal.Claims);
             var newRefreshToken = tokenService.GenerateRefreshToken();
 
-            tokenService.DeleteRefreshToken(username, refreshToken);
-            tokenService.SaveRefreshToken(username, newRefreshToken);   // Salvar a data de criação/expiração para invalida-lo
+            // tokenService.DeleteRefreshToken(username, refreshToken);
+            tokenService.SaveRefreshToken(username, HttpUtility.UrlDecode(newJwtToken), HttpUtility.UrlDecode(newRefreshToken) );   // Salvar a data de criação/expiração para invalida-lo
 
             return new ObjectResult(new
-            {
-                token = newJwtToken,
-                refreshToken = newRefreshToken
-
-                // Retornar a data de expiração do refreshToken
-            });
+                                    {
+                                        user = username,
+                                        token = HttpUtility.UrlDecode(newJwtToken),
+                                        tokenType = "Bearer",
+                                        tokenExpireIn = Settings.TokenExpireIn,
+                                        tokenExpireInUnit = Settings.TokenExpireInUnit,
+                                        refreshToken = HttpUtility.UrlDecode(newRefreshToken)
+                                    });
         }
 
         // TODO  1. No método "tokenService.GenerateRefreshToken" deve guardar a data de expiração do refreshToken
         //       2. Criar método que gera novo token somente com o refreshToken
         //       3. Esse método deve validar a expiração do refreshToken
-
-
     }
+
+. Acesse o controller "HomeController" e altere todo código dele como abaixo:
+
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+
+    namespace superTokenApp.Controllers;
+
+    [ApiController]
+    [Route("[controller]")]
+    public class HomeController : ControllerBase
+    {
+        [HttpGet("v1/anonymous")]
+        [AllowAnonymous]
+        public string Anonymous() => "Anônimo";
+
+        [HttpGet("v1/authenticated")]
+        [Authorize]
+        public string Authenticate() => $"Authenticated - {User.Identity.Name}";
+
+        [HttpGet("v1/employee")]
+        [Authorize(Roles = "employee,manager")]
+        public string Employee() => "Funcionário";
+
+        [HttpGet("v1/manager")]
+        [Authorize(Roles = "manager")]
+        public string Manager() => "Gerente";
+    }
+
+. Levante a aplicação
+
+. Acesse o Postman e execute a rota abaixo:
+
+    url: https://localhost:[porta]/login/v1/getToken
+    method: POST
+    Body.raw.JSON: True
+    Body.raw:   {
+        "username": "batman",
+        "password": "batman"
+    }
+
+    . Copie o token e o refreshToken gerado
+
+// 18.13
+. Execute a rota abaixo:
+
+    url: https://localhost:[porta]/login/v1/getRefreshToken
+    method: POST
+    Params.token: [token gerado no item anterior]
+    Params.refreshToken: [Refresh Token gerado no passo anterior]
+    Body.raw.JSON: True
+    Body.raw:   {
+        "username": "batman",
+        "password": "batman"
+    }
+
+. Acesse o controller "HomeController" e altere todo código dele como abaixo:
+
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+
+    namespace superTokenApp.Controllers
+    {
+        [ApiController]
+        [Route("[controller]")]
+        public class HomeController: ControllerBase
+        {
+            [HttpGet("v1/anonymous")]
+            [AllowAnonymous]
+            public string Anonymous() => "Anônimo";
+
+            [HttpGet("v1/authenticated")]
+            [Authorize]
+            public string Authenticate() => $"Authenticated - {User.Identity.Name}";
+
+            [HttpGet("v1/employee")]
+            [Authorize( Roles = "employee,manager")]
+            public string Employee() => "Funcionário";
+
+            [HttpGet("v1/manager")]
+            [Authorize( Roles = "manager")]
+            public string Manager() => "Gerente";
+        }
+    }
+
+. Pare o projeto e execute novamente em modo debug
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:[porta]/home/v1/anonymous
+    method: GET 
+    body.none: true
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:[porta]/home/v1/authenticated
+    method: GET 
+    body.none: true
+
+    . Dará erro "401. Unauthenticated"
+
+    . No Postman reconfigure a requisição como abaixo:
+
+        url: https://localhost:[porta]/home/v1/authenticated
+        method: GET
+        Authorization.Type: Bearer Token
+        Authorization.Token: [token obtido no item anterior]
+
+        ou
+
+        url: https://localhost:[porta]/home/v1/authenticated
+        method: GET
+        Headers.Authorization: Bearer [Token obtido no item anterior]
+
+        . Este NÃO DARÁ erro, retornando o "User.Identity.Name"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:[porta]/home/v1/employee
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:[porta]/home/v1/employee
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este NÃO DARÁ erro, retornando o "Funcionário"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:[porta]/home/v1/manager
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:[porta]/home/v1/manager
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este DARÁ erro, retornando status Code "403. Forbidden"
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:[porta]/login/v1/getToken
+    method: POST
+    body.raw: true
+    body.raw.json: True
+    body:   {
+                "username": "batman",
+                "password": "batman"
+            }
+
+    . Guarde o Token gerado para ser utilizado logo mais.
+
+. Acesse o Postman e execute a requisição abaixo:
+
+    url: https://localhost:[porta]/home/v1/manager
+    method: GET
+    Authorization.Type: Bearer Token
+    Authorization.Token: [token obtido no item anterior]
+
+    ou
+
+    url: https://localhost:[porta]/home/v1/manager
+    method: GET
+    Headers.Authorization: Bearer [Token obtido no item anterior]
+
+    . Este NÃO DARÁ erro, retornando o valor "Gerente"
+
