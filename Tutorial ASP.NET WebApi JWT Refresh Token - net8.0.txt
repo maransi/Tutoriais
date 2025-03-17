@@ -5,15 +5,18 @@ ASP.NET WebApi JWT Refresh Token
 
     dotnet new webapi -o superRefreshTokenApp -n superRefreshTokenApp -f net8.0 --use-controllers
 
+. Apague as classes abaixo:
+
+    WeatherForecast.cs
+    Controllers/WeatherForecastController.cs
+
 . Acesse a pasta do projeto criado e execute os comandos abaixo:
 
     dotnet add package Microsoft.AspNetCore.Authentication --version 2.3.0
 
-    # dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 9.0.3
     dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.0.14
 
-
-. Altere o atributo "<Nullable>" para "disable" para impedir os "Warnings" de objeto nulo
+. Acesse o arquivo "superRefreshTokenApp.csproj" e altere o atributo "<Nullable>" para "disable" para impedir os "Warnings" de objeto nulo
 
     <Project Sdk="Microsoft.NET.Sdk.Web">
 
@@ -80,245 +83,160 @@ ASP.NET WebApi JWT Refresh Token
 
 . Crie a pasta "Services" e dentro dela a classe abaixo:
 
-    using System.IdentityModel.Tokens.Jwt;
-    using System.Security.Claims;
-    using System.Security.Cryptography;
-    using System.Text;
-    using Microsoft.IdentityModel.Tokens;
+    using System.Web;
+    using Microsoft.AspNetCore.Mvc;
+    using superRefreshTokenApp;
     using superRefreshTokenApp.Models;
+    using superRefreshTokenApp.Repositories;
+    using superRefreshTokenApp.Services;
 
-    namespace superRefreshTokenApp.Services;
-
-    public class TokenService
+    namespace superAuthApp.Controllers;
+    [ApiController]
+    [Route("[controller]")]
+    public class LoginController : ControllerBase
     {
-        private List<(string, string, string)> _refreshTokens; //  = new();
 
-        public TokenService()
+        [HttpPost("v1/getToken")]
+        public ActionResult<dynamic> Authenticate([FromServices] TokenService tokenService,
+                                                                    [FromBody] User model)
         {
-            _refreshTokens = new();
-        }
+            var user = UserRepository.Get(model.Username, model.Password);
 
-        public string GenerateToken(User user)
-        {
-            // Classe responsável por gerar o token
-            var tokenHandler = new JwtSecurityTokenHandler();
 
-            // Nossa chave de validação do token
-            var key = Encoding.ASCII.GetBytes(Settings.JwtKey);
-
-            // Informações contidas no nosso token
-            var tokenDescriptor = new SecurityTokenDescriptor()
+            if (user == null)
             {
-                // Perfis dos usuários
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                            new Claim( ClaimTypes.Name, user.Username ),    // Aponta para User.Identity.Name
-                            new Claim( ClaimTypes.Role, user.Role )         // Aponta para User.InRole
-                }),
-                // Tempo de expiração do nosso token
-                // Expires = DateTime.UtcNow.AddHours(8),
-                // Tempo de expiração do nosso token
-                Expires = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds( Settings.TokenExpireIn ):
-                                                                            DateTime.UtcNow.AddHours(   Settings.TokenExpireIn ),
-                // Credenciais para incriptar e desincriptar nosso token
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                                                                SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            // Faz a criação do token
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
-
-        }
-
-        // 7.52
-        public string GenerateToken(IEnumerable<Claim> claims)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var key = Encoding.ASCII.GetBytes(Settings.JwtKey);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(2),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                                        SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            return tokenHandler.WriteToken(token);
-        }
-
-        // 8.24
-        public string GenerateRefreshToken()
-        {
-            var randomNumber = new byte[32];
-
-            using var rng = RandomNumberGenerator.Create();
-
-            rng.GetBytes(randomNumber);
-
-            return Convert.ToBase64String(randomNumber);
-        }
-
-        // 9.20
-        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
-        {
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = false,
-                ValidateIssuer = false,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Settings.JwtKey)),
-                ValidateLifetime = false
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            try
-            {
-                var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
-
-                if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-                        !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
-                                                                StringComparison.InvariantCultureIgnoreCase))
-                    throw new SecurityTokenException("Invalid Token");
-
-                return principal;
+                return NotFound(new { message = "Usuário, ou senha, inválido" });
             }
-            catch (Exception ex)
+
+            string token = tokenService.GenerateToken(user);
+
+            string refreshToken = tokenService.GenerateRefreshToken();
+
+            tokenService.SaveRefreshToken(user.Username, HttpUtility.UrlDecode(token), HttpUtility.UrlDecode(refreshToken));   // Salvar a data de criação/expiração para invalida-lo
+
+            user.Password = "";
+
+            return new ObjectResult(new
             {
-                throw new SecurityTokenException("Invalid Token");
-            }            
+                user = user,
+                token = HttpUtility.UrlDecode(token),
+                tokenType = "Bearer",
+                // tokenExpireIn = Settings.TokenExpireIn,
+                tokenExpireIn = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(Settings.TokenExpireIn) :
+                                                                            DateTime.UtcNow.AddHours(Settings.TokenExpireIn),            tokenExpireInUnit = Settings.TokenExpireInUnit,
+                refreshToken = HttpUtility.UrlDecode(refreshToken)
+            });
         }
 
-        // 11.26
-        public void SaveRefreshToken(string username, string token, string refreshToken)
+        // 14.50
+        [HttpPost("v1/getRefreshToken")]
+        public IActionResult Refresh([FromServices] TokenService tokenService,
+                                    [FromQuery] string token,
+                                        [FromQuery] string refreshToken)
         {
 
-            int index = _refreshTokens.FindIndex(x => x.Item1 == username);
+            var principal = tokenService.GetPrincipalFromExpiredToken(token);
 
-            if (index == -1)
-                _refreshTokens.Add(new(username, token, refreshToken));
-            else
-                _refreshTokens[index] = new(username, token, refreshToken);
+            var username = principal.Identity.Name;
+
+            // TODO: Fazer a validação do Token como é feito com o RefreshToken
+
+            var savedToken = tokenService.GetToken(username);
+
+            var savedRefreshToken = tokenService.GetRefreshToken(username);
+
+            if (savedToken != token)
+                // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
+                return Unauthorized(new { Error = "Token Inválido" });
+
+            if (savedRefreshToken != refreshToken)
+                // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
+                return Unauthorized(new { Error = "RefreshToken Inválido" });
+            //  throw new SecurityTokenException("Invalid Token");  // Ao invés de levantar um exception, devolver um StatusCode
+
+            var newJwtToken = tokenService.GenerateToken(principal.Claims);
+            var newRefreshToken = tokenService.GenerateRefreshToken();
+
+            // tokenService.DeleteRefreshToken(username, refreshToken);
+            tokenService.SaveRefreshToken(username, HttpUtility.UrlDecode(newJwtToken), HttpUtility.UrlDecode(newRefreshToken));   // Salvar a data de criação/expiração para invalida-lo
+
+            return new ObjectResult(new
+            {
+                user = username,
+                token = HttpUtility.UrlDecode(newJwtToken),
+                tokenType = "Bearer",
+                // tokenExpireIn = Settings.TokenExpireIn,
+                tokenExpireIn = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(Settings.TokenExpireIn) :
+                                                                DateTime.UtcNow.AddHours(Settings.TokenExpireIn),            
+                refreshToken = HttpUtility.UrlDecode(newRefreshToken)
+            });
         }
 
-        public string GetRefreshToken(string username)
-        {
-            return _refreshTokens.FirstOrDefault(x => x.Item1 == username).Item3;
-        }
-
-        public string GetToken(string username)
-        {
-            return _refreshTokens.FirstOrDefault(x => x.Item1 == username).Item2;
-        }
-
-        public void DeleteRefreshToken(string username, string refreshToken)
-        {
-
-            // ATENÇÃO: Verificar se "x.items2 == refreshToken ).item2;" está correto
-
-            var item = _refreshTokens.FirstOrDefault(x => x.Item1 == username &&
-                                                        x.Item3 == refreshToken);
-
-            _refreshTokens.Remove(item);
-        }
+        // TODO  1. No método "tokenService.GenerateRefreshToken" deve guardar a data de expiração do refreshToken
+        //       2. Criar método que gera novo token somente com o refreshToken
+        //       3. Esse método deve validar a expiração do refreshToken
     }
 
 
-    . Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
-        no nosso projeto, obrigatório ser nessa ordem:
+. Acesse a classe "Programs.cs" e insira as linhas abaixo para habilitar a autenticação e a autorização 
+    no nosso projeto, obrigatório ser nessa ordem:
 
-        using System.Text;                                          // Linha inserida
-        using superRefreshTokenApp;                                 // Linha inserida
-        using Microsoft.AspNetCore.Authentication.JwtBearer;        // Linha inserida
-        using Microsoft.IdentityModel.Tokens;                       // Linha inserida
+    using System.Text;                                          // Linha inserida
+    using superRefreshTokenApp;                                 // Linha inserida
+    using Microsoft.AspNetCore.Authentication.JwtBearer;        // Linha inserida
+    using Microsoft.IdentityModel.Tokens;                       // Linha inserida
+    using superRefreshTokenApp.Services;                       // Linha inserida
 
-        ...
-        var builder - WebApplication.CreateBuilder( args );
+    ...
+    var builder - WebApplication.CreateBuilder( args );
 
-        builder.Services.AddSingleton<TokenService>();  // Linha inserida
+    builder.Services.AddSingleton<TokenService>();  // Linha inserida
 
-        builder.Services.AddControllers();               // Linha inserida
-        builder.Services.AddAuthorization();             // Linha inserida
+    builder.Services.AddControllers();               // Linha inserida
+    builder.Services.AddAuthorization();             // Linha inserida
 
-        var key = Encoding.ASCII.GetBytes( Settings.JwtKey );   // Linha inserida
+    var key = Encoding.ASCII.GetBytes( Settings.JwtKey );   // Linha inserida
 
-        // Linha abaixo inserida, não é para alterar
-        builder
-            .Services
-            .AddAuthentication(x =>
+    // Linha abaixo inserida, não é para alterar
+    builder
+        .Services
+        .AddAuthentication(x =>
+                                {
+                                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                                })
+        .AddJwtBearer(x =>
+                                {
+                                    x.RequireHttpsMetadata = false;             
+                                    x.SaveToken = true;
+                                    x.TokenValidationParameters = new TokenValidationParameters
                                     {
-                                        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                                        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                                    })
-            .AddJwtBearer(x =>
-                                    {
-                                        x.RequireHttpsMetadata = false;             
-                                        x.SaveToken = true;
-                                        x.TokenValidationParameters = new TokenValidationParameters
-                                        {
-                                            ValidateIssuerSigningKey = true,
-                                            IssuerSigningKey = new SymmetricSecurityKey(key),
-                                            ValidateIssuer = false,
-                                            ValidateAudience = false
-                                        };
-                                    });
+                                        ValidateIssuerSigningKey = true,
+                                        IssuerSigningKey = new SymmetricSecurityKey(key),
+                                        ValidateIssuer = false,
+                                        ValidateAudience = false
+                                    };
+                                });
 
-        // Linha Inserida
-        builder.Services.Configure<RouteOptions>(options =>
-        {
-            options.LowercaseUrls = true; // Força URLs em minúsculas
-        });
+    // Linha Inserida
+    builder.Services.Configure<RouteOptions>(options =>
+    {
+        options.LowercaseUrls = true; // Força URLs em minúsculas
+    });
 
-        ...
-        var app = builder.Build();
+    ...
+    var app = builder.Build();
 
-        app.UseAuthentication();    // Linha inserida   "Nessa ordem"
-        app.UseAuthorization();     // Linha inserida   "Nessa ordem"
+    app.UseAuthentication();    // Linha inserida   "Nessa ordem"
+    app.UseAuthorization();     // Linha inserida   "Nessa ordem"
 
-        app.MapControllers();       // Linha inserida
+    app.MapControllers();       // Linha inserida
 
-        ...
+    ...
 
-        app.UseHttpsRedirection();
+    app.UseHttpsRedirection();
 
-        // Apague o bloco de código abaixo
-        /*  
-        var summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        app.MapGet("/weatherforecast", () =>
-        {
-            var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-                .ToArray();
-            return forecast;
-        })
-        .WithName("GetWeatherForecast")
-        .WithOpenApi();
-        */
-
-        app.Run();
-
-        // Apague o bloco de código abaixo
-        /*
-        record WeatherForecast(DateOnly Date, int TemperatureC, string Summary)
-        {
-            public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-        }
-        */
+    app.Run();
 
 . Crie a pasta "Controllers" e crie a classe "LoginController" dentro dela:
 
@@ -410,6 +328,33 @@ ASP.NET WebApi JWT Refresh Token
         // TODO  1. No método "tokenService.GenerateRefreshToken" deve guardar a data de expiração do refreshToken
         //       2. Criar método que gera novo token somente com o refreshToken
         //       3. Esse método deve validar a expiração do refreshToken
+    }
+
+. Levante a aplicação
+
+. Acesse o Postman e execute a rota abaixo:
+
+    url: https://localhost:[porta]/login/v1/getToken
+    method: POST
+    Body.raw.JSON: True
+    Body.raw:   {
+        "username": "batman",
+        "password": "batman"
+    }
+
+    . Copie o token e o refreshToken gerado
+
+// 18.13
+. Execute a rota abaixo:
+
+    url: https://localhost:[porta]/login/v1/getRefreshToken
+    method: POST
+    Params.token: [token gerado no item anterior]
+    Params.refreshToken: [Refresh Token gerado no passo anterior]
+    Body.raw.JSON: True
+    Body.raw:   {
+        "username": "batman",
+        "password": "batman"
     }
 
 . Acesse o controller "HomeController" e altere todo código dele como abaixo:
@@ -585,3 +530,97 @@ ASP.NET WebApi JWT Refresh Token
 
     . Este NÃO DARÁ erro, retornando o valor "Gerente"
 
+
+
+
+
+
+
+
+// Program.cs
+Explique os parâmetros do objeto:
+
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            ValidateLifetime = true, // Rejeita tokens expirados automaticamente
+            ClockSkew = TimeSpan.Zero // Sem tolerância de tempo
+        };
+    });
+
+1. ValidateIssuerSigningKey: Este parâmetro define se o token deve ser validado com base na chave de assinatura do emissor. Se for true, o token será validado apenas se a chave de assinatura do emissor for igual à chave de assinatura configurada no servidor.
+
+2. IssuerSigningKey: Este parâmetro define a chave de assinatura do emissor. Deve ser uma instância de SymmetricSecurityKey ou AsymmetricSecurityKey. No exemplo, é usado uma chave simétrica (SymmetricSecurityKey) criada a partir de uma string (key).
+
+3. ValidateIssuer: Este parâmetro define se o token deve ser validado com base no emissor. Se for true, o token será validado apenas se o emissor for igual ao emissor configurado no servidor.
+
+4. ValidIssuer: Este parâmetro define o emissor válido. Deve ser uma string que corresponda ao emissor configurado no servidor.
+
+5. ValidateAudience: Este parâmetro define se o token deve ser validado com base no público-alvo. Se for true, o token será validado apenas se o público-alvo for igual ao público-alvo configurado no servidor.
+
+6. ValidAudience: Este parâmetro define o público-alvo válido. Deve ser uma string que corresponda ao público-alvo configurado no servidor.
+
+7. ValidateLifetime: Este parâmetro define se o token deve ser validado com base no tempo de vida. Se for true, o token será validado apenas se o tempo de vida for válido.
+
+8. ClockSkew: Este parâmetro define a tolerância de tempo para a validação do token. Se for TimeSpan.Zero, o token será validado apenas se o tempo de vida for exatamente igual ao tempo de vida configurado no servidor. Se for um valor diferente de zero, o token será validado se o tempo de vida estiver dentro da tolerância de tempo especificada.
+
+No exemplo, os parâmetros são configurados da seguinte forma:
+
+ValidateIssuerSigningKey é true, o que significa que o token será validado com base na chave de assinatura do emissor.
+IssuerSigningKey é uma chave simétrica criada a partir de uma string (key).
+ValidateIssuer é true, o que significa que o token será validado com base no emissor.
+ValidIssuer é uma string que corresponde ao emissor configurado no servidor (builder.Configuration["JwtSettings:Issuer"]).
+ValidateAudience é true, o que significa que o token será validado com base no público-alvo.
+ValidAudience é uma string que corresponde ao público-alvo configurado no servidor (builder.Configuration["JwtSettings:Audience"]).
+ValidateLifetime é true, o que significa que o token será validado com base no tempo de vida.
+ClockSkew é TimeSpan.Zero, o que significa que o token será validado apenas se o tempo de vida for exatamente igual ao tempo de vida configurado no servidor.
+
+// TokenService
+
+DateTime tokenExpiration = DateTime.UtcNow.AddSeconds(Settings.TokenExpireIn);
+DateTime outraData = DateTime.Now;
+
+if (tokenExpiration < outraData)
+{
+    // tokenExpiration é menor que outraData
+}
+
+
+
+DateTime tokenExpiration = DateTime.UtcNow.AddSeconds(Settings.TokenExpireIn);
+DateTime outraData = DateTime.Now;
+
+if (tokenExpiration > outraData)
+{
+    // tokenExpiration é maior que outraData
+}
+
+
+
+
+
+DateTime tokenExpiration = DateTime.UtcNow.AddSeconds(Settings.TokenExpireIn);
+DateTime outraData = DateTime.Now;
+
+int resultado = tokenExpiration.CompareTo(outraData);
+
+if (resultado < 0)
+{
+    // tokenExpiration é menor que outraData
+}
+else if (resultado > 0)
+{
+    // tokenExpiration é maior que outraData
+}
+else
+{
+    // tokenExpiration é igual a outraData
+}
