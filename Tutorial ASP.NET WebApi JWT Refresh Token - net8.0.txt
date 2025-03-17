@@ -120,8 +120,9 @@ ASP.NET WebApi JWT Refresh Token
 
         public static string ApiKeyName = "api_key";
         public static string ApiKey = "curso_api_IlTevUM/z0ey3NwCV/unWg==";
-        public static int TokenExpireIn = 10800;
-        public static string TokenExpireInUnit = "seconds";
+        public static int TokenExpireIn = 600;
+        public static int RefreshTokenExpireIn = 7200;
+        public static string ExpireInUnit = "seconds";
 
     }
 
@@ -138,7 +139,7 @@ ASP.NET WebApi JWT Refresh Token
 
     public class TokenService
     {
-        private List<(string, string, string)> _refreshTokens; //  = new();
+        private List<(string, string, string, DateTime)> _refreshTokens; //  = new();
 
         public TokenService()
         {
@@ -159,8 +160,8 @@ ASP.NET WebApi JWT Refresh Token
                 // Perfis dos usuários
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                                    new Claim( ClaimTypes.Name, user.Username ),    // Aponta para User.Identity.Name
-                                    new Claim( ClaimTypes.Role, user.Role )         // Aponta para User.InRole
+                                        new Claim( ClaimTypes.Name, user.Username ),    // Aponta para User.Identity.Name
+                                        new Claim( ClaimTypes.Role, user.Role )         // Aponta para User.InRole
                 }),
                 // NotBefore tem o valor default DateTime.UtcNow fuso horário mundial, aqui é feito alteração para pegar a data e horário local
                 // Sem isso o horário será sempre UTC e seria levantado a exception System.ArgumentException: IDX12401, devido o valor calculado
@@ -168,10 +169,10 @@ ASP.NET WebApi JWT Refresh Token
                 NotBefore = DateTime.Now,
 
                 // Se o projeto for executado mundialmente, então devemos utilizar DateTime.UtcNow
-                // Expires = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(Settings.TokenExpireIn) :
+                // Expires = Settings.ExpireInUnit.Equals("seconds") ? DateTime.UtcNow.AddSeconds(Settings.TokenExpireIn) :
                 // 
                 // Tempo de expiração do nosso token
-                Expires = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                Expires = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
                                                                             DateTime.Now.AddHours(Settings.TokenExpireIn),
                 // Credenciais para incriptar e desincriptar nosso token
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
@@ -196,7 +197,7 @@ ASP.NET WebApi JWT Refresh Token
             {
                 Subject = new ClaimsIdentity(claims),
                 NotBefore = DateTime.Now,
-                Expires = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                Expires = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
                                                                             DateTime.Now.AddHours(Settings.TokenExpireIn),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                                         SecurityAlgorithms.HmacSha256Signature)
@@ -244,28 +245,30 @@ ASP.NET WebApi JWT Refresh Token
 
                 return principal;
             }
-            catch (Exception ex)
+            catch // (Exception ex)
             {
                 throw new SecurityTokenException("Invalid Token");
             }
         }
 
         // 11.26
-        public void SaveRefreshToken(string username, string token, string refreshToken)
+        public void SaveRefreshToken(string username, string token, string refreshToken, DateTime refreshTokenExpireIn)
         {
 
             int index = _refreshTokens.FindIndex(x => x.Item1 == username);
 
             if (index == -1)
-                _refreshTokens.Add(new(username, token, refreshToken));
+                _refreshTokens.Add(new(username, token, refreshToken, refreshTokenExpireIn));
             else
-                _refreshTokens[index] = new(username, token, refreshToken);
+                _refreshTokens[index] = new(username, token, refreshToken, refreshTokenExpireIn);
         }
 
         public string GetRefreshToken(string username)
         {
             return _refreshTokens.FirstOrDefault(x => x.Item1 == username).Item3;
         }
+
+        public DateTime GetRefreshTokenExpireIn(string username, string refreshToken) => _refreshTokens.FirstOrDefault(x => x.Item1 == username && x.Item3 == refreshToken).Item4;
 
         public string GetToken(string username)
         {
@@ -343,7 +346,7 @@ ASP.NET WebApi JWT Refresh Token
 
     app.Run();
 
-. Crie a pasta "Controllers" e crie a classe "LoginController" dentro dela:
+. Na pasta "Controllers" e crie a classe "LoginController" dentro dela:
 
     using System.Web;
     using Microsoft.AspNetCore.Mvc;
@@ -374,19 +377,21 @@ ASP.NET WebApi JWT Refresh Token
 
             string refreshToken = tokenService.GenerateRefreshToken();
 
-            tokenService.SaveRefreshToken(user.Username, HttpUtility.UrlDecode(token), HttpUtility.UrlDecode(refreshToken));   // Salvar a data de criação/expiração para invalida-lo
+            var rtExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.RefreshTokenExpireIn) :
+                                                                            DateTime.Now.AddHours(Settings.RefreshTokenExpireIn);
 
-            user.Password = "";
+            tokenService.SaveRefreshToken(user.Username, HttpUtility.UrlDecode(token), HttpUtility.UrlDecode(refreshToken), rtExpireIn);
 
             return new ObjectResult(new
             {
-                user = user,
+                user = user.Username,
                 tokenType = "Bearer",
                 token = HttpUtility.UrlDecode(token),
                 // tokenExpireIn = Settings.TokenExpireIn,
-                tokenExpireIn = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
-                                                                            DateTime.Now.AddHours(Settings.TokenExpireIn),   
-                refreshToken = HttpUtility.UrlDecode(refreshToken)
+                tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                                            DateTime.Now.AddHours(Settings.TokenExpireIn),
+                refreshToken = HttpUtility.UrlDecode(refreshToken),
+                refreshTokenExpireIn = rtExpireIn
             });
         }
 
@@ -396,34 +401,36 @@ ASP.NET WebApi JWT Refresh Token
                                     [FromQuery] string token,
                                         [FromQuery] string refreshToken)
         {
-
             var principal = tokenService.GetPrincipalFromExpiredToken(token);
-
             var username = principal.Identity.Name;
+            var rtExpireIn = tokenService.GetRefreshTokenExpireIn(username, refreshToken);
+            var tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                            DateTime.Now.AddHours(Settings.TokenExpireIn);
+
+            if ( ( rtExpireIn < DateTime.Now ) ||
+                ( rtExpireIn < tokenExpireIn ) )
+                return Unauthorized( new { message = "RefreshToken Expired"} );
+                // return Unauthorized( new { message =  $"Now is {DateTime.Now} - RefreshToken Expired at {rtExpireIn} - Token Expired at {tokenExpireIn}"} );
 
             var user = UserRepository.GetUserByName(username);
-
-
-            // TODO: Fazer a validação do Token como é feito com o RefreshToken
 
             var savedToken = tokenService.GetToken(username);
 
             var savedRefreshToken = tokenService.GetRefreshToken(username);
 
             if (savedToken != token)
-                // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
-                return Unauthorized(new { Error = "Token Inválido" });
+                return Unauthorized(new { message =  "Token Inválido"} );
+                // return Unauthorized(new { Error = "Token Inválido" });
 
             if (savedRefreshToken != refreshToken)
-                // return Unauthorized(new ObjectResult( new { description =  "RefreshToken Inválido"} ) );
-                return Unauthorized(new { Error = "RefreshToken Inválido" });
-            //  throw new SecurityTokenException("Invalid Token");  // Ao invés de levantar um exception, devolver um StatusCode
+                return Unauthorized(new { message =  "RefreshToken Inválido"} ) ;
+                // return Unauthorized(new { Error = "RefreshToken Inválido" });
 
             var newJwtToken = tokenService.GenerateToken(user);
-            var newRefreshToken = tokenService.GenerateRefreshToken();
+            // var newRefreshToken = tokenService.GenerateRefreshToken();
+            
 
-            // tokenService.DeleteRefreshToken(username, refreshToken);
-            tokenService.SaveRefreshToken(username, HttpUtility.UrlDecode(newJwtToken), HttpUtility.UrlDecode(newRefreshToken));   // Salvar a data de criação/expiração para invalida-lo
+            tokenService.SaveRefreshToken(username, HttpUtility.UrlDecode(newJwtToken), HttpUtility.UrlDecode(savedRefreshToken), rtExpireIn); 
 
             return new ObjectResult(new
             {
@@ -431,9 +438,10 @@ ASP.NET WebApi JWT Refresh Token
                 tokenType = "Bearer",
                 token = HttpUtility.UrlDecode(newJwtToken),
                 // tokenExpireIn = Settings.TokenExpireIn,
-                tokenExpireIn = Settings.TokenExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
-                                                                DateTime.Now.AddHours(Settings.TokenExpireIn),            
-                refreshToken = HttpUtility.UrlDecode(newRefreshToken)
+                tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                                DateTime.Now.AddHours(Settings.TokenExpireIn),
+                refreshToken = HttpUtility.UrlDecode(savedRefreshToken),
+                refreshTokenExpireIn = rtExpireIn
             });
         }
 
