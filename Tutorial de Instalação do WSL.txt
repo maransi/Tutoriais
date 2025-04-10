@@ -186,7 +186,7 @@ Tutorial WSL ( Windows Subsystem Linux )
 
     . Instalação do plugins ZSH Highlight. Após a conclusão da instalação, feche e abra o terminal para ver o resultado.
         
-        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 
 
         . Abra o arquivo ~/.zshrc, localize o paragrafo "plugins" e adicione o plugin "zsh-syntax-highlighting"
 
@@ -199,7 +199,7 @@ Tutorial WSL ( Windows Subsystem Linux )
 
     . Instalação do plugins ZSH Suggestions. Após instalação, feche e abra novamente o terminal:
 
-        git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
+        git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH/plugins/zsh-autosuggestions
 
         . Abra o arquivo ~/.zshrc, localize o paragrafo "plugins" e adicione o plugin "zsh-syntax-highlighting"
 
