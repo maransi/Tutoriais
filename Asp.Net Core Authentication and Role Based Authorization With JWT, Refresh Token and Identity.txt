@@ -1,0 +1,141 @@
+Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token and Identity
+---------------------------------------------------------------------------------------------
+
+. Video tutorial
+
+    https://www.youtube.com/watch?v=EnHrfJO0gyE&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR
+
+. Enviroment
+
+    . Instalação para as versões acima do Ubuntu 22.04
+
+        wget https://dot.net/v1/dotnet-install.sh
+        chmod +x dotnet-install.sh
+        ./dotnet-install.sh -c 3.1
+        ./dotnet-install.sh -c 5.0
+        ./dotnet-install.sh -c 6.0
+        ./dotnet-install.sh -c 7.0
+
+        dotnet --version
+
+        # insira as linhas abaixo no arquivo ".bashrc"
+        export PATH="home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"
+        export DOTNET_ROOT=/home/$USER/.dotnet/
+
+        source ~/.bashrc
+
+        sudo ln -s /home/$USER/.dotnet/dotnet /usr/bin/dotnet
+
+        dotnet --version
+        dotnet --list-runtimes
+        dotnet --list-sdks
+
+    . Instalação das extensões do VSCode
+
+            C# 
+            C# Extensions (JosKreativ)
+            C# XML Documentation Comments
+            C# Snippets
+            Docker
+
+    . Instalação do Nodejs
+
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | $SHELL
+
+        echo 'export PATH="/home/$USER/.nvm:$PATH"' >> ~/.bashrc
+        echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc 
+
+        nvm --version
+
+        # Para instalar a versão lts mais recente
+        nvm install --lts
+
+        # Se quiser instalar uma versão especifica, utilize:
+        # nvm install 18.20.4
+
+        # Se quiser listar as versões do node disponivel no repositorio remoto
+        # nvm ls-remote
+
+        # Se quiser listar as versões instalada na máquina atual
+        # nvm ls
+
+        # Para usar uma versão instalada na máquina atual
+        # nvm use 20.17.0
+
+        # Para desinstalar uma versão do node js
+        # nvm uninstall 18.20.4
+
+        node -v
+        npm -v
+
+    . Instalação do Git
+
+        sudo apt-get install git
+        git --version
+        git config --global user.name "maransi"
+        git config --global user.email "maransi"
+        git config --list
+
+    . Instalação do Docker
+
+        # Acesse o paragrafo "Install Docker Desktop" e execute o passo a passo
+
+        # Ubuntu
+        https://docs.docker.com/desktop/setup/install/linux/ubuntu/
+
+        # Debian
+        https://docs.docker.com/desktop/setup/install/linux/debian/
+
+
+. Creating a new project
+
+
+    . Digite os comandos abaixo na pasta de projetos:
+
+        dotnet new sln -o DotnetApiCompleteAuth
+
+        cd DonetApiCompleteAuth
+
+        dotnet new webapi --use-controllers -n dotnetApiCompleteAuth -o DotnetApiCompleteAuth -f net8.0 
+
+        dotnet sln add ./DotnetApiCompleteAuth/DotnetApiCompleteAuth.csproj
+
+        git init
+
+        dotnet new gitignore
+
+    . Acesse a pasta da solution com o VSCode
+
+    . Apague o controller "./Controllers/WeatherForecastController.cs" e a classe "./WeatherForecast.cs"
+
+    . Acesse a classe "Program.cs" e apague as linhas abaixo:
+
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.services.addControllers();
+
+        // builder.Services.AddOpenApi();       // Linha eliminada
+
+        var app = builder.Build();
+
+        /*                                      // Bloco de código elimanado
+
+        if (app.Enviroment.IsDevelopment())
+        {
+            app.MapOpenApi();
+        }
+
+        */
+
+    . Acesse o prompt do terminal e a pasta raiz da "solution" e execute o comando abaixo:
+
+        dotnet clean
+
+        dotnet build
+
+        dotnet add .
+
+        dotnet commit -am "feat: first commit"
+
+. Creating the PeopleController
+
