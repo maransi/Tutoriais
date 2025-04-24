@@ -5,6 +5,10 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
     https://www.youtube.com/watch?v=EnHrfJO0gyE&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR
 
+. Os fontes do projeto desenvolvido estão na URL abaixo:
+
+    https://github.com/rd003/DotnetApiCompleteAuth
+
 . Enviroment
 
     . Instalação para as versões acima do Ubuntu 22.04
@@ -96,7 +100,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         cd DonetApiCompleteAuth
 
-        dotnet new webapi --use-controllers -n dotnetApiCompleteAuth -o DotnetApiCompleteAuth -f net8.0 
+        dotnet new webapi --use-controllers -n DotnetApiCompleteAuth -o DotnetApiCompleteAuth -f net8.0 
 
         dotnet sln add ./DotnetApiCompleteAuth/DotnetApiCompleteAuth.csproj
 
@@ -138,4 +142,89 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         dotnet commit -am "feat: first commit"
 
 . Creating the PeopleController
+
+    . Podemos criar um controller com o "dotnet cli"
+
+    . Precisamos ter o pacote "Microsoft.VisualStudio.Web.CodeGeneration.Design" instalado no seu projeto para usar esse comando. 
+        Se você não tiver esse pacote instalado, você pode instalá-lo usando o comando:
+
+        dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design --version 8.0.7
+
+    . Sintaxe
+
+
+        dotnet aspnet-codegenerator controller -name NomeDoController -async -api -m NomeDoModelo -dc NomeDoDbContext -outDir Controllers
+
+        . Este comando cria um novo controller com o nome especificado, com suporte a async/await, API e usando o modelo e contexto de dados especificados.
+
+        . Aqui está uma explicação dos parâmetros:
+
+            -name: especifica o nome do controller.
+            -async: especifica que o controller deve ser criado com suporte a async/await.
+            -api: especifica que o controller deve ser criado como um controller API.
+            -m: especifica o nome do modelo que o controller deve usar.
+            -dc: especifica o nome do contexto de dados que o controller deve usar.
+            -outDir: especifica o diretório onde o controller deve ser criado.
+
+    . Exemplo
+
+        dotnet aspnet-codegenerator controller -name ProdutosController -async -api -m Produto -dc MeuDbContext -outDir Controllers  
+
+    . Crie a classe "PeopleController.cs" dentro da pasta "Controllers" com o conteúdo abaixo, ou execute o comando "dotnet cli" acima:
+
+        using Microsoft.AspNetCore.Http;
+        using Microsoft.AspNetCore.Mvc;
+
+        namespace DotnetApiCompleteAuth.Controllers;
+
+        [Route("api/[controller]")]
+        [ApiController]
+        public class PeopeController : ControllerBase
+        {
+            [HttpGet]
+            [AllowAnonymous]
+            public IActionResult GetPeople()
+            {
+                return Ok("People data");
+            }
+
+            [HttpPost]
+            public IActionResult CreatePerson()
+            {
+                return Ok("Person is created");
+            }
+        }
+
+    . Executando o projeto pela solution:
+
+        dotnet clean
+
+        dotnet restore
+
+        dotnet build
+
+        dotnet run --project DotnetApiCompleteAuth/ 
+
+    . Executando o projeto diretamente pelo projeto:
+
+        cd DotnetApiCompleteAuth
+
+        dotnet clean
+
+        dotnet restore
+
+        dotnet build
+
+        dotnet run
+
+    . Acesse o Postman e execute as APIs com os parâmetros abaixo:
+
+        method: GET
+        url: http://localhost:[porta]/api/people
+
+        method: POST
+        url: http://localhost:[porta]/api/people
+
+
+. Adding required Nuget Packages
 
