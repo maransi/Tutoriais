@@ -101,8 +101,8 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         cd DonetApiCompleteAuth
 
-        # dotnet new webapi --use-controllers -n DotnetApiCompleteAuth -o DotnetApiCompleteAuth --no-openapi -f net8.0 
-         dotnet new webapi --use-controllers -n DotnetApiCompleteAuth -o ./src/DotnetApiCompleteAuth  -f net8.0
+        dotnet new webapi --use-controllers -n DotnetApiCompleteAuth -o DotnetApiCompleteAuth --no-openapi -f net8.0 
+        # dotnet new webapi --use-controllers -n DotnetApiCompleteAuth -o ./src/DotnetApiCompleteAuth  -f net8.0
 
         dotnet sln add ./src/DotnetApiCompleteAuth/DotnetApiCompleteAuth.csproj
 
@@ -114,28 +114,6 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
     . Apague o controller "./Controllers/WeatherForecastController.cs" e a classe "./WeatherForecast.cs"
 
-/*
-    . Acesse a classe "Program.cs" e apague as linhas abaixo:
-
-        var builder = WebApplication.CreateBuilder(args);
-
-        builder.services.addControllers();
-
-        builder.Services.AddSwaggerGen();
-
-        // builder.Services.AddOpenApi();       // Linha eliminada
-
-        var app = builder.Build();
-
-        /*                                      // Bloco de código elimanado
-
-        if (app.Enviroment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
-
-        */
-*/
     . Acesse o prompt do terminal e a pasta raiz da "solution" e execute o comando abaixo:
 
         dotnet clean
@@ -205,6 +183,25 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             }
         }
 
+    . Acesse a classe "Program.cs" e insira as linhas abaixo:
+
+        using AspNetCore.Scalar;
+
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddControllers();
+
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+        // Linha Inserida
+        builder.Services.Configure<RouteOptions>(options =>
+        {
+            options.LowercaseUrls = true; // Força URLs em minúsculas
+        });
+
+        ...
+
     . Executando o projeto pela solution:
 
         dotnet clean
@@ -227,6 +224,104 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         dotnet run
 
+    . Configurando o swagger
+
+        . Acesse o terminal e execute o comando abaixo:
+
+            dotnet add package Swashbuckle.AspNetCore --version 8.1.1
+
+        . Acesse a classe "Program.cs" e insira as linhas abaixo:
+
+            var builder = WebApplication.CreateBuilder(args);
+
+            // Add services to the container.
+
+            builder.Services.AddControllers();
+
+            builder.Services.AddEndpointsApiExplorer();         // linha inserida
+            builder.Services.AddSwaggerGen();                   // Linha inserida
+
+
+            var app = builder.Build();
+
+            // Bloco inserido
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();                               // Linha inserida
+                app.UseSwaggerUI();                             // Linha inserida
+            }
+
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+            app.Run();
+
+        . Levante o projeto e execute a URL abaixo no navegador:
+
+            http://localhost:[porta]/swagger/index.html
+
+    . Configurando o Scalar:
+
+        . Caso queira adaptar o Scalar para a versão do .net9.0 em diante verifique os links abaixo:
+
+            # A partir 20:40
+            https://www.youtube.com/watch?v=Tx49o-5tkis&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=4
+
+            https://guides.scalar.com/scalar/scalar-api-references/net-integration
+
+            https://medium.com/@encinecarlos/documentando-apis-net-com-scalar-2025bda7f39a
+
+            https://carloscds.net/2024/06/aspnetcore-swagger-scalar/
+
+        . Acesse o terminal e execute o comando abaixo na pasta raiz do projeto API:
+
+            dotnet add package AspNetCore.Scalar --version 1.1.1
+
+        . Acesse a classe "Program.cs" e insira as linhas abaixo:
+
+            using AspNetCore.Scalar;                                    // Linha inserida
+
+            var builder = WebApplication.CreateBuilder(args);
+
+            // Add services to the container.
+
+            builder.Services.AddControllers();
+
+            builder.Services.AddEndpointsApiExplorer();         
+            builder.Services.AddSwaggerGen();                   
+
+
+            var app = builder.Build();
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();                               
+                app.UseSwaggerUI();   
+            }
+
+            app.UseScalar( options =>                                   // Bloco inserido
+            {
+                options.UseTheme(Theme.Default);
+                options.RoutePrefix = "api-docs";
+
+            });
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+            app.Run();
+
+        . Levante o projeto e execute a URL abaixo no navegador:
+
+            http://localhost:[porta]/api-docs
+
     . Acesse o Postman e execute as APIs com os parâmetros abaixo:
 
         method: GET
@@ -235,63 +330,3 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         method: POST
         url: http://localhost:[porta]/api/people
 
-
-. Using scalar instead of swagger
-
-https://www.youtube.com/watch?v=Tx49o-5tkis&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR&index=4
-
-
-// Tentar utilizar a package "Microsoft.AspNetCore.OpenApi"
-// Acesse o link "https://guides.scalar.com/scalar/scalar-api-references/net-integration"
-
-    . Acesse o prompt da pasta raiz do projeto de API e execute o comando abaix:
-
-        dotnet add package AspNetCore.Scalar --version 1.1.1   
-
-21.40
-    . Acesse o arquivo "Programs.cs" e realize as alterações abaixo:
-
-
-
-
-. Adding required Nuget Packages
-
-    using AspNetCore.Scalar;                        // Linha inserida
-
-    var builder = WebApplication.CreateBuilder(args);
-        
-    // Add services to the container.
-    builder.Services.AddControllers();
-
-
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-
-    var app = builder.Build();
-
-    // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-
-        app.MapScalarApiReference();            // Linha insrida
-
-        app.UseSwaggerUI();
-    }
-
-    // Bloco inserido
-    app.UseScalar( options => 
-    {
-        options.UseTheme(Theme.Default);
-        options.RoutePrefix = "api-docs";
-
-    });
-
-    app.UseHttpsRedirection();
-
-    app.UseAuthorization();
-
-    app.MapControllers();
-
-    app.Run();
