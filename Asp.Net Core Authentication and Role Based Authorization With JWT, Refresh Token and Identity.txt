@@ -358,7 +358,31 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         # Execute a linha abaixo caso o "dotnet-ef" não existir no ambiente
         dotnet tool install --global dotnet-ef --version 8.0.15
 
-5. ConnectionString and Application User
+6. Criando um container docker para o banco de dados MySQL
+
+Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
+
+
+6. ConnectionString and Application User
+
+    . Verificar detalhes sobre o arquivo "AppSettings.[Development].json" na "Aula 71. Configurações de Debug" do curso "Fundamentos ASP.NET 6 - Balta"
+
+    . Acesse o arquivo "appsettings.Development.json" e insira as linhas abaixo?
+
+        {
+        "Logging": {
+            "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+            },
+            "ConnectionStrings": {                      // Linha inserida
+                "DotNetCoreMySQLAppConnection": "server=localhost; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+            },
+        }
+        }
+
+
+
 
 10.47
     
