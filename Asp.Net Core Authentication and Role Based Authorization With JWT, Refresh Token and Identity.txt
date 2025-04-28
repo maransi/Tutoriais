@@ -1,15 +1,15 @@
 Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token and Identity
 ---------------------------------------------------------------------------------------------
 
-. Video tutorial
+1. Video tutorial
 
     https://www.youtube.com/watch?v=EnHrfJO0gyE&list=PL7yxJa4Na-ir9DLuPL_8kYhyHJXCoPyaR
 
-. Os fontes do projeto desenvolvido estão na URL abaixo:
+    . Os fontes do projeto desenvolvido estão na URL abaixo:
 
-    https://github.com/rd003/DotnetApiCompleteAuth
+        https://github.com/rd003/DotnetApiCompleteAuth
 
-. Enviroment
+2. Enviroment
 
     . Instalação para as versões acima do Ubuntu 22.04
 
@@ -91,8 +91,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         # Debian
         https://docs.docker.com/desktop/setup/install/linux/debian/
 
-
-. Creating a new project
+3. Creating a new project
 
 
     . Digite os comandos abaixo na pasta de projetos:
@@ -124,7 +123,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         git commit -am "feat: first commit"
 
-. Creating the PeopleController
+4. Creating the PeopleController
 
     . Podemos criar um controller com o "dotnet cli"
 
@@ -303,11 +302,15 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                 app.UseSwaggerUI();   
             }
 
-            app.UseScalar( options =>                                   // Bloco inserido
+            // Bloco Inserido
+            app.UseScalar(options =>
             {
-                options.UseTheme(Theme.Default);
+                options.UseTheme(Theme.BluePlanet);
+                options.UseLayout(Layout.Classic);
+
                 options.RoutePrefix = "api-docs";
 
+                options.DocumentTitle = "Documentação das APIs";
             });
 
             app.UseHttpsRedirection();
@@ -330,3 +333,32 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         method: POST
         url: http://localhost:[porta]/api/people
 
+    . Acesse a URL abaixo e execute as APIs do projeto:
+
+        http://localhost:[porta]/api-docs    
+
+5. Adding required Nuget Package
+
+    . Na pasta raiz do projeto "webapi" execute os comandos abaixo:
+
+        cd src/DotnetApiCompleteAuth
+
+        dotnet add package Microsoft.EntityFrameworkCore --version 8.0.15
+
+        dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.15
+
+        dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.15
+
+        dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 8.0.15
+
+        dotnet add package Pomelo.EntityFrameworkCore.MySql --version 8.0.3
+
+        dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.0.15
+
+        # Execute a linha abaixo caso o "dotnet-ef" não existir no ambiente
+        dotnet tool install --global dotnet-ef --version 8.0.15
+
+5. ConnectionString and Application User
+
+10.47
+    
