@@ -88,6 +88,31 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         # Ubuntu
         https://docs.docker.com/desktop/setup/install/linux/ubuntu/
 
+            . Instalação de 05/2025
+
+                sudo apt-get update
+                sudo apt-get install ca-certificates curl
+                sudo install -m 0755 -d /etc/apt/keyrings
+                sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+                sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+                echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+                $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+                sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+                sudo apt-get update
+                sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+                docker --version
+
+                sudo groupadd docker
+                sudo gpasswd -a $USER docker
+                sudo chown "$USER":"$USER" /var/run/docker.sock -R
+                docker --version
+                docker ps -a
+
+                sudo docker run hello-world
+
         # Debian
         https://docs.docker.com/desktop/setup/install/linux/debian/
 
@@ -358,7 +383,64 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         # Execute a linha abaixo caso o "dotnet-ef" não existir no ambiente
         dotnet tool install --global dotnet-ef --version 8.0.15
 
-6. Criando um container docker para o banco de dados MySQL
+6. Create Docker Container for Database MySQL
+
+    . Veja a instalação do docker no item "2. Enviroment - Instalação do Docker"
+
+	. Instalação do container do MySQL
+
+		docker pull mysql
+		docker images
+
+		. Executando o container MySQL criado:
+		
+			. Forma 1 - De forma pura sem nenhuma configuração
+
+				docker run -e MYSQL_ROOT_PASSWORD=root --name dotnetdb -d mysql:8.0
+
+				docker inspect dotnetdb | grep IPAddress
+
+				mysql -u root -p -h [ IPAddress "172.17.02" ]			
+                ou 			
+                docker exec -it dotnetdb bash	ou mysql -uroot -proot -h172.17.0.2
+
+				docker start/restart c342845054d1
+				docker ps
+				
+                docker stop c342845054d1 		
+                ou 	
+                docker stop dotnetdb
+
+			. Forma 2 - Acessando o container e executando o MySQL dentro dele
+
+				docker run -e MYSQL_ROOT_PASSWORD=root --name dotnetdb -d mysql:8.0
+					ou 
+				docker start 1fa7691c5482
+					ou 
+				docker start dotnetdb
+
+				docker stop c342845054d1 		
+                ou 	
+                docker stop dotnetdb
+
+				docker ps -a
+				docker exec -it dotnetdb bash	
+				mysql -u root -p
+
+			. Forma 3 - Executando o Container do MySQL no localhost numa porta diferente 3306:
+
+				docker run -e MYSQL_ROOT_PASSWORD=root --name dotnetdb-1 -d -p 6603:3306 mysqL:8.0
+				docker start dotnetdb
+				docker ps
+				
+                mysql -u root -p -h 127.0.0.1 -P 6603	
+                ou 
+                mysql -uroot -proot -h172.17.0.2
+
+				docker stop c342845054d1 		
+                ou 	
+                docker stop dotnetdb
+
 
 Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
 
