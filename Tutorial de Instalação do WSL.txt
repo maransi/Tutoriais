@@ -176,8 +176,10 @@ Tutorial WSL ( Windows Subsystem Linux )
         # Instalar o complemento Oh-My-ZSH. Ao termino da instalação, o prompt do shell já passa o controle para o zsh
         curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh; zsh
 
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
         # OBSERVAÇÃO: Se já estiver instalado o "oh-my-zsh" simplesmente apague a pasta dele para reinstalá-lo e execute o comando acima
-        rm -rf ~/.oh-my-zsh
+        # rm -rf ~/.oh-my-zsh
 
 
     . Definindo ZSH como padrão. Após instalação, feche e abra o terminal:
@@ -269,11 +271,11 @@ Tutorial WSL ( Windows Subsystem Linux )
     
             . Altere o item abaixo com o novo tema:
                 
-                ZSH_THEME="powerlevel9k/powerlevel9k"
+                ZSH_THEME="powerlevel10k/powerlevel10k"
 
             . Logo abaixo deste item, insira o item abaixo:
 
-                POWERLEVEL9K_MODE="nerdfont-complete"
+                POWERLEVEL10K_MODE="nerdfont-complete"
 
         . Feche e abra o terminal
 
