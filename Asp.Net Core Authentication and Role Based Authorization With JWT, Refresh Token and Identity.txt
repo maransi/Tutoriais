@@ -15,7 +15,9 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         wget https://dot.net/v1/dotnet-install.sh
         chmod +x dotnet-install.sh
+
         export DOTNET_INSTALL_DIR=$HOME/.dotnet 
+        
         ./dotnet-install.sh --install-dir /home/marco/.dotnet -c 3.1
         ./dotnet-install.sh -c 5.0
         ./dotnet-install.sh -c 6.0
@@ -157,8 +159,10 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
     . Podemos criar um controller com o "dotnet cli"
 
-    . Precisamos ter o pacote "Microsoft.VisualStudio.Web.CodeGeneration.Design" instalado no seu projeto para usar esse comando. 
+    . Precisamos ter o pacote "Microsoft.VisualStudio.Web.CodeGeneration.Design" instalado no seu projeto de API para usar esse comando. 
         Se você não tiver esse pacote instalado, você pode instalá-lo usando o comando:
+
+        cd src/DotnetApiCompleteAuth
 
         dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design --version 8.0.7
 
@@ -249,6 +253,27 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         dotnet build
 
         dotnet run
+
+        # Caso ocorra alguma msg de warning (   Warning: Locale 'ru' does not match any known cultures.
+        #                                       Warning: Failed to read or parse localization file .... )
+        # Execute o comando abaixo:
+        #
+        # chmod -R u+r /home/marco/.dotnet/templates/ 
+        #
+        # e atualize o ".csproj" com a linha abaixo
+        #
+        #    <Project Sdk="Microsoft.NET.Sdk.Web">
+        #
+        #       <PropertyGroup>
+        #           <TargetFramework>net8.0</TargetFramework>
+        #           <Nullable>enable</Nullable>
+        #           <ImplicitUsings>enable</ImplicitUsings>
+        #
+        #           <!-- Insira a linha abaixo -->
+        #           <NoWarn>$(NoWarn);NETSDK1188</NoWarn>
+        #       </PropertyGroup>
+        #
+        #   </Project>
 
     . Configurando o swagger
 
@@ -368,6 +393,16 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
 5. Adding required Nuget Package
 
+    . Crie a branch "5. Adding required Nuget Package"
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git commit -am "4. Creating the PeopleController"
+
+        git branch 5.AddingRequiredNugetPackage 
+
+        git checkout 5.AddingRequiredNugetPackage  
+
     . Na pasta raiz do projeto "webapi" execute os comandos abaixo:
 
         cd src/DotnetApiCompleteAuth
@@ -387,8 +422,48 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         # Execute a linha abaixo caso o "dotnet-ef" não existir no ambiente
         dotnet tool install --global dotnet-ef --version 8.0.15
 
+    . Atualize a master com a branch "5.AddingRequiredNugetPackage"
+
+        git commit -am "5.AddingRequiredNugetPackage"
+        
+        git checkout master
+
+        git commit -am "5.AddingRequiredNugetPackage"
+
+        git add .
+
+        git commit -am "5.AddingRequiredNugetPackage"
+
 6. Create Docker Container for Database MySQL
 
+    . Instalação do MySQL:
+
+        sudo apt update && sudo apt upgrade -y  
+
+        sudo apt install libaio1
+
+        cd ~/Downloads
+
+        sudo wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
+        
+        # Na janela gráfica deixe as opções marcadas ou escolha se você souber o que está fazendo > enter > enter > tab > OK > enter.
+        sudo dpkg -i mysql-apt-config_0.8.29-1_all.deb
+        
+        # Na janela gráfica deixe as opções marcadas ou escolha se você souber o que está fazendo > enter > enter > tab > OK > enter.
+        sudo dpkg-reconfigure mysql-apt-config
+
+        # File '/usr/share/keyrings/mysql-apt-config.gpg' exists. Overwrite? (y/N) y
+        
+        sudo dpkg -i mysql-apt-config_0.8.29-1_all.deb
+        
+        sudo dpkg-reconfigure mysql-apt-config
+        
+        sudo apt update
+        
+        sudo apt install mysql-server
+        
+        mysql -u root -p 
+        
     . Veja a instalação do docker no item "2. Enviroment - Instalação do Docker"
 
 	. Instalação do container do MySQL
