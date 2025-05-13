@@ -15,7 +15,8 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         wget https://dot.net/v1/dotnet-install.sh
         chmod +x dotnet-install.sh
-        ./dotnet-install.sh -c 3.1
+        export DOTNET_INSTALL_DIR=$HOME/.dotnet 
+        ./dotnet-install.sh --install-dir /home/marco/.dotnet -c 3.1
         ./dotnet-install.sh -c 5.0
         ./dotnet-install.sh -c 6.0
         ./dotnet-install.sh -c 7.0
@@ -81,6 +82,10 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         git config --global user.email "maransi"
         git config --list
 
+        . Importante: Verifique como trabalhar com "Branchs" no curso "Resumo do Curso Git", principalmente na parte 
+                        "6. Trabalhando com "Branchs"
+
+
     . Instalação do Docker
 
         # Acesse o paragrafo "Install Docker Desktop" e execute o passo a passo
@@ -125,14 +130,14 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         cd DonetApiCompleteAuth
 
-        dotnet new webapi --use-controllers -n DotnetApiCompleteAuth -o DotnetApiCompleteAuth --no-openapi -f net8.0 
+        dotnet new webapi --use-controllers -n DotnetApiCompleteAuth -o ./src/DotnetApiCompleteAuth --no-openapi -f net8.0 
         # dotnet new webapi --use-controllers -n DotnetApiCompleteAuth -o ./src/DotnetApiCompleteAuth  -f net8.0
 
         dotnet sln add ./src/DotnetApiCompleteAuth/DotnetApiCompleteAuth.csproj
 
         git init
 
-        dotnet new gitignore
+        dotnet new gitignore --force
 
     . Acesse a pasta da solution com o VSCode
 
@@ -215,9 +220,6 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         builder.Services.AddControllers();
 
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-
         // Linha Inserida
         builder.Services.Configure<RouteOptions>(options =>
         {
@@ -251,6 +253,8 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
     . Configurando o swagger
 
         . Acesse o terminal e execute o comando abaixo:
+
+            cd src/DotnetApiCompleteAuth
 
             dotnet add package Swashbuckle.AspNetCore --version 8.1.1
 
