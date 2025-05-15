@@ -123,6 +123,58 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         # Debian
         https://docs.docker.com/desktop/setup/install/linux/debian/
 
+    . Create Docker Container for Database MySQL
+
+        . Instalação do MySQL:
+
+            sudo apt update && sudo apt upgrade -y  
+
+            sudo apt install libaio1
+
+            cd ~/Downloads
+
+            sudo wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
+            
+            # Na janela gráfica deixe as opções marcadas ou escolha se você souber o que está fazendo > enter > enter > tab > OK > enter.
+            sudo dpkg -i mysql-apt-config_0.8.29-1_all.deb
+            
+            # Na janela gráfica deixe as opções marcadas ou escolha se você souber o que está fazendo > enter > enter > tab > OK > enter.
+            sudo dpkg-reconfigure mysql-apt-config
+
+            # File '/usr/share/keyrings/mysql-apt-config.gpg' exists. Overwrite? (y/N) y
+            
+            sudo dpkg -i mysql-apt-config_0.8.29-1_all.deb
+            
+            sudo dpkg-reconfigure mysql-apt-config
+            
+            sudo apt update
+            
+            sudo apt install mysql-server
+            
+            mysql -u root -p 
+            
+        . Instalação do container do MySQL
+
+            docker pull mysql
+            docker images
+
+            . Executando o container MySQL criado:
+            
+                . Executando o Container do MySQL no localhost numa porta diferente 3003:
+
+                    docker run -e MYSQL_ROOT_PASSWORD=root --name dotnetdb -d -p 3003:3306 mysql:8.0
+                    docker start dotnetdb
+                    docker ps
+                    
+                    mysql -u root -p -h 127.0.0.1 -P 3003	
+                    ou 
+                    mysql -uroot -proot -h172.17.0.2
+
+                    docker stop c342845054d1 		
+                    ou 	
+                    docker stop dotnetdb
+
+
 3. Creating a new project
 
 
@@ -391,17 +443,22 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         http://localhost:[porta]/api-docs    
 
+    . Atualize a branch master
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git add .
+
+        git commit -am "4. Creating the PeopleController"
+
+
 5. Adding required Nuget Package
 
     . Crie a branch "5. Adding required Nuget Package"
 
         cd ~/workspace/dotnet/DotnetApiCompleteAuth
 
-        git commit -am "4. Creating the PeopleController"
-
         git branch 5.AddingRequiredNugetPackage 
-
-        git checkout 5.AddingRequiredNugetPackage  
 
     . Na pasta raiz do projeto "webapi" execute os comandos abaixo:
 
@@ -422,128 +479,126 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         # Execute a linha abaixo caso o "dotnet-ef" não existir no ambiente
         dotnet tool install --global dotnet-ef --version 8.0.15
 
-    . Atualize a master com a branch "5.AddingRequiredNugetPackage"
+    . Atualize a branch master
 
-        git commit -am "5.AddingRequiredNugetPackage"
-        
-        git checkout master
-
-        git commit -am "5.AddingRequiredNugetPackage"
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
 
         git add .
 
-        git commit -am "5.AddingRequiredNugetPackage"
-
-6. Create Docker Container for Database MySQL
-
-    . Instalação do MySQL:
-
-        sudo apt update && sudo apt upgrade -y  
-
-        sudo apt install libaio1
-
-        cd ~/Downloads
-
-        sudo wget https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb
-        
-        # Na janela gráfica deixe as opções marcadas ou escolha se você souber o que está fazendo > enter > enter > tab > OK > enter.
-        sudo dpkg -i mysql-apt-config_0.8.29-1_all.deb
-        
-        # Na janela gráfica deixe as opções marcadas ou escolha se você souber o que está fazendo > enter > enter > tab > OK > enter.
-        sudo dpkg-reconfigure mysql-apt-config
-
-        # File '/usr/share/keyrings/mysql-apt-config.gpg' exists. Overwrite? (y/N) y
-        
-        sudo dpkg -i mysql-apt-config_0.8.29-1_all.deb
-        
-        sudo dpkg-reconfigure mysql-apt-config
-        
-        sudo apt update
-        
-        sudo apt install mysql-server
-        
-        mysql -u root -p 
-        
-    . Veja a instalação do docker no item "2. Enviroment - Instalação do Docker"
-
-	. Instalação do container do MySQL
-
-		docker pull mysql
-		docker images
-
-		. Executando o container MySQL criado:
-		
-			. Forma 1 - De forma pura sem nenhuma configuração
-
-				docker run -e MYSQL_ROOT_PASSWORD=root --name dotnetdb -d mysql:8.0
-
-				docker inspect dotnetdb | grep IPAddress
-
-				mysql -u root -p -h [ IPAddress "172.17.02" ]			
-                ou 			
-                docker exec -it dotnetdb bash	ou mysql -uroot -proot -h172.17.0.2
-
-				docker start/restart c342845054d1
-				docker ps
-				
-                docker stop c342845054d1 		
-                ou 	
-                docker stop dotnetdb
-
-			. Forma 2 - Acessando o container e executando o MySQL dentro dele
-
-				docker run -e MYSQL_ROOT_PASSWORD=root --name dotnetdb -d mysql:8.0
-					ou 
-				docker start 1fa7691c5482
-					ou 
-				docker start dotnetdb
-
-				docker stop c342845054d1 		
-                ou 	
-                docker stop dotnetdb
-
-				docker ps -a
-				docker exec -it dotnetdb bash	
-				mysql -u root -p
-
-			. Forma 3 - Executando o Container do MySQL no localhost numa porta diferente 3306:
-
-				docker run -e MYSQL_ROOT_PASSWORD=root --name dotnetdb-1 -d -p 6603:3306 mysqL:8.0
-				docker start dotnetdb
-				docker ps
-				
-                mysql -u root -p -h 127.0.0.1 -P 6603	
-                ou 
-                mysql -uroot -proot -h172.17.0.2
-
-				docker stop c342845054d1 		
-                ou 	
-                docker stop dotnetdb
-
-
-Tutorial ASP.NET MVC, EntityFramework, MySQL e Docker
+        git commit -am "5. Adding required Nuget Package"
 
 
 6. ConnectionString and Application User
 
-    . Verificar detalhes sobre o arquivo "AppSettings.[Development].json" na "Aula 71. Configurações de Debug" do curso "Fundamentos ASP.NET 6 - Balta"
+    . Crie a branch "6.ConnectionStringAandApplicationUser"
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git branch 6.ConnectionStringAndApplicationUser
+
+
+    . Verificar detalhes sobre o arquivo "AppSettings.[Development].json" na 
+        "Aula 71. Configurações de Debug" do curso "Fundamentos ASP.NET 6 - Balta"
 
     . Acesse o arquivo "appsettings.Development.json" e insira as linhas abaixo?
 
         {
-        "Logging": {
-            "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Warning"
-            },
-            "ConnectionStrings": {                      // Linha inserida
-                "DotNetCoreMySQLAppConnection": "server=localhost; port=3306; database=productsdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
-            },
+            "Logging": {
+                "LogLevel": {
+                "Default": "Information",
+                "Microsoft.AspNetCore": "Warning"
+                },
+                "ConnectionStrings": {
+                "default": "server=localhost; port=3003; database=dotnetdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+                }
+            }
         }
+
+
+    . Crie a pasta "Models" e dentro dela a classe "ApplicationUser" como abaixo:
+
+
+        using Microsoft.AspNetCore.Identity;
+
+        namespace DotnetApiCompleteAuth.Models;
+
+        public class ApplicationUser : IdentityUser
+        {
+            public string Name { get; set; } = string.Empty;
         }
 
+    . Atualize a branch master
 
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
 
+        git add .
 
-10.47
-    
+        git commit -am "6. ConnectionString and Application User"
+
+7. AppDbContext and Sending Data
+
+    . Crie a branch "7.AppDbContextAndSendingData"
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git branch 7.AppDbContextAndSendingData
+
+    . Crie a classe "AppDbContext" dentro da pasta "Models" com o conteúdo abaixo:
+
+        using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+        using Microsoft.EntityFrameworkCore;
+
+        namespace DotnetApiCompleteAuth.Models;
+
+        public class AppDbContext : IdentityDbContext<ApplicationUser>
+        {
+            public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+            {
+
+            }
+
+        }
+
+    . Acesse a classe "Programs.cs" e insira as linhas abaixo:
+
+        using AspNetCore.Scalar;
+        using DotnetApiCompleteAuth.Models;     // linha inserida
+        using Microsoft.AspNetCore.Identity;    // linha inserida
+        using Microsoft.EntityFrameworkCore;    // linha inserida
+
+        ...
+        builder.Services.AddControllers();
+
+        // linha inserida
+        string connectionString = builder.Configuration.GetConnectionString("default");
+
+        // linha inserida
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+        // linha inserida
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                        .AddEntityFrameworkStores<AppDbContext>()
+                        .AddDefaultTokenProviders();
+
+    . Crie a pasta "Constants" na pasta raiz do projeto API e crie a classe "Roles" com o conteúdo abaixo:
+
+        namespace DotnetApiCompleteAuth.Constants;
+
+        public static class Roles
+        {
+            public const string Admin = "Admin";
+            public const string User = "User";
+        }
+
+    . Atualize a branch master
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git add .
+
+        git commit -am "7. AppDbContext and Sending Data"
+
+8. Creating An Admin Account
+
+16.07
