@@ -600,5 +600,153 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         git commit -am "7. AppDbContext and Sending Data"
 
 8. Creating An Admin Account
+
+    . Crie a branch "8.CreatingAnAdminAccount"
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git branch 8.CreatingAnAdminAccount
+
+
+    . Crie a pasta "Data" e dentro dela a classe "DbSeeder" com o conteúdo abaixo:
+
+
+        using DotnetApiCompleteAuth.Constants;
+        using DotnetApiCompleteAuth.Models;
+        using Microsoft.AspNetCore.Identity;
+        using Microsoft.EntityFrameworkCore;
+
+        namespace DotnetApiCompleteAuth.Data;
+
+        public class DbSeeder
+        {
+            public static async Task SeedDataAsync(IApplicationBuilder app)
+            {
+                // Normalmente utilizamos injeção de dependência para criar os objetos
+                // Porém, utilizaremos o objeto "scope" para essa finalidade
+                using var scope = app.ApplicationServices.CreateScope();
+
+                // Applying the pending migration (Not reccomended for prduction)
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                if ((await dbContext.Database.GetPendingMigrationsAsync()).Count() > 0)
+                {
+                    await dbContext.Database.MigrateAsync();
+                }
+
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<DbSeeder>>();
+
+                try
+                {
+                    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+                    GetRequiedService<UserManager<ApplicationUser>>();
+
+                    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+                    GetRequiedService<RoleManager<IdentityRole>>();
+
+                    // check if any user exists
+                    if (!userManager.Users.Any())
+                    {
+                        // We will create a default user with role=Admin
+                        var user = new ApplicationUser
+                        {
+                            Name = "Admin",
+                            UserName = "admin@example.com",
+                            Email = "admin@example.com",
+                            EmailConfirmed = true,
+                            SecurityStamp = Guid.NewGuid().ToString()
+                        };
+
+                        // create an Admin role if does not exists
+
+                        if (!await roleManager.RoleExistsAsync(Roles.Admin))
+                        {
+                            var roleResult = await roleManager.CreateAsync(new IdentityRole(Roles.Admin));
+
+                            if (roleResult.Succeeded == false)
+                            {
+                                var roleErrors = roleResult.Errors.Select(e => e.Description);
+                                logger.LogError($"Failed to create admin role. Errors : {string.Join(",", roleErrors)}");
+                                return;
+                            }
+                            logger.LogInformation("Admin role is created");
+                        }
+
+                        // Attempt to create admin user
+                        var createUserResult = await userManager
+                            .CreateAsync(user: user, password: "Admin@123");
+
+                        // Validate user creation
+                        if (createUserResult.Succeeded == false)
+                        {
+                            var errors = createUserResult.Errors.Select(e => e.Description);
+                            logger.LogError(
+                                $"Failed to create admin user. Errors: {string.Join(", ", errors)}"
+                            );
+                            return;
+                        }
+
+                        // adding role to user
+                        var addUserToRoleResult = await userManager
+                                        .AddToRoleAsync(user: user, role: Roles.Admin);
+
+                        if (addUserToRoleResult.Succeeded == false)
+                        {
+                            var errors = addUserToRoleResult.Errors.Select(e => e.Description);
+                            logger.LogError($"Failed to add admin role to user. Errors : {string.Join(",", errors)}");
+                        }
+                        logger.LogInformation("Admin user is created");
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.Message);
+                }
+            }
+        }
+
+    . Altere a classe "Program.cs" com o conteúdo abaixo:
+
+        ...
+        app.UseHttpsRedirection();
+
+        app.UseAuthorization();
+
+        app.MapControllers();
+
+        // Linha inserida
+        await DbSeeder.SeedDataAsync(app);
+
+        app.Run();
+
+    . Acesse o prompt e execute o comando abaixo na pasta do projeto de APIs
  
-16.07
+
+        cd src/DotnetApiCompleteAuth
+
+        dotnet ef migrations add InitialCreate
+
+    . Acesse a pasta "Migrations" e verifique se foi criado os arquivos de migração.
+
+    . Levante o container do MySQL e execute o projeto de APIs com o comando abaixo:
+
+        dotnet run
+
+    . Acesse o MySQL e veja se foi criado o database do projeto com as tabelas 
+        de controle de autorização devidamente populadas.
+
+    . Atualize a branch master
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git add .
+
+        git commit -am "8. Creating An Admin Account"
+
+
+9. Signup
+
+27.18
