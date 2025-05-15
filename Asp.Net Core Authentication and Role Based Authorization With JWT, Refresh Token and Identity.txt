@@ -600,5 +600,5 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         git commit -am "7. AppDbContext and Sending Data"
 
 8. Creating An Admin Account
-
+ 
 16.07
