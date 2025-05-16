@@ -45,6 +45,9 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             C# Snippets
             Docker
             RapidAPI client      // Rest API
+            SQLTools
+            SQLTools MySQL/MariaDB/...
+
 
     . Instalação do Nodejs
 
