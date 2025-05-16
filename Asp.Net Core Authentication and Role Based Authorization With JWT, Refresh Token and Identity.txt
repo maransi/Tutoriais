@@ -507,10 +507,10 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                 "LogLevel": {
                 "Default": "Information",
                 "Microsoft.AspNetCore": "Warning"
-                },
-                "ConnectionStrings": {
-                "default": "server=localhost; port=3003; database=dotnetdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
                 }
+            },
+            "ConnectionStrings": {
+                "default": "server=localhost; port=3003; database=dotnetdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
             }
         }
 
@@ -640,11 +640,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                 {
                     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-                    GetRequiedService<UserManager<ApplicationUser>>();
-
                     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-                    GetRequiedService<RoleManager<IdentityRole>>();
 
                     // check if any user exists
                     if (!userManager.Users.Any())
@@ -727,7 +723,10 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         cd src/DotnetApiCompleteAuth
 
+        # ATENÇÃO: Verifique se o container DOCKER do MySQL está levantado
         dotnet ef migrations add InitialCreate
+
+        dotnet ef database update --context AppDbContext
 
     . Acesse a pasta "Migrations" e verifique se foi criado os arquivos de migração.
 
