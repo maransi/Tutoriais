@@ -513,7 +513,8 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                 }
             },
             "ConnectionStrings": {
-                "default": "server=localhost; port=3003; database=dotnetdb; user=root; password=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None"
+                "default": "server=localhost; port=3003; database=dotnetdb; uid=root; pwd=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None; AllowPublicKeyRetrieval=True;"
+
             }
         }
 
@@ -709,6 +710,8 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
     . Altere a classe "Program.cs" com o conteúdo abaixo:
 
+        using DotnetApiCompleteAuth.Data;       // Linha inserida
+
         ...
         app.UseHttpsRedirection();
 
@@ -751,4 +754,157 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
 9. Signup
 
-27.18
+    . Crie a branch "9.Signup"
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git branch 9.Signup
+
+    . Crie a classe "SignupModel" na pasta "Model" com o conteúdo abaixo:
+
+        using System.ComponentModel.DataAnnotations;
+
+        namespace DotnetApiCompleteAuth.Models;
+
+        public class SignupModel
+        {
+            [Required]
+            [MaxLength(30)]
+            public string Name { get; set; } = string.Empty;
+
+            [Required]
+            [MaxLength(30)]
+            [EmailAddress]
+            public string Email { get; set; } = string.Empty;
+
+            [Required]
+            [MaxLength(30)]
+            public string Password { get; set; } = string.Empty;
+
+        }
+
+
+    . Crie a classe "AccountController" dentro da pasta "Controllers" com o conteúdo abaixo:
+
+        using Microsoft.AspNetCore.Identity;
+        using DotnetApiCompleteAuth.Models;
+        using Microsoft.AspNetCore.Mvc;
+
+        namespace DotnetApiCompleteAuth.Controllers
+        {
+            [Route("api/[controller]")]
+            [ApiController]
+            public class AccountsController : ControllerBase
+            {
+                private readonly UserManager<ApplicationUser> _userManager;
+                private readonly RoleManager<IdentityRole> _roleManager;
+                private readonly ILogger<AccountsController> _logger;
+
+
+            }
+
+            public AccountsController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<AccountsController> logger)
+            {
+                _userManager = userManager;
+                _roleManager = roleManager;
+                _logger = logger;
+            }
+
+            [HttpPost("signup")]
+            public async Task<IActionResult> Signup(SignupModel model)
+            {
+                try
+                {
+                    var existingUser = await _userManager.FindByNameAsync(model.Email);
+
+                    if (existingUser != null)
+                    {
+                        return BadRequest("User already exists");
+                    }
+
+                    // Create User role if it doesn't exist
+                    if ((await _roleManager.RoleExistsAsync(Roles.User)) == false)
+                    {
+                        var roleResult = await _roleManager
+                            .CreateAsync(new IdentityRole(Roles.User));
+
+                        if (roleResult.Succeeded == false)
+                        {
+                            var roleErros = roleResult.Errors.Select(e => e.Description);
+                            _logger.LogError($"Failed to create user role. Errors : {string.Join(",", roleErros)}");
+                            return BadRequest($"Failed to create user role. Errors : {string.Join(",", roleErros)}");
+                        }
+                    }
+
+                    ApplicationUser user = new()
+                    {
+                        Email = model.Email,
+                        SecurityStamp = Guid.NewGuid().ToString(),
+                        UserName = model.Email,
+                        Name = model.Name,
+                        EmailConfirmed = true
+                    };
+
+                    // Attempt to create a user
+                    var createUserResult = await _userManager.CreateAsync(user, model.Password);
+
+                    // Validate user creation. If user is not created, log the error and
+                    // return the BadRequest along with the errors
+                    if (createUserResult.Succeeded == false)
+                    {
+                        var errors = createUserResult.Errors.Select(e => e.Description);
+                        _logger.LogError(
+                            $"Failed to create user. Errors: {string.Join(", ", errors)}"
+                        );
+                        return BadRequest($"Failed to create user. Errors: {string.Join(", ", errors)}");
+                    }                    
+
+                    // adding role to user
+                    var addUserToRoleResult = await _userManager.AddToRoleAsync(user: user, role: Roles.User);
+
+                    if (addUserToRoleResult.Succeeded == false)
+                    {
+                        var errors = addUserToRoleResult.Errors.Select(e => e.Description);
+                        _logger.LogError($"Failed to add role to the user. Errors : {string.Join(",", errors)}");
+                        return BadRequest($"Failed to create user Role. Errors: {string.Join(", ", errors)}");
+                    }
+
+                    return CreatedAtAction(nameof(Signup), null);
+
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                }
+            }
+        }
+
+    . Levante o projeto:
+
+        dotnet run
+
+    . Acesse o Postman e execute a API abaixo:
+
+        URL: http://localhost:[port]/api/accounts/signup
+        Method: POST
+        Body:   
+            raw: JSON,
+            {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "password": "John@123"
+
+        }
+
+    . Atualize a branch master
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git add .
+
+        git commit -am "9. Signup"
+
+10. Login
+
+
+31.09
