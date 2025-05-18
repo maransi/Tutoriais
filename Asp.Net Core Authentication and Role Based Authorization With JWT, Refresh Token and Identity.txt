@@ -801,6 +801,29 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                 private readonly RoleManager<IdentityRole> _roleManager;
                 private readonly ILogger<AccountsController> _logger;
 
+                /****
+                    A injeção de dependência da classe UserManager<ApplicationUser> pelo 
+                    construtor do controller "AccountsController" foi configurada 
+                    automaticamente pelo ASP.NET Core Identity 
+                    quando adicionamos o seguinte código no método de configuração 
+                    de serviços (geralmente em Program.cs):
+
+                    // ...existing code...
+                    builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                        .AddEntityFrameworkStores<AppDbContext>()
+                        .AddDefaultTokenProviders();
+                    // ...existing code...
+
+                    Esse trecho de código no "Program.cs" registra todos os serviços
+                    necessários de autenticação e gerenciamento de usuário no contêiner
+                    de injeção de dependência.
+
+                    Basta declarar o "UserManager<ApplicationUser> userManager" para que
+                    seja feita a injeção de dependência. O mesmo se aplica para 
+                    "RoleManager<IdentityRole> roleManager"
+
+                ****/                
+
                 public AccountsController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, ILogger<AccountsController> logger)
                 {
                     _userManager = userManager;
@@ -905,5 +928,75 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
 10. Login
 
+    . Crie a branch "10.Login"
 
-31.09
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git branch 10.Login
+
+
+    . Crie a classe "LoginModel" na pasta "Models" com o conteúdo abaixo:
+
+        using System.ComponentModel.DataAnnotations;
+
+        namespace DotnetApiCompleteAuth.Models;
+
+        public class LoginModel
+        {
+            [Required]
+            public string Username { get; set; } = string.Empty;
+
+            [Required]
+            public string Password { get; set; } = string.Empty;
+        }
+
+    . Insira o trecho de código abaixo na classe "AccountsController.cs":
+
+
+        ,,,
+        [HttpPost("signup")]
+        public async Task<IActionResult> Signup(SignupModel model)
+        {
+            ...
+        }
+
+        // Insira o método abaixo 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginModel loginModel)
+        {
+            try
+            {
+                var user = await _userManager.FindByNameAsync(loginModel.Username);
+                if (user == null ||
+                !await _userManager.CheckPasswordAsync(user, loginModel.Password)
+                )
+                {
+                    return Unauthorized();
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+        ...
+
+    . Acesse o Postman e execute a chamada de API abaixo:
+
+        url: https://localhost:[port]/api/accounts/login
+        method: POST
+        raw: JSON
+        Body: {
+            "username": "john@example.com",
+            "password": "John@123"
+        }
+
+    . Atualize a branch master
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git add .
+
+        git commit -am "10. Login"
+
+33.37
