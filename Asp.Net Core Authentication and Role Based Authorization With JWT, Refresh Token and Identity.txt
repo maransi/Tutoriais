@@ -258,7 +258,6 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         public class PeopleController : ControllerBase
         {
             [HttpGet]
-            [AllowAnonymous]
             public IActionResult GetPeople()
             {
                 return Ok("People data");
@@ -1302,8 +1301,194 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         git branch 12.AuthenticatingOurRoutes
 
 
+    . Faça as alterações abaixo na classe "PeopleController.cs"
+
+        using Microsoft.AspNetCore.Http;
+        using Microsoft.AspNetCore.Mvc;
+        using Microsoft.AspNetCore.Authorization;
+
+        namespace DotnetApiCompleteAuth.Controllers;
+
+        [Route("api/[controller]")]
+        [ApiController]
+        [Authorize]                                        // Linha inserida
+        public class PeopleController : ControllerBase
+        {
+            [HttpGet]
+            public IActionResult GetPeople()
+            {
+                return Ok("People data");
+            }
+
+            [HttpPost]
+            public IActionResult CreatePerson()
+            {
+                return Ok("Person is created");
+            }
+        }
 
 
+    . Acesse o Postman e execute as APIs com os parâmetros abaixo. Verifique se o acesso a API não foi permitido:
+
+        method: GET
+        url: http://localhost:[porta]/api/people
+
+        method: POST
+        url: http://localhost:[porta]/api/people
 
 
-42.50
+    . Faça as alterações abaixo na classe "PeopleController.cs"
+
+        using Microsoft.AspNetCore.Http;
+        using Microsoft.AspNetCore.Mvc;
+        using Microsoft.AspNetCore.Authorization;
+
+        namespace DotnetApiCompleteAuth.Controllers;
+
+        [Route("api/[controller]")]
+        [ApiController]
+        [Authorize]                                     
+        public class PeopleController : ControllerBase
+        {
+            [HttpGet]
+            [AllowAnonymous]                            // Linha inserida
+            public IActionResult GetPeople()
+            {
+                return Ok("People data");
+            }
+
+            [HttpPost]
+            public IActionResult CreatePerson()
+            {
+                return Ok("Person is created");
+            }
+        }
+
+    . Acesse o Postman e execute as APIs com os parâmetros abaixo. Verifique se o acesso a API foi permitido:
+
+        method: GET
+        url: http://localhost:[porta]/api/people
+
+
+    . Acesse o Postman e execute a chamada de API abaixo:
+
+        url: http://localhost:[port]/api/accounts/login
+        method: POST
+        raw: JSON
+        Body: {
+            "username": "john@example.com",
+            "password": "John@123"
+        }
+
+
+    . Acesse o Postman e execute as APIs com os parâmetros abaixo. Verifique se o acesso a API foi permitido:
+
+        method: POST
+        Headers.Authorization: Bearer [Token obtido no item anterior]
+        url: http://localhost:[porta]/api/people
+
+    . Faça as alterações abaixo na classe "PeopleController.cs"
+
+        using Microsoft.AspNetCore.Http;
+        using Microsoft.AspNetCore.Mvc;
+        using Microsoft.AspNetCore.Authorization;
+
+        namespace DotnetApiCompleteAuth.Controllers;
+
+        [Route("api/[controller]")]
+        [ApiController]
+        [Authorize( Roles = "Admin")]                       // Linha alterada
+        public class PeopleController : ControllerBase
+        {
+            [HttpGet]
+            [AllowAnonymous]                            
+            public IActionResult GetPeople()
+            {
+                return Ok("People data");
+            }
+
+            [HttpPost]
+            public IActionResult CreatePerson()
+            {
+                return Ok("Person is created");
+            }
+        }
+
+    . Acesse o Postman e execute a chamada de API abaixo:
+
+        url: http://localhost:[port]/api/accounts/login
+        method: POST
+        raw: JSON
+        Body: {
+            "username": "john@example.com",
+            "password": "John@123"
+        }
+
+
+    . Acesse o Postman e execute as APIs com os parâmetros abaixo. Verifique se o acesso a API não foi permitido:
+
+        method: POST
+        Headers.Authorization: Bearer [Token obtido no item anterior]
+        url: http://localhost:[porta]/api/people
+
+    . Acesse o Postman e execute a chamada de API abaixo:
+
+        url: http://localhost:[port]/api/accounts/login
+        method: POST
+        raw: JSON
+        Body: {
+            "username": "admin@example.com",
+            "password": "Admin@123"
+        }
+
+
+    . Acesse o Postman e execute as APIs com os parâmetros abaixo. Verifique se o acesso a API foi permitido:
+
+        method: POST
+        Headers.Authorization: Bearer [Token obtido no item anterior]
+        url: http://localhost:[porta]/api/people
+
+    . O estado da sessão do token em APIs, especialmente quando se utiliza JWT (JSON Web Token), é stateless 
+        (sem estado). Isso significa que o servidor não armazena informações sobre sessões de usuários 
+        entre as requisições. Todas as informações necessárias para autenticação e autorização estão 
+        contidas no próprio token, que é enviado pelo cliente (geralmente no header Authorization) a cada 
+        requisição.
+
+    . Como funciona:
+
+        . O usuário faz login e recebe um token JWT, que contém claims com informações do usuário e permissões.
+
+        . O cliente (frontend, mobile, etc.) armazena esse token (normalmente em memória, localStorage ou 
+            cookies seguros).
+
+        . Em cada requisição à API, o token é enviado no header Authorization.
+
+        . O servidor valida o token (assinatura, expiração, claims) e, se válido, processa a requisição 
+            sem precisar consultar o banco de dados para autenticação.
+
+    . Melhores práticas para trabalhar com tokens em APIs:
+
+        . Tokens curtos: Use tokens de acesso (access tokens) com tempo de expiração curto (ex: 15 minutos) 
+            para reduzir riscos em caso de vazamento.
+        
+        . Refresh Tokens: Implemente refresh tokens para permitir que o usuário obtenha um novo access token 
+            sem precisar fazer login novamente. O refresh token deve ter expiração maior e ser armazenado com 
+            mais segurança.
+        
+        . Armazenamento seguro: Nunca armazene tokens em local inseguro (ex: localStorage em aplicações 
+            web públicas). Prefira cookies HTTPOnly e Secure, ou armazenamento seguro em apps mobile.
+        
+        . HTTPS obrigatório: Sempre utilize HTTPS para proteger o tráfego dos tokens.
+        
+        . Revogação: Como o JWT é stateless, não há revogação nativa. Para casos críticos, mantenha uma 
+            blacklist de tokens revogados ou use access tokens curtos e refresh tokens.
+        
+        . Validação: Sempre valide assinatura, expiração e claims do token em cada requisição.
+        
+        . Menor privilégio: Inclua apenas as informações necessárias nas claims do token, evitando 
+            dados sensíveis.
+
+13. Refresh Tokens
+
+
+46.34
