@@ -968,11 +968,13 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             {
                 var user = await _userManager.FindByNameAsync(loginModel.Username);
                 if (user == null ||
-                !await _userManager.CheckPasswordAsync(user, loginModel.Password)
+                    !await _userManager.CheckPasswordAsync(user, loginModel.Password)
                 )
                 {
                     return Unauthorized();
                 }
+
+                return Ok("Login successful");
             }
             catch (Exception ex)
             {
@@ -983,7 +985,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
     . Acesse o Postman e execute a chamada de API abaixo:
 
-        url: https://localhost:[port]/api/accounts/login
+        url: http://localhost:[port]/api/accounts/login
         method: POST
         raw: JSON
         Body: {
@@ -998,5 +1000,307 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         git add .
 
         git commit -am "10. Login"
+ 
 
-33.37
+11. JWT
+
+    . Crie a branch "10.Login"
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git branch 11.JWT
+
+    . Crie a pasta "Services" e dentro dela a interface "ITokenService.cs" com o conteúdo abaixo:
+
+        using System.Security.Claims;
+
+        namespace DotnetApiCompleteAuth.Services;
+
+        public interface ITokenService
+        {
+            string GenerateAccessToken(IEnumerable<Claim> claims);
+            string GenerateRefreshToken();
+            ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken);
+        }
+
+    . Crie a classe "TokenService.cs" dentro da pasta "Services" com o conteúdo abaixo:
+
+        using System.IdentityModel.Tokens.Jwt;
+        using System.Security.Claims;
+        using System.Security.Cryptography;
+        using System.Text;
+        using Microsoft.IdentityModel.Tokens;
+
+        namespace DotnetApiCompleteAuth.Services;
+
+        public class TokenService : ITokenService
+        {
+            private readonly IConfiguration _configuration;
+
+            public TokenService(IConfiguration configuration)
+            {
+                _configuration = configuration;
+            }
+
+            public string GenerateAccessToken(IEnumerable<Claim> claims)
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+
+                // Create a symmetric security key using the secret key from the configuration.
+                var authSigningKey = new SymmetricSecurityKey
+                                (Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Issuer = _configuration["JWT:ValidIssuer"],
+                    Audience = _configuration["JWT:ValidAudience"],
+                    Subject = new ClaimsIdentity(claims),
+                    Expires = DateTime.Now.AddMinutes(15),
+                    SigningCredentials = new SigningCredentials
+                                (authSigningKey, SecurityAlgorithms.HmacSha256)
+                };
+
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+
+                return tokenHandler.WriteToken(token);
+            }            
+        }
+
+    . Acesse o arquivo "appsettings.Development.json" e insira as linhas abaixo:
+
+        {
+        "Logging": {
+            "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+            }
+        },
+        "ConnectionStrings": {
+            "default": "server=localhost; port=3003; database=dotnetdb; uid=root; pwd=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None; AllowPublicKeyRetrieval=True;"
+        },
+
+            // Parâgrafo inserido - IMPORTANTE, altere a porta do projeto
+            "JWT": {
+                "ValidAudience": "http://localhost:5232",
+                "ValidIssuer": "http://localhost:5232",
+                "Secret": "your-32-characters-long-super-strong-jwt-secret-key"
+            }    
+        }
+
+    . Insira a linha abaixo na classe "Program.cs":
+
+        ...
+
+        // for identity
+        builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+                        .AddEntityFrameworkStores<AppDbContext>()
+                        .AddDefaultTokenProviders();
+
+        // ---> Linhas abaixo inseridas
+        //
+        // JWT Configuration
+        // Authentication
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.SaveToken = true;
+            options.RequireHttpsMetadata = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                ClockSkew = TimeSpan.Zero,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+            };
+        });
+
+        // ---> Linha inserida
+        builder.Services.AddTransient<ITokenService, TokenService>(;)
+
+
+        var app = builder.Build();
+        app.UseHttpsRedirection();
+
+
+        // ---> Linha inserida
+        app.UseAuthentication();        
+
+        app.UseAuthorization();
+
+        app.MapControllers();
+        ...
+
+    . Funcionamento da "Claim" vs "Tokens":
+
+        . No .NET, uma Claim (ou "declaração") é uma informação sobre um usuário, 
+            como: nome, e-mail, permissões ou qualquer outro dado relevante para 
+            autenticação e autorização. Cada claim é composta por um tipo 
+            (por exemplo, ClaimTypes.Name ou ClaimTypes.Role) e um valor 
+            (por exemplo, "joao@email.com" ou "Admin").
+
+        . No contexto de autenticação com JWT (JSON Web Token), as claims são usadas 
+            para armazenar informações do usuário dentro do próprio token. Assim, 
+            quando um usuário faz login, você pode criar uma lista de claims representando 
+            suas informações e permissões, e então gerar um token JWT que inclui 
+            essas claims.
+
+        . Como associar claims a um token:
+
+            1. Criar as claims:
+
+                . Você monta uma lista de claims com as informações desejadas, por exemplo:
+
+                    List<Claim> authClaims = [
+                        new (ClaimTypes.Name, user.UserName),
+                        new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    ];
+
+
+            2. Adicionar roles (funções) como claims:
+
+                . Se o usuário tiver papéis (roles), você pode adicioná-los também:
+
+                    foreach (var userRole in userRoles)
+                    {
+                        authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                    }
+
+            3. Gerar o token JWT com as claims:
+
+                . Ao criar o token, você passa a lista de claims para o construtor do JWT:
+
+                    var token = _tokenService.GenerateAccessToken(authClaims);
+
+        . Dessa forma, todas as informações relevantes sobre o usuário ficam dentro do token, 
+            e podem ser lidas e validadas em cada requisição, sem necessidade de consultar 
+            o banco de dados a todo momento. Isso é fundamental para autenticação e 
+            autorização baseada em tokens no ASP.NET Core.
+
+    . Insira as linhas abaixo na classe "AccountsController.cs"
+
+        using Microsoft.AspNetCore.Identity;
+        using DotnetApiCompleteAuth.Models;
+        using Microsoft.AspNetCore.Mvc;
+        using DotnetApiCompleteAuth.Constants;
+
+        namespace DotnetApiCompleteAuth.Controllers
+        {
+            [Route("api/[controller]")]
+            [ApiController]
+            public class AccountsController : ControllerBase
+            {
+                private readonly UserManager<ApplicationUser> _userManager;
+                private readonly RoleManager<IdentityRole> _roleManager;
+                private readonly ILogger<AccountsController> _logger;
+
+                // ----> Linha inserida
+                private readonly ITokenService _tokenService;
+
+                public AccountsController(UserManager<ApplicationUser> userManager, 
+                                            RoleManager<IdentityRole> roleManager, 
+                                            ILogger<AccountsController> logger,
+                                            ITokenService tokenService)      // ----> Linha alterada
+                {
+                    _userManager = userManager;
+                    _roleManager = roleManager;
+                    _logger = logger;
+                    _tokenService = tokenService;
+                }
+
+                [HttpPost("login")]
+                public async Task<IActionResult> Login(LoginModel loginModel)
+                {
+                    try
+                    {
+                        var user = await _userManager.FindByNameAsync(loginModel.Username);
+
+                        if (user == null ||
+                            !await _userManager.CheckPasswordAsync(user, loginModel.Password)
+                        )
+                        {
+                            return Unauthorized();
+                        }
+
+        
+
+
+                        // ----> Linhas abaixo inseridas
+                        //
+                        // creating the necessary claims
+                        List<Claim> authClaims = [
+                                new (ClaimTypes.Name, user.UserName),
+                                new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                        // unique id for token
+                        ];
+
+                        var userRoles = await _userManager.GetRolesAsync(user);
+
+                        // adding roles to the claims. So that we can get the user role from the token.
+                        foreach (var userRole in userRoles)
+                        {
+                            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                        }
+
+                        // generating access token
+                        var token = _tokenService.GenerateAccessToken(authClaims);
+                        
+                        // ----> Fim da inserção
+
+
+
+
+
+                        // ----> Linha alterada
+                        return Ok( token );
+                    }
+                    catch (Exception ex)
+                    {
+                        return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                    }
+                }
+
+
+            }
+        }
+
+    . Acesse o Postman e execute a chamada de API abaixo:
+
+        url: http://localhost:[port]/api/accounts/login
+        method: POST
+        raw: JSON
+        Body: {
+            "username": "john@example.com",
+            "password": "John@123"
+        }
+
+    . Selecione o token criado e submeta ele no site e vejo as informações contidas no Payload dele:
+
+        https://jwt.io
+
+    . Atualize a branch master
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git add .
+
+        git commit -am "11. JWT"
+ 
+
+12. Authenticating Our Routes
+
+    . Crie a branch "10.Login"
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git branch 12.AuthenticatingOurRoutes
+
+
+
+42.50
