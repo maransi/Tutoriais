@@ -1049,6 +1049,9 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         public static class Settings
         {
+
+            public static string ValidIssuer = "https://localhost:5232/";
+            public static string ValidAudience = "https://localhost:5232/";
             public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
 
             public static string ApiKeyName = "api_key";
@@ -1058,7 +1061,6 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             public static string ExpireInUnit = "seconds";
 
         }
-
 
     . Crie a pasta "Services" e dentro dela a interface "ITokenService.cs" com o conteúdo abaixo:
 
@@ -1087,9 +1089,12 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         {
             private readonly IConfiguration _configuration;
 
+            //  Faz a injeção do objeto "appsettings.[Development].json"
+            //                                  |
+            //                                  V   
             public TokenService(IConfiguration configuration)
             {
-                _configuration = configuration;
+                _configuration = configuration;     // Exemplo de uso: _configuration["JWT:ValidaUssuer"]
             }
 
             public string GenerateAccessToken(IEnumerable<Claim> claims)
@@ -1098,14 +1103,17 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
                 // Create a symmetric security key using the secret key from the configuration.
                 var authSigningKey = new SymmetricSecurityKey
-                                (Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+                                (Encoding.UTF8.GetBytes(Settings.JwtKey));
 
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
-                    Issuer = _configuration["JWT:ValidIssuer"],
-                    Audience = _configuration["JWT:ValidAudience"],
+                    Issuer = Settings.ValidIssuer,  
+                    Audience = Settings.ValidAudience,
                     Subject = new ClaimsIdentity(claims),
-                    Expires = DateTime.Now.AddMinutes(15),
+                    NotBefore = DateTime.Now,
+                    Expires = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                                        DateTime.Now.AddHours(Settings.TokenExpireIn),
+
                     SigningCredentials = new SigningCredentials
                                 (authSigningKey, SecurityAlgorithms.HmacSha256)
                 };
@@ -1113,31 +1121,33 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                 var token = tokenHandler.CreateToken(tokenDescriptor);
 
                 return tokenHandler.WriteToken(token);
-            }            
-        }
-
-    . Acesse o arquivo "appsettings.Development.json" e insira as linhas abaixo:
-
-        {
-        "Logging": {
-            "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Warning"
             }
-        },
-        "ConnectionStrings": {
-            "default": "server=localhost; port=3003; database=dotnetdb; uid=root; pwd=root; Persist Security Info=false; Connect Timeout=300;SSL Mode=None; AllowPublicKeyRetrieval=True;"
-        },
 
-            // Parâgrafo inserido - IMPORTANTE, altere a porta do projeto
-            "JWT": {
-                "ValidAudience": "http://localhost:5232",
-                "ValidIssuer": "http://localhost:5232",
-                "Secret": "your-32-characters-long-super-strong-jwt-secret-key"
-            }    
+            public string GenerateRefreshToken()
+            {
+                throw new NotImplementedException();
+            }
+
+            public ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
+            {
+                throw new NotImplementedException();
+            }
         }
+
 
     . Insira a linha abaixo na classe "Program.cs":
+
+        // Linha inserida
+        using System.Text;
+
+        // Linha inserida
+        using DotnetApiCompleteAuth.Services;
+
+        // Linha inserida
+        using Microsoft.AspNetCore.Authentication.JwtBearer;
+
+        // Linha inserida
+        using Microsoft.IdentityModel.Tokens;
 
         ...
 
@@ -1164,15 +1174,16 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             {
                 ValidateIssuer = true,
                 ValidateAudience = true,
-                ValidAudience = builder.Configuration["JWT:ValidAudience"],
-                ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                ValidAudience = Settings.ValidAudience,
+                ValidIssuer = Settings.ValidIssuer,
                 ClockSkew = TimeSpan.Zero,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Settings.JwtKey))
+
             };
         });
 
         // ---> Linha inserida
-        builder.Services.AddTransient<ITokenService, TokenService>(;)
+        builder.Services.AddTransient<ITokenService, TokenService>()
 
 
         var app = builder.Build();
@@ -1240,6 +1251,18 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         using Microsoft.AspNetCore.Mvc;
         using DotnetApiCompleteAuth.Constants;
 
+        // Linha inserida
+        using DotnetApiCompleteAuth.Services;
+
+        // Linha inserida
+        using System.Security.Claims;
+
+        // Linha inserida
+        using System.IdentityModel.Tokens.Jwt;
+
+        // Linha inserida
+        using System.Web;
+
         namespace DotnetApiCompleteAuth.Controllers
         {
             [Route("api/[controller]")]
@@ -1261,7 +1284,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                     _userManager = userManager;
                     _roleManager = roleManager;
                     _logger = logger;
-                    _tokenService = tokenService;
+                    _tokenService = tokenService;                            // Linha inserida
                 }
 
                 [HttpPost("login")]
@@ -1308,15 +1331,23 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
 
                         // ----> Linha alterada
-//                        return Ok( token );
-                        return Ok(new ResultViewModel<dynamic>(new 
-                                                                { 
-                                                                    accessToken = token,
-                                                                    tokenType = "Bearer",
-//                                                                    tokenExpireIn = ConfigHelper.TokenExpireIn,
-//                                                                    tokenExpireInUnit = ConfigHelper.TokenExpireInUnit,
-                                                                    refreshToken = "",
-                                                                }, null));
+                        // return Ok(new
+                        // {
+                        //     user = loginModel.Username,
+                        //     tokenType = "Bearer",
+                        //     token = HttpUtility.UrlDecode(token),
+                        //     tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                        //                                                                             DateTime.Now.AddHours(Settings.TokenExpireIn)
+                        // });
+
+                        return Ok(new ResultViewModel<dynamic>(new
+                        {
+                            user = loginModel.Username,
+                            tokenType = "Bearer",
+                            token = HttpUtility.UrlDecode(token),
+                            tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                                                                DateTime.Now.AddHours(Settings.TokenExpireIn)
+                        }, null));
 
                     }
                     catch (Exception ex)
@@ -1351,7 +1382,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         git commit -am "11. JWT"
  
-
+// PAREI AQUI
 12. Authenticating Our Routes
 
     . Crie a branch "10.Login"
