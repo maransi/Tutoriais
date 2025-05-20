@@ -1009,6 +1009,57 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         git branch 11.JWT
 
+    . Crie a a pasta "ViewModels" e dentro dela a classe "ResultViewModel", responsável por padronizar e deixar mais amigável as mensagens de erro:
+
+        using System.Collections.Generic;
+
+        namespace DotnetApiCompleteAuth.ViewModels
+        {
+            public class ResultViewModel<T>
+            {
+                public ResultViewModel(T data, List<string> errors)
+                {
+                    Data = data;
+                    Errors = errors;
+                }
+
+                public ResultViewModel(T data)
+                {
+                    Data = data;
+                }
+
+                public ResultViewModel(List<string> errors)
+                {
+                    Errors = errors;
+                }
+
+                public ResultViewModel(string error)
+                {
+                    Errors.Add(error);
+                }
+
+                public T Data { get; private set; }
+                public List<string> Errors { get; private set; } = new();
+            }
+        }
+
+    . Na raiz do projeto crie a classe "Settings":
+
+        namespace DotnetApiCompleteAuth;
+
+        public static class Settings
+        {
+            public static string JwtKey = "ZmVkYWY3ZDg4NjNiNDhlMTk3YjkyODdkNDkyYjcwOGU=";
+
+            public static string ApiKeyName = "api_key";
+            public static string ApiKey = "curso_api_IlTevUM/z0ey3NwCV/unWg==";
+            public static int TokenExpireIn = 600;
+            public static int RefreshTokenExpireIn = 7200;
+            public static string ExpireInUnit = "seconds";
+
+        }
+
+
     . Crie a pasta "Services" e dentro dela a interface "ITokenService.cs" com o conteúdo abaixo:
 
         using System.Security.Claims;
@@ -1257,7 +1308,16 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
 
                         // ----> Linha alterada
-                        return Ok( token );
+//                        return Ok( token );
+                        return Ok(new ResultViewModel<dynamic>(new 
+                                                                { 
+                                                                    accessToken = token,
+                                                                    tokenType = "Bearer",
+//                                                                    tokenExpireIn = ConfigHelper.TokenExpireIn,
+//                                                                    tokenExpireInUnit = ConfigHelper.TokenExpireInUnit,
+                                                                    refreshToken = "",
+                                                                }, null));
+
                     }
                     catch (Exception ex)
                     {
