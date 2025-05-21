@@ -1003,7 +1003,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
 11. JWT
 
-    . Crie a branch "10.Login"
+    . Crie a branch "11.JWT"
 
         cd ~/workspace/dotnet/DotnetApiCompleteAuth
 
@@ -1382,7 +1382,6 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         git commit -am "11. JWT"
  
-// PAREI AQUI
 12. Authenticating Our Routes
 
     . Crie a branch "10.Login"
@@ -1578,6 +1577,16 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
         
         . Menor privilégio: Inclua apenas as informações necessárias nas claims do token, evitando 
             dados sensíveis.
+
+    . Atualize a branch master
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git add .
+
+        git commit -am "12. Authenticating Our Routes"
+ 
+
 
 13. Refresh Tokens
 
