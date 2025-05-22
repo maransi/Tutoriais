@@ -1384,7 +1384,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
  
 12. Authenticating Our Routes
 
-    . Crie a branch "10.Login"
+    . Crie a branch "12.AuthenticatingOurRoutes"
 
         cd ~/workspace/dotnet/DotnetApiCompleteAuth
 
@@ -1588,7 +1588,341 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
  
 
 
-13. Refresh Tokens
+13. Refresh Tokens 
+
+    . Crie a branch "13. Refresh Tokens"
+
+        cd ~/workspace/dotnet/DotnetApiCompleteAuth
+
+        git branch 13.RefreshTokens-Ravindra
+
+        git branch 13.RefreshTokens-MySoltion
+
+    . Refresh Token by Ravindra
+
+        . Altere a branch para "13.RefreshTokens-Ravindra":
+
+            git checkout 13.RefreshTokens-Ravindra
+
+        . Insira as linhas abaixo na classe "TokenService.cs"
+
+            using System.IdentityModel.Tokens.Jwt;
+            using System.Security.Claims;
+            using System.Security.Cryptography;
+            using System.Text;
+            using Microsoft.IdentityModel.Tokens;
+
+            namespace DotnetApiCompleteAuth.Services;
+
+            public class TokenService : ITokenService
+            {
+
+                public string GenerateAccessToken(IEnumerable<Claim> claims)
+                {
+                    ...
+                }
+
+                // Linhas inseridas dentro do método
+                public string GenerateRefreshToken()
+                {
+                    // Linha Eliminada
+                    // throw new NotImplementedException();
+
+                    // Create a 32-byte array to hold cryptographically secure random bytes
+                    var randomNumber = new byte[32];
+
+                    // Use a cryptographically secure random number generator
+                    // to fill the byte array with random values
+                    using var randomNumberGenerator = RandomNumberGenerator.Create();
+                    randomNumberGenerator.GetBytes(randomNumber);
+
+                    // Convert the random bytes to a base64 encoded string
+                    return Convert.ToBase64String(randomNumber);                    
+                }
+
+                // Linhas inseridas dentro do método
+                public ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
+                {
+                    // Linha Eliminada
+                    // throw new NotImplementedException();
+
+                    // Define the token validation parameters used to validate the token.
+                    var tokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidAudience = Settings.ValidAudience,
+                        ValidIssuer = Settings.ValidIssuer,
+                        ValidateLifetime = false,
+                        ClockSkew = TimeSpan.Zero,
+                        IssuerSigningKey = new SymmetricSecurityKey
+                        (Encoding.UTF8.GetBytes(Settings.Secret))
+                    };
+
+                    var tokenHandler = new JwtSecurityTokenHandler();
+
+                    // Validate the token and extract the claims principal and the security token.
+                    var principal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out SecurityToken securityToken);
+
+                    // Cast the security token to a JwtSecurityToken for further validation.
+
+                    var jwtSecurityToken  = securityToken as JwtSecurityToken;
+
+                    // Ensure the token is a valid JWT and uses the HmacSha256 signing algorithm.
+                    // If no throw new SecurityTokenException
+                    if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals
+                    (SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        throw new SecurityTokenException("Invalid token");
+                    }
+
+                    // return the principal
+                    return principal;
+                }
+            }
+
+        . Crie a classe "TokenModel" dentro da pasta "Models" com o conteúdo abaixo:
+
+            using System.ComponentModel.DataAnnotations;
+
+            namespace DotnetApiCompleteAuth.Models;
+
+            public class TokenModel
+            {
+                [Required]
+                public string AccessToken { get; set; } = string.Empty;
+
+                [Required]
+                public string RefreshToken { get; set; } = string.Empty;
+            }
+
+        . Crie a classe "TokenInfo" dentro da pasta "Models" com o conteúdo abaixo:
+
+            using System;
+            using System.ComponentModel.DataAnnotations;
+
+            namespace DotnetApiCompleteAuth.Models;
+
+            public class TokenInfo
+            {
+                public int Id { get; set; }
+
+                [Required]
+                [MaxLength(30)]
+                public string Username { get; set; } = string.Empty;
+
+                [Required]
+                [MaxLength(200)]
+                public string RefreshToken { get; set; } = string.Empty;
+
+                [Required]
+                public DateTime ExpiredAt { get; set; }
+            }
+
+        . Insira a linha abaixo na classe "AppDbContext.cs"
+
+            using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+            using Microsoft.EntityFrameworkCore;
+
+            namespace DotnetApiCompleteAuth.Models;
+
+            public class AppDbContext : IdentityDbContext<ApplicationUser>
+            {
+                public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+                {
+
+                }
+
+                public DbSet<TokenInfo> TokenInfos{ get; set; }
+            }
+
+        . Acesse a raiz do projeto de APIs e execute o comando abaixo:
+
+            cd src/DotnetApiCompleteAuth
+
+            dotnet ef migrations add TokenInfos
+
+            dotnet ef database update
+
+        . Acesse a classe "AccountsController.cs" e insira as linhas abaixo:
+
+using Microsoft.AspNetCore.Identity;
+using DotnetApiCompleteAuth.Models;
+using Microsoft.AspNetCore.Mvc;
+using DotnetApiCompleteAuth.Constants;
+using DotnetApiCompleteAuth.Services;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using System.Web;
+using DotnetApiCompleteAuth.ViewModels;
+
+namespace DotnetApiCompleteAuth.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AccountsController : ControllerBase
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ILogger<AccountsController> _logger;
+        private readonly ITokenService _tokenService;
+        private readonly AppDbContext _context;                     // Linha inserida
+
+        public AccountsController(UserManager<ApplicationUser> userManager,
+                                    RoleManager<IdentityRole> roleManager,
+                                    ILogger<AccountsController> logger,
+                                    ITokenService tokenService,
+                                    AppDbContext context)           // Linha inserida
+        {
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _logger = logger;
+            _tokenService = tokenService;
+            _context = context;                                     // Linha inserida
+        }
+
+        .....
+
+        [HttpPost("login")]
+        [Produces("application/json")]
+        public async Task<IActionResult> Login(LoginModel loginModel)
+        {
+            try
+            {
+                ...
+
+                // generating access token
+                var token = _tokenService.GenerateAccessToken(authClaims);
 
 
-46.34
+                // Linha inserida
+                string refreshToken = _tokenService.GenerateAccessToken();
+
+                // Linha inserida
+                var tokenInfo = _context.TokenInfos.FirsOrDefault( a => a.Username == User.UserName );
+
+                // If inserido  <-----
+                //
+                // If tokenInfo is null for the user, create a new one
+                if (tokenInfo == null)
+                {
+                    var ti = new TokenInfo
+                    {
+                        Username = user.UserName,
+                        RefreshToken = refreshToken,
+                        ExpiredAt = DateTime.UtcNow.AddDays(7)
+                    };
+                    _context.TokenInfos.Add(ti);
+                }
+                // Else, update the refresh token and expiration
+                else
+                {
+                    tokenInfo.RefreshToken = refreshToken;
+                    tokenInfo.ExpiredAt = DateTime.UtcNow.AddDays(7);
+                }
+
+                // Linha inserida
+                await _context.SaveChangesAsync();
+
+                return Ok(new ResultViewModel<dynamic>(new
+                {
+                    user = loginModel.Username,
+                    tokenType = "Bearer",
+                    token = HttpUtility.UrlDecode(token),
+                    tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                                                        DateTime.Now.AddHours(Settings.TokenExpireIn),
+                    refreshToken =  HttpUtility.UrlDecode(refreshToken)
+                }, null));
+ 
+
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
+
+
+
+        // Método "Refresh" Inserido
+
+        [HttpPost("token/refresh")]
+        public async Task<IActionResult> Refresh(TokenModel tokenModel)
+        {
+            try
+
+            {
+                var principal = _tokenService.GetPrincipalFromExpiredToken(tokenModel.AccessToken);
+                var username = principal.Identity.Name;
+
+                var tokenInfo = _context.TokenInfos.SingleOrDefault(u => u.Username == username);
+                if (tokenInfo == null
+                    || tokenInfo.RefreshToken != tokenModel.RefreshToken
+                    || tokenInfo.ExpiredAt <= DateTime.UtcNow)
+                {
+                    return BadRequest("Invalid refresh token. Please login again.");
+                }
+
+                var newAccessToken = _tokenService.GenerateAccessToken(principal.Claims);
+                var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+                tokenInfo.RefreshToken = newRefreshToken; // rotating the refresh token
+                await _context.SaveChangesAsync();
+
+                return Ok(new TokenModel
+                {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
+
+
+        // Método "Revoke" Inserido
+
+        [HttpPost("token/revoke")]
+        [Authorize]
+        public async Task<IActionResult> Revoke()
+        {
+            try
+            {
+                var username = User.Identity.Name;
+
+                var userToken = _context.TokenInfos.SingleOrDefault(u => u.Username == username);
+                if (userToken == null)
+                {
+                    return BadRequest();
+                }
+
+                userToken.RefreshToken = string.Empty;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
+
+
+    }
+
+}        
+
+
+
+55.48
