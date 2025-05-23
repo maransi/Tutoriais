@@ -1656,7 +1656,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                         ValidateLifetime = false,
                         ClockSkew = TimeSpan.Zero,
                         IssuerSigningKey = new SymmetricSecurityKey
-                        (Encoding.UTF8.GetBytes(Settings.Secret))
+                        (Encoding.UTF8.GetBytes(Settings.JwtKey))
                     };
 
                     var tokenHandler = new JwtSecurityTokenHandler();
@@ -1755,6 +1755,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             using System.IdentityModel.Tokens.Jwt;
             using System.Web;
             using DotnetApiCompleteAuth.ViewModels;
+            using Microsoft.AspNetCore.Authorization;       // Linha inserida
 
             namespace DotnetApiCompleteAuth.Controllers
             {
@@ -1796,10 +1797,10 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
 
                             // Linha inserida
-                            string refreshToken = _tokenService.GenerateAccessToken();
+                            string refreshToken = _tokenService.GenerateRefreshToken();
 
                             // Linha inserida
-                            var tokenInfo = _context.TokenInfos.FirsOrDefault( a => a.Username == User.UserName );
+                            var tokenInfo = _context.TokenInfos.FirsOrDefault( a => a.Username == user.UserName );
 
                             // If inserido  <-----
                             //
@@ -1831,7 +1832,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                                 token = HttpUtility.UrlDecode(token),
                                 tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
                                                                                                     DateTime.Now.AddHours(Settings.TokenExpireIn),
-                                refreshToken =  HttpUtility.UrlDecode(refreshToken)
+                                refreshToken =  HttpUtility.UrlDecode(refreshToken)     // Linha inserida
                             }, null));
             
 
@@ -1889,7 +1890,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
                     // Método "Revoke" Inserido
 
-                    [HttpPost("token/revoke")]
+                    [HttpPost("token/logout")]
                     [Authorize]
                     public async Task<IActionResult> Revoke()   // Deixa os token/refreshToken invalidos após o logout
                     {
@@ -1928,8 +1929,8 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             Body: {
                 raw: true,
                 {
-                    "username": "john@example.com",
-                    "password": "John@123"
+                    "username": "admin@example.com",
+                    "password": "Admin@123"
                 }
 
             }
