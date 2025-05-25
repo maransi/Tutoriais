@@ -1,0 +1,86 @@
+. Você me fornece o documento com as regras de negócio, requisitos ou qualquer descrição do processo. A partir disso, eu posso te ajudar a:
+
+    . Mapear os requisitos funcionais e não funcionais.
+
+    . Desenhar o fluxo do sistema ou dos processos.
+
+    . Propor wireframes (protótipos de baixa fidelidade) — representações simples das telas.
+
+    . Gerar protótipos mais visuais, simulando interfaces modernas (com botões, campos, cards, menus, etc.).
+
+    . Sugerir melhorias na experiência do usuário (UX) e na organização das telas.
+
+. Você pode enviar:
+
+    . Um texto descrevendo os processos, regras e objetivos.
+
+    . Um arquivo (PDF, DOC, imagem, ou outro).
+
+    . Ou até me descrever por mensagem mesmo.
+
+. Depois, me fala também:
+
+    . Qual o tipo do sistema? (Web, mobile, desktop, intranet?)
+
+    . Qual o público-alvo? (Usuários técnicos, administrativos, clientes, público geral…)
+
+    . Se deseja um estilo mais simples, corporativo, moderno, jovem, etc.
+
+. Assim, eu posso gerar os protótipos mais alinhados às suas necessidades.
+
+. Depois de você me apresentar os protótipos, consegue gerar o código e/ou projeto delas em .net com angular?
+
+. Fluxo de trabalho possível aqui:
+
+    . Análise das regras de negócio
+
+        . Mapeamos os requisitos, identificamos os fluxos principais e definimos as telas necessárias.
+
+    . Protótipos/Wireframes
+
+        . Gero os modelos visuais das telas, tanto em esboços simples quanto com mais detalhes visuais, simulando como seria no sistema.
+
+    . Geração de Código Frontend e Backend:
+
+        . Frontend em Angular:
+
+            . Posso gerar a estrutura dos componentes, templates HTML, CSS (ou SCSS), arquivos TypeScript, organização de rotas, serviços, comunicação com API (HTTPClient) e até modelos de dados.
+
+        . Backend em .NET (C#):
+
+            . Posso gerar controllers, services, models, repositórios, mapeamento de entidades (Entity Framework), além de endpoints RESTful para integração com o frontend.
+
+    . Arquitetura do Projeto:
+
+        . Sugiro a arquitetura (ex.: API RESTful em .NET + SPA Angular), padrões como Clean Architecture, DDD (se desejar) e melhores práticas.
+
+    . Documentação Técnica:
+
+        . Posso gerar diagramas de classes, diagramas de banco de dados, e até documentação Swagger simulada.
+
+    . Limitações:
+
+        . Eu não gero diretamente projetos no formato .zip ou .sln/.csproj, mas te entrego o código organizado, estruturado e pronto pra você colar no seu ambiente e compilar.
+
+        . Também posso te orientar a configurar o projeto no Visual Studio/VS Code e como rodar tudo localmente.
+
+    . Resumo:
+
+        . Protótipo visual ✔️
+
+        . Código Angular ✔️
+
+        . Código .NET (API) ✔️
+
+        . Banco de dados (SQL, migrations) ✔️
+
+        . Documentação ✔️
+
+
+    . Se quiser, já me envia:
+
+        . O documento com as regras de negócio.
+
+        . Qual a versão do Angular (ex.: 14, 15, 16...) e do .NET (.NET 6, 7, 8...) que você pretende usar.
+
+        . Se quer usar algum framework visual (ex.: Angular Material, PrimeNG, Bootstrap).
