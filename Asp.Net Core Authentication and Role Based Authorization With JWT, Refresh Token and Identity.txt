@@ -1604,7 +1604,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
             git checkout 13.RefreshTokens-Ravindra
 
-        . Insira as linhas abaixo na classe "TokenService.cs"
+        . Insira as linhas abaixo na classe "TokenService.cs":
 
             using System.IdentityModel.Tokens.Jwt;
             using System.Security.Claims;
@@ -1820,42 +1820,46 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                             var tokenInfo = _context.TokenInfos.FirstOrDefault(a => a.Username == user.UserName);
 
                             // If tokenInfo is null for the user, create a new one
-                            if ( (tokenInfo == null)
-                                || (tokenInfo.ExpiredAt <= DateTime.Now) )
+                            if (tokenInfo == null)
                             {
-                                if (tokenInfo == null)
+                                var ti = new TokenInfo
                                 {
-                                    var ti = new TokenInfo
-                                    {
-                                        Username = user.UserName,
-                                        RefreshToken = _tokenService.GenerateRefreshToken(),
-                                        ExpiredAt = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.RefreshTokenExpireIn) :
-                                                                                DateTime.Now.AddHours(Settings.RefreshTokenExpireIn)
-                                    };
-                                    _context.TokenInfos.Add(ti);
-                                    
-                                    tokenInfo = ti;
-                                }
-                                else if (tokenInfo.ExpiredAt <= DateTime.Now)
-                                {
-                                    // If tokenInfo exists but is expired, update it
-                                    tokenInfo.RefreshToken = _tokenService.GenerateRefreshToken();
-                                    tokenInfo.ExpiredAt = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.RefreshTokenExpireIn) :
-                                                                                DateTime.Now.AddHours(Settings.RefreshTokenExpireIn);
-                                }
+                                    Username = user.UserName,
+                                    Token = HttpUtility.UrlDecode(token),
+                                    TokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                                                                    DateTime.Now.AddHours(Settings.TokenExpireIn),
+                                    RefreshToken = _tokenService.GenerateRefreshToken(),
+                                    RefreshTokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.RefreshTokenExpireIn) :
+                                                                            DateTime.Now.AddHours(Settings.RefreshTokenExpireIn)
+                                };
+                                _context.TokenInfos.Add(ti);
+
+                                tokenInfo = ti;
+                            }
+                            else /* if ((tokenInfo.RefreshTokenExpireIn <= DateTime.Now)
+                                    || (tokenInfo.TokenExpireIn <= DateTime.Now)) */
+                            {
+                                tokenInfo.Token = HttpUtility.UrlDecode(token);
+                                tokenInfo.TokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                                                                    DateTime.Now.AddHours(Settings.TokenExpireIn);
+                                // If tokenInfo exists but is expired, update it
+                                tokenInfo.RefreshToken = _tokenService.GenerateRefreshToken();
+                                tokenInfo.RefreshTokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.RefreshTokenExpireIn) :
+                                                                            DateTime.Now.AddHours(Settings.RefreshTokenExpireIn);
+                            }
 
                                 await _context.SaveChangesAsync();
                             }
-
+                            
                             return Ok(new ResultViewModel<dynamic>(new
                             {
                                 user = loginModel.Username,
                                 tokenType = "Bearer",
                                 token = HttpUtility.UrlDecode(token),
+                                refreshToken = HttpUtility.UrlDecode(tokenInfo.RefreshToken),
                                 tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
                                                                                                     DateTime.Now.AddHours(Settings.TokenExpireIn),
-                                refreshToken = HttpUtility.UrlDecode(tokenInfo.RefreshToken),
-                                refreshTokenExpireIn = tokenInfo.ExpiredAt
+                                refreshTokenExpireIn = tokenInfo.RefreshTokenExpireIn
                             }, null));
 
 
@@ -1877,32 +1881,51 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                     public async Task<IActionResult> Refresh(TokenModel tokenModel)
                     {
                         try
-
                         {
                             var principal = _tokenService.GetPrincipalFromExpiredToken(tokenModel.Token);
                             var username = principal.Identity.Name;
 
                             var tokenInfo = _context.TokenInfos.SingleOrDefault(u => u.Username == username);
+
                             if (tokenInfo == null
                                 || HttpUtility.UrlDecode(tokenInfo.RefreshToken) != tokenModel.RefreshToken
-                                || tokenInfo.ExpiredAt <= DateTime.Now)
+                                || tokenInfo.RefreshTokenExpireIn <= DateTime.Now
+                                || HttpUtility.UrlDecode(tokenInfo.Token) != tokenModel.Token)
                             {
-                                return BadRequest("Invalid refresh token. Please login again.");
+                                if (HttpUtility.UrlDecode(tokenInfo.RefreshToken) != tokenModel.RefreshToken
+                                    || HttpUtility.UrlDecode(tokenInfo.Token) != tokenModel.Token)
+                                {
+                                    _logger.LogWarning("Invalid token/refreshToken");
+
+                                    return BadRequest("Invalid token/refreshToken");
+                                }
+                                else 
+                                {
+                                    _logger.LogWarning("Token/RefreshToken expired");
+
+                                    return BadRequest("Token/RefreshToken expired");
+                                }
                             }
 
                             var newToken = _tokenService.GenerateToken(principal.Claims);
                             var newRefreshToken = _tokenService.GenerateRefreshToken();
 
-                            tokenInfo.RefreshToken = HttpUtility.UrlDecode(newRefreshToken); // rotating the refresh token
-                            tokenInfo.ExpiredAt = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.RefreshTokenExpireIn) :
-                                                                            DateTime.Now.AddHours(Settings.RefreshTokenExpireIn);
+                            tokenInfo.Token = HttpUtility.UrlDecode(newToken);
+                            tokenInfo.TokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
+                                                                                                DateTime.Now.AddHours(Settings.TokenExpireIn);
 
+                            if (tokenInfo.RefreshTokenExpireIn <= DateTime.Now)
+                            {
+                                tokenInfo.RefreshToken = HttpUtility.UrlDecode(newRefreshToken); // rotating the refresh token
+                                tokenInfo.RefreshTokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.RefreshTokenExpireIn) :
+                                                                                DateTime.Now.AddHours(Settings.RefreshTokenExpireIn);
+                            }
 
                             await _context.SaveChangesAsync();
 
                             // return Ok(new TokenModel
                             // {
-                            //     Token = newToken,
+                            //     Token = newAccessToken,
                             //     RefreshToken = newRefreshToken
                             // });
 
@@ -1911,10 +1934,10 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                                 user = username,
                                 tokenType = "Bearer",
                                 token = HttpUtility.UrlDecode(newToken),
+                                refreshToken = HttpUtility.UrlDecode(tokenInfo.RefreshToken),
                                 tokenExpireIn = Settings.ExpireInUnit.Equals("seconds") ? DateTime.Now.AddSeconds(Settings.TokenExpireIn) :
                                                                                                     DateTime.Now.AddHours(Settings.TokenExpireIn),
-                                refreshToken = HttpUtility.UrlDecode(newRefreshToken),
-                                refreshTokenExpireIn = tokenInfo.ExpiredAt
+                                refreshTokenExpireIn = tokenInfo.RefreshTokenExpireIn
                             }, null));
 
 
@@ -1925,8 +1948,6 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                             return StatusCode(StatusCodes.Status500InternalServerError);
                         }
                     }
-
-
 
 
                     // Método "Revoke" Inserido
@@ -2022,7 +2043,6 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             git commit -am "13.RefreshTokens-Ravindra"
        
 
-1. Testar a expiração do RefreshToken
-2. Criar um método no AccountController para criar somente o token,
-    pegando o refreshToken
+1. Refazer as mudanças da aula 13. Refresh Token na branch 13.RefreshToken-MySolution2
+
 59.04
