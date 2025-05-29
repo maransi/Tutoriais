@@ -18,20 +18,29 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
 
         export DOTNET_INSTALL_DIR=$HOME/.dotnet 
         
-        ./dotnet-install.sh --install-dir /home/marco/.dotnet -c 3.1
-        ./dotnet-install.sh -c 5.0
-        ./dotnet-install.sh -c 6.0
-        ./dotnet-install.sh -c 7.0
+        ./dotnet-install.sh --install-dir $HOME/.dotnet -c 3.1
+        ./dotnet-install.sh --install-dir $HOME/.dotnet -c 5.0
+        ./dotnet-install.sh --install-dir $HOME/.dotnet -c 6.0
+        ./dotnet-install.sh --install-dir $HOME/.dotnet -c 7.0
 
         dotnet --version
 
+        # Caso o comando "dotnet" não se comportar como um executável, crie o link abaixo:
+        sudo ln -s /home/$USER/.dotnet/dotnet /usr/bin/dotnet
+
         # insira as linhas abaixo no arquivo ".bashrc"
-        export PATH="home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"
-        export DOTNET_ROOT=/home/$USER/.dotnet/
+        echo 'export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"' >> ~/.bashrc
+        echo 'export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1' >> ~/.bashrc
+        echo 'export DOTNET_ROOT=$HOME/.dotnet' >> ~/.bashrc
 
         source ~/.bashrc
 
-        sudo ln -s /home/$USER/.dotnet/dotnet /usr/bin/dotnet
+        # insira as linhas abaixo no arquivo ".zshrc"
+        echo 'export PATH="$HOME/.dotnet:$HOME/.dotnet/tools:$PATH"' >> ~/.zshrc
+        echo 'export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1' >> ~/.zshrc
+        echo 'export DOTNET_ROOT=$HOME/.dotnet' >> ~/.zshrc
+
+        source ~/.zshrc
 
         dotnet --version
         dotnet --list-runtimes
@@ -44,7 +53,6 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             C# XML Documentation Comments
             C# Snippets
             Docker
-            RapidAPI client      // Rest API
             SQLTools
             SQLTools MySQL/MariaDB/...
 
