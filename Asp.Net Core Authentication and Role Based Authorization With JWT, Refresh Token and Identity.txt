@@ -1899,9 +1899,9 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                                 }
                                 else 
                                 {
-                                    _logger.LogWarning("Token/RefreshToken expired");
+                                    _logger.LogWarning("RefreshToken expired");
 
-                                    return BadRequest("Token/RefreshToken expired");
+                                    return BadRequest("RefreshToken expired");
                                 }
                             }
 
@@ -1964,7 +1964,7 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
                                 return BadRequest();
                             }
 
-                            userToken.RefreshToken = string.Empty;
+                            userToken.RefreshTokenExpireIn = DateTime.MinValue;
 
                             await _context.SaveChangesAsync();
 
@@ -2031,6 +2031,28 @@ Asp.Net Core Authentication and Role Based Authorization With JWT, Refresh Token
             url: http://localhost:[porta]/api/people
             method: POST
             Headers.Authorization: Bearer [Token obtido no item anterior]
+
+        . Execute a API de logout
+
+            url: http://localhost:[porta]/api/accounts/token/logout
+            method: POST
+
+        . Execute a API de RefreshToken. Verifique se a mensagem será: "Token Expired"
+
+            url: http://localhost:[porta]/api/accounts/token/refresh
+            method: POST
+            body: {
+                raw: true,
+                {
+                    "token": [Token obtido no item anterior],
+                    "refreshToken": [refreshToken obtido no item anterior]
+                }
+            }
+
+
+
+
+
 
         . Atualize a branch "13.RefreshTokens-Ravindra"
 
