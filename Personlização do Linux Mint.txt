@@ -1,0 +1,182 @@
+Personlização do Linux Mint
+---------------------------
+
+1. Baseado no Vídeo:
+
+    https://www.youtube.com/watch?v=NwdumrRU4eQ
+
+
+2. Acesse "Preferências / Configurações do Sistema - Centro de Controle / Temas" e altere:
+
+    . Escolha "Tema Escuro"
+
+    . Acesse "Configurações Avançadas" e altere as opções (Icones, área de trabalho, etc) a vontade.
+
+3. Clique com o botão direito sobre a barra de tarefas e escolha a opção "Move". Escolha o local desejado
+    para colocar a barra de ferramentas (Esquerda, ou superior).
+
+    . Configure a barra de tarefas para se auto ocultar
+
+4. Altere o wallpaper do desktop, localiza alguma imagem na internet, dê Preferência alguma que traga os
+    comandos linux por exemplo.
+
+    https://wallpapercave.com/linux-commands-wallpapers
+
+
+5. Acesse "Gerenciador de Aplicativos - Instalar Novos Aplicativos", localize e instale "Plank":
+
+    . Clique com "Ctrl+Botão direito do mouse" na parte inferior do Plank para abrir as configurações.
+
+    . Configure o tema para transparente, icon size para 28 e icon zoom para o máximo.
+
+    . Para adicionar um novo ícone, basta abrir o programa, dar um clique direito sobre o ícone quando estiver  
+        aberto e fixar ele no plank.
+
+    . Acesse "Configurações do Sistema / Aplicativos da Inicialização" 
+
+        . Insira o Plank e marque ele para auto iniciar.
+
+6. Acesse o Gnome Look para baixar novos temas e icones
+
+    https://www.gnome-look.org/browse/
+
+    . Localize os "Icons Themes":
+
+        . Papirus
+
+        . Kora
+
+    . Acesse a aba "Files" e baixe-os
+
+        cd ~/Downloads
+
+        tar -xvf kora-1-7-2.tar.xz ~/.icons
+
+        tar xvfz papirus-icon-theme-20250501.tar.gz ~/.icons
+
+    . Acesse "Temas" do linux, acesse "Icones" e altere o icone por um desses que foram baixados.
+
+
+7. Configurando o terminal
+
+    . Instalando o zsh Shell
+
+        . Execute o comando abaixo no prompt do linux para instalar o "zsh":
+
+            sudo apt-get update && sudo apt-get upgrade -y
+
+            sudo apt install zsh -y
+
+        . Execute o complemento "Oh-My-ZSH" executando o comando abaixo no prompt do linux:
+
+            # Instalar o complemento Oh-My-ZSH. Ao termino da instalação, o prompt do shell já passa o controle para o zsh
+            curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh | sh; zsh
+
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+            # OBSERVAÇÃO: Se já estiver instalado o "oh-my-zsh" simplesmente apague a pasta dele para reinstalá-lo e execute o comando acima
+            # rm -rf ~/.oh-my-zsh
+
+
+        . Definindo ZSH como padrão. Após instalação, feche e abra o terminal:
+        
+            sudo usermod --shell $(which zsh) $USER
+
+        . Instalação do plugins ZSH Highlight. Após a conclusão da instalação, feche e abra o terminal para ver o resultado.
+            
+            git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting 
+
+            . Abra o arquivo ~/.zshrc, localize o paragrafo "plugins" e adicione o plugin "zsh-syntax-highlighting"
+
+                plugins=(
+                    git
+                    zsh-syntax-highlighting
+                )
+
+            . Feche e abra o terminal
+
+        . Instalação do plugins ZSH Suggestions. Após instalação, feche e abra novamente o terminal:
+
+            git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH/plugins/zsh-autosuggestions
+
+            . Abra o arquivo ~/.zshrc, localize o paragrafo "plugins" e adicione o plugin "zsh-syntax-highlighting"
+
+                plugins=(
+                    git
+                    zsh-syntax-highlighting
+                    zsh-autosuggestions
+                )
+
+            . Feche e abra o terminal
+
+        . Instalação do Buscador com ctrl+t FZF. Após instalação, feche e abra novamente o terminal:
+
+            # Responda Yes em todas as perguntas
+            git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install
+
+            . Feche e abra o terminal
+
+
+        . Acesse o site abaixo para baixar novas fontes. Adicionar uma fonte nova:
+        
+            # Baixe a fonte "Hack Nerd Font"
+            https://www.nerdfonts.com/#downloads
+
+            ou
+
+            cd ~/Downloads
+            wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Hack.zip
+
+
+        . Alteração da fonte do terminal:
+        
+            . Criar o diretório para a fonte e descompacte aqui:
+        
+                mkdir ~/.fonts 
+                mkdir ~/.local/share/fonts/
+
+                cd ~/.fonts
+                unzip ~/Downloads/Hack.zip 
+
+                cd ~/.local/share/fonts/
+                unzip ~/Downloads/Hack.zip 
+
+            . No caso do terminal numa instalçao Linux puro sangue:
+            
+                . Acesse as configurações do terminal e altere a fonte da interface "Hack NF"
+
+            . No caso do WSL:
+            
+                . Descompacte o arquivo zip, selecione todos os arquivos de fontes, dê um clique direito e faça a instalação das fontes
+
+                . Acesse as configurações do terminal WSL da distribuição sendo 
+                    usada "WSL -> Configurações -> <Distribuição> -> Aparência -> Tipo de Fonte":
+
+                    . Altere para "Hack Nerd Font"
+
+            . No caso do VSCode:
+
+                . Acesse as configurações e localize "Terminal > Integrated > Font Family", se quiser digite na busca "Terminal Font"
+
+                . Altere para "Hack Nerd Font"
+
+            . Feche e abra o terminal
+
+        . Alteração do tema do terminal:
+
+            . Altere o Tema do terminal para Powerlevel10k:
+
+                # git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
+                git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/themes/powerlevel10k
+
+            . Altere o arquivo .zshrc para adicionar o novo tema,  conforme abaixo:
+        
+                . Altere o item abaixo com o novo tema:
+                    
+                    ZSH_THEME="powerlevel10k/powerlevel10k"
+
+                . Logo abaixo deste item, insira o item abaixo:
+
+                    POWERLEVEL10K_MODE="nerdfont-complete"
+
+            . Feche e abra o terminal. Se mesmo assim o tema do ZSH não funcionar, reinicie o linux e tente novamente.
