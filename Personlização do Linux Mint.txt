@@ -263,3 +263,7 @@ Personlização do Linux Mint
                     POWERLEVEL10K_MODE="nerdfont-complete"
 
             . Feche e abra o terminal. Se mesmo assim o tema do ZSH não funcionar, reinicie o linux e tente novamente.
+
+    . Acesse o arquivo ~/.zshrc e insira na última linha o conteúdo abaixo:
+
+        neofetch
