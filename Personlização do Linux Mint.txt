@@ -21,6 +21,7 @@ Personlização do Linux Mint
     comandos linux por exemplo.
 
     https://wallpapercave.com/linux-commands-wallpapers
+    https://wallhaven.cc/
 
 
 5. Acesse "Gerenciador de Aplicativos - Instalar Novos Aplicativos", localize e instale "Plank":
@@ -56,8 +57,90 @@ Personlização do Linux Mint
 
     . Acesse "Temas" do linux, acesse "Icones" e altere o icone por um desses que foram baixados.
 
+        . Icones -> Papirus-Dark
 
-7. Configurando o terminal
+7. Passo opcional, com mais opções de temas e icones
+
+    . Acesse as URLs abaixo e faça o Download dos arquivos:
+
+        # Temas
+        https://www.cinnamon-look.org/p/1357889/
+
+        # Icones
+        https://www.cinnamon-look.org/p/1340791/
+
+
+    . Acesse a pasta de Download, descompacte os arquivos.
+
+        tar -xvf Orchis.tar.xz
+        
+        tar xvf Reversal.tar.xz
+
+    . Copie as pastas "Orchis*" para a pasta "~/.themes"
+
+        mv Orchis* ~/.themes
+
+    . Copie as pastas "Reversal*" para a pasta "~/.icons"
+
+        mv Reversal* ~/.icons
+
+    . Acesse "Temas" do linux, acesse "Icones" e altere o icone por um desses que foram baixados.
+    
+        Aplicativos -> Orchis-Dark-Compact
+
+        Icones -> Reversal-Dark
+
+        Área de Trabalho -> Orchis-Light-Compact
+
+8. Instalando "Applets"
+
+    . Vá em configurações de sistema e acesse os Applets.
+
+    . Vá em "Downloads" e Baixe
+
+        . Indicador de teclas de bloqueio
+
+            . Vá em "Gerenciamento", clique sobre o Applet "Indicador de Teclas" e clique no simbolo de "+"
+
+            . Acesse as configurações do Applets, acessar o icone de engrenagem, e ative as configurações:
+
+                . Exibir notificações
+
+                . Silence system notification sound
+
+                . Exibir Indicador de Caps Look 
+
+                . Exibir Indicador de Num Look 
+
+        . Documentos Recentes
+            
+            . Vá em "Gerenciamento", clique sobre o Applet "Indicador de Teclas" e clique no simbolo de "+"
+
+        . Lixeira
+
+
+9. Instalando "Extensões"
+
+    . Vá em configurações de sistema e acesse "Downloads"
+
+    . Vá em "Downloads" e baixe:
+
+        . Paineis transparente
+
+    . Vá em "Gerenciamento", clique sobre a extensão "Paineis transparente" e clique no icone de "+"
+
+    . Acesse as configurações da extensão, acessar o icone de engrenagem, e altere a configuração:
+
+        . Tipo de Transparência para "transparente", ou "Semi transparente"
+
+10. Alterando o efeito das janelas
+
+    . Vá em "Configurações do Sistema", acesse "Janelas", vá em "Alt Tab" e altere a configuração:
+
+        . Estilo de alternância do Alt+Tab para "Coverflow 3D"
+
+
+11. Configurando o terminal
 
     . Instalando o zsh Shell
 
