@@ -140,7 +140,20 @@ Personlização do Linux Mint
         . Estilo de alternância do Alt+Tab para "Coverflow 3D"
 
 
-11. Configurando o terminal
+11. Instalando Wallpapers animados
+
+    . Acesse a loja de Aplicativos e instale o "Hidamari"
+
+    . Acesse a URL abaixo, baixe alguns wallpaper animados para a pasta "~/Videos/Hidamari":
+
+        # Baixe arquivos com Extensões ".mp4"
+        https://mylivewallpapers.com/
+
+    . Acesse o aplicativo Hidamari e configure o wallpaper para executar
+
+    . Importante: Cuidado com o alto consumo de processsamento e memória.
+
+12. Configurando o terminal
 
     . Instalando o zsh Shell
 
