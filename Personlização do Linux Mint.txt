@@ -215,13 +215,17 @@ Personlização do Linux Mint
 
         . Acesse o site abaixo para baixar novas fontes. Adicionar uma fonte nova:
         
-            # Baixe a fonte "Hack Nerd Font"
+            # Baixe a fonte "Hack Nerd Font" ou "Firacode Nerd Font"
             https://www.nerdfonts.com/#downloads
 
             ou
 
             cd ~/Downloads
             wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Hack.zip
+
+
+            ou 
+
 
 
         . Alteração da fonte do terminal:
