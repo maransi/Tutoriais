@@ -283,8 +283,20 @@ Tutorial WSL ( Windows Subsystem Linux )
 
                 POWERLEVEL10K_MODE="nerdfont-complete"
 
-        . Feche e abra o terminal
+        . Acesse o arquivo .p10k.zsh e faça as alterações abaixo:
 
+            # Altere para "off" 
+            typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
+
+            # Descomente as linhas abaixo:
+            disk_usage 
+            ram
+
+        . Acesse o arquivo ~/.zshrc e insira na última linha o conteúdo abaixo:
+
+            neofetch
+
+        . Feche e abra o terminal
 
 . Instalando o Fish Shell
 

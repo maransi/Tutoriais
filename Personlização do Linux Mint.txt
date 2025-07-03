@@ -223,11 +223,6 @@ Personlização do Linux Mint
             cd ~/Downloads
             wget https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/Hack.zip
 
-
-            ou 
-
-
-
         . Alteração da fonte do terminal:
         
             . Criar o diretório para a fonte e descompacte aqui:
@@ -280,6 +275,15 @@ Personlização do Linux Mint
                     POWERLEVEL10K_MODE="nerdfont-complete"
 
             . Feche e abra o terminal. Se mesmo assim o tema do ZSH não funcionar, reinicie o linux e tente novamente.
+
+    . Acesse o arquivo .p10k.zsh e faça as alterações abaixo:
+
+        # Altere para "off" 
+        typeset -g POWERLEVEL9K_INSTANT_PROMPT=off
+
+        # Descomente as linhas abaixo:
+        disk_usage 
+        ram
 
     . Acesse o arquivo ~/.zshrc e insira na última linha o conteúdo abaixo:
 
