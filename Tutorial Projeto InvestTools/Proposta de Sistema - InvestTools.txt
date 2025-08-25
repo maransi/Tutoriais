@@ -54,6 +54,10 @@ Proposta de Sistema - InvestTools
 
         3.2.1. Novo Cenário
 
+            Todas as vezes que o usuário se autenticar, com usuário e senha, o sistema associará as informações
+            (investimentos, carteiras, etc) com o usuário atual. Assim, todas as informações fornecidas abaixo
+            serão do usuário de momento.
+
             3.2.1.1. Investimentos em Renda Variável
 
                 As compras e vendas de ativos na B3, como: ações, fundos imobiliário, ETF, BDR, etc. serão registradas com
@@ -97,4 +101,7 @@ Proposta de Sistema - InvestTools
 
                 3.2.1.3.1. Configuração das carteiras
 
-                    
+
+                3.2.1.3.1. Montagens das carteiras
+
+            3.2.1.4. Comparativo de Ativos de Renda Variável para Compra
