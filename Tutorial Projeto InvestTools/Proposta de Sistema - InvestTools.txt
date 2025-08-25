@@ -1,0 +1,100 @@
+Proposta de Sistema - InvestTools
+---------------------------------
+
+1. Introdução
+
+    1.1. Visão Geral
+
+        Sempre que é feito uma compra, ou venda de ativos na B3 é registrado numa planilha as 
+        informações da negociação: Ticker do ativo, evento (compra/venda), data da negociação, 
+        quantidade (unidades) negociada, valor unitário da negociação e banco/corretora responsável
+        pela custódio do ativo. 
+
+        A partir destas informações é feito o cálculo do preço médio dos ativos. Cada ativo tem seu 
+        controle de compra/venda, total de quotas e preço médio separado.
+
+        Além das compras de ativos na B3, também é feito outro controle em cima das compras de ativos de renda fixa, como:
+        CDB, LCI/LCA, Debentures, CRI, CRA, Tesouro direto, etc. Esse controle diverge das compras de ativos da B3, porque
+        cada compra é tratado de forma individualizada, não havendo controle de preço médio, nem venda desses ativos. 
+        Neste caso informamos os seguintes dados da compra: Tipo da aplicação (CDB, LCI, LCA, etc..), Banco Emissor do ativo, 
+        Taxa negociada (IPCA+, Juros Pré-fixado, ou Juros Pós-fixado), vencimento da aplicação e saldo aportado.
+
+2. Cenário Atual
+
+    Conforme explicado no item 1.1. Visão Geral, ao realizarmos uma negociação em renda variável, ou fixa, 
+    essas informações são agrupadas nas carteiras de investimentos.
+
+    Cada carteira é dividida em grupos de ativos, por exemplo: Renda Fixa, Fundos de Investimentos, Ações, Rerverva de 
+    oportunidade, etc. Não existe um padrão para a divisão das carteiras, é feito a configuração de acordo com a necessidade
+    do investidor.
+    
+    As carteiras apresentam o total dos ativos no último dia útil de cada mês para acompanhar a evolução das aplicações. 
+    Devido a falta de automação, as informações são informadas manualmente para que seja feita a apresentação na carteira.
+
+    Cada grupo da carteira tem um percentual previsto de acumulo na carteira, que será comparado com o percentual totalizado
+    de cada grupo efetivo do último dia dos mês. Neste caso, é possível verificar quais grupos precisarão, ou não, de aportes 
+    de acordo com a posição totalizada vs o percentual previsto do grupo na carteira.
+
+3. Cenário proposto
+
+    3.1. Objetivos
+
+        . Compor o cadastro de ativos de renda variável para calcular o preço médio dos ativos comprados na B3.
+
+        . Compor um cadastro de compra de ativos de renda fixa comprado 
+
+        . Montagem das carteiras de investimentos, agrupando as compras de renda fixa e variável de acordo com configurações 
+            prévias, como: percentual de composição de cada grupo, ativos que compoe cada grupo, aportes realizado no mês,
+            rendimentos no mês (dividendos, JCP, juros renda fixa, etc.).
+
+        . Controle para tomada de decisão de compra/venda de ações e fundos imobiliários; comparando informações como:
+            cotação, preço médio, valor da última compra, P/VP, Dividend Yield, etc.
+
+    3.2. Descrição do Sistema Proposto
+
+        3.2.1. Novo Cenário
+
+            3.2.1.1. Investimentos em Renda Variável
+
+                As compras e vendas de ativos na B3, como: ações, fundos imobiliário, ETF, BDR, etc. serão registradas com
+                as seguintes informações:
+
+                    . Ticker do ativo;
+                    
+                    . Evento (compra/venda)
+                    
+                    . Data da negociação;
+
+                    . Quantidade (unidades) negociada;
+                    
+                    . Valor unitário da negociação;
+                    
+                    . Banco/corretora responsável pela custódio do ativo.
+
+                A partir dessas informações calcularemos o preço médio de cada ativo.
+
+            3.2.1.2. Investimentos em Renda Fixa
+
+                As compras de aplicações em renda fixa serão registradas com as seguintes informações:
+
+                    . Tipo da aplicação (CDB, LCI, LCA, Debenture, CRI, CRA, Tesouro Direto, etc.);
+
+                    . Entidade financeira emissora do ativo;
+
+                    . Taxa negociada:
+
+                        . IPCA+ (com a taxa fixa)
+                        
+                        . Juros Pré-fixado (Percentual/Taxa fixa)
+                        
+                        . Juros Pós-fixado (Percentual sobre o CDI)
+
+                        . Vencimento da aplicação.
+
+                    . Valor aplicado/aportado.
+
+            3.2.1.3. Gerenciamento das carteiras de investimentos.
+
+                3.2.1.3.1. Configuração das carteiras
+
+                    
