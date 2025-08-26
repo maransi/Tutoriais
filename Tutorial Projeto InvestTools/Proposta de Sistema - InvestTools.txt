@@ -54,9 +54,48 @@ Proposta de Sistema - InvestTools
 
         3.2.1. Novo Cenário
 
-            Todas as vezes que o usuário se autenticar, com usuário e senha, o sistema associará as informações
+            Todas as vezes que o usuário se autenticar, com usuário e senha, o sistema associará as informações do investidor
             (investimentos, carteiras, etc) com o usuário atual. Assim, todas as informações fornecidas abaixo
-            serão do usuário de momento.
+            serão do usuário corrente.
+
+            Sempre que for realizado investimentos em renda fixa, ou variável, o usuário se conectará ao sistema
+            com o seu usuário e senha para informar os dados da compra, ou venda do ativo.
+
+            Ao realizar a autenticação, o sistema exibirá no seu "dashboard" os gráfico(s) da(s) carteira(s) com 
+            a composição de cada uma, dividindo percentualmente e monetariamente por grupos; ou seja, para cada 
+            carteira será apresentado dois gráfico dividido por grupo, um percentualmente e outro financeiramente.
+
+            O "Dashboard" apresentará um gráfico do crescimento da(s) do investidor nos últimos 12 meses, baseado 
+            no preço de mercado.
+
+            No mesmo "dashboard" será apresentado um resumo, em forma de grade, dos ativos de renda 
+            variável ordenado pelo total do preço de compra, do maior para o menor, logo abaixo do respectivo 
+            gráfico de grupo monetário. 
+
+            Haverá no sistema um cadastro de investidores, nele configuramos as informações, como: Nome, endereço, 
+            usuário do sistema ( que servirá para associar o usuário do sistema com o investidor ), conta(s) de investimento
+
+            O gerenciamento da(s) carteira(s) de investimento começa pela configuração delas, informando:
+
+                . Nome
+
+                . Grupos e seus percentuais de composição financeira dos ativos
+
+                . Para cada grupo, a composição de ativos com a respectiva conta de investimento.
+
+            Mensalmente o investidor gerenciará a(s) sua(s) carteira(s). Ao acessarmos o módulo de gerenciamento
+            de carteiras, será solicitado o mês, ano e a carteira para busca; caso não encontre, será criada
+            uma nova posição zerada da carteira para o novo período; caso contrário, apresenta as informações encontradas.
+            Assim que os dados forem apresentado, serão feito os apontamentos dos valores de cada ativo
+            existente nela. A nova posição no período será sobre feita sobre todos os 
+            ativos vigentes de renda fixa/variável negociados naquela carteira com a posição zerada; ativos renda 
+            variável com a posição zerada (ações, ETFs, fundos imobiliário, etc.) não farão parte da carteira; ativos de renda
+            fixa vencidas também ficam fora da carteira.
+
+        3.2.2. Funcionalidades
+
+            3.2.1.1. Investidores
+
 
             3.2.1.1. Investimentos em Renda Variável
 
