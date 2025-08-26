@@ -92,6 +92,9 @@ Proposta de Sistema - InvestTools
             variável com a posição zerada (ações, ETFs, fundos imobiliário, etc.) não farão parte da carteira; ativos de renda
             fixa vencidas também ficam fora da carteira.
 
+[Comparativo de Ativos de Renda Variável para Compra]
+
+
         3.2.2. Funcionalidades
 
             3.2.1.1. Investidores
