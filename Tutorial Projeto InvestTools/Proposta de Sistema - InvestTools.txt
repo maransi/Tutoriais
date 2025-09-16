@@ -7,8 +7,8 @@ Proposta de Sistema - InvestTools
 
         Sempre que é feito uma compra, ou venda de ativos na B3 é registrado numa planilha as 
         informações da negociação: Ticker do ativo, evento (compra/venda), data da negociação, 
-        quantidade (unidades) negociada, valor unitário da negociação e banco/corretora responsável
-        pela custódio do ativo. 
+        quantidade (unidades) negociada, valor unitário da negociação e agente custodiante (banco/corretora) responsável
+        pelo ativo. 
 
         A partir destas informações é feito o cálculo do preço médio dos ativos. Cada ativo tem seu 
         controle de compra/venda, total de quotas e preço médio separado.
@@ -21,7 +21,46 @@ Proposta de Sistema - InvestTools
 
 2. Contexto Atual
 
-    Conforme explicado no item 1.1. Visão Geral, ao realizarmos uma negociação em renda variável, ou fixa, 
+    Periodicamente são realizadas negociações de compra/venda de ativos de renda fixa (CDB, LCI, LCA, Debentures, CRI, CRA, 
+    Tesouro Direto) e variável (ações, ETFs, Fundos imobiliário, etc.).
+
+    Sempre que ocorre uma compra/venda de ativos de renda variável, o sistema guardará os detalhes da compra, como: código 
+    do ativo, data da compra, quantidade adquirida, preço unitário da compra e o agente custodiante do ativo. 
+    Com essas transações o sistema calcula o preço médio de cada ativo.
+
+    As compras de ativos de renda fixa serão registrados no sistema com as seguintes informações: Tipo da aplicação 
+    (CDB, LCI, LCA, etc..), emissor (banco/financeira) do ativo, tipo da Taxa negociada (IPCA+, Juros Pré-fixado, ou Juros Pós-fixado), 
+    taxa contratada, vencimento da aplicação e saldo aportado.
+
+    Para que possamos manter um controle amigável desses ativos, configuramos as carteiras de investimentos. As 
+    carteiras tem grupos de investimentos. Os grupos configurados são construídos conforme a escolha do usuário, ou seja, 
+    com grupos personalizados. Por exemplo: 
+    
+        Carteira Corretora Toro é composta pelos grupos:
+
+            . Reserva de Oportunidade
+
+            . Fundos Imobiliário
+
+            . Ações
+
+            . Oportunidade
+
+    Cada carteira é associada a um, ou vários agentes custodiante. 
+    
+    A associação dos ativos negociados é feita dentro de cada grupo com a identificação dos ativos:
+    
+        . Renda variável: pelo código do ativo
+
+        . Renda fixa: pelo tipo do ativo (CDB, LCI, LCA, Debentures, CRI, CRA, Tesouro Direto)
+
+    Quando um ativo de renda variável for negociado em diversos agentes custodiantes, o sistema agrupará os ativos oriundos do
+    agente configurado na carteira.
+
+    Para cada grupo da carteira é dado um percentual de acumulo, dessa forma acompanhamos a evolução de acumulo de cada grupo,
+    se o total de ativos estão, ou não dentro do que foi configurado inicialmente.
+
+->    Conforme explicado no item 1.1. Visão Geral, ao realizarmos uma negociação em renda variável, ou fixa, 
     essas informações são agrupadas nas carteiras de investimentos.
 
     Cada carteira é dividida em grupos de ativos, por exemplo: Renda Fixa, Fundos de Investimentos, Ações, Rerverva de 
