@@ -19,7 +19,7 @@ Proposta de Sistema - InvestTools
         Neste caso informamos os seguintes dados da compra: Tipo da aplicação (CDB, LCI, LCA, etc..), Banco Emissor do ativo, 
         Taxa negociada (IPCA+, Juros Pré-fixado, ou Juros Pós-fixado), vencimento da aplicação e saldo aportado.
 
-2. Cenário Atual
+2. Contexto Atual
 
     Conforme explicado no item 1.1. Visão Geral, ao realizarmos uma negociação em renda variável, ou fixa, 
     essas informações são agrupadas nas carteiras de investimentos.
@@ -35,7 +35,7 @@ Proposta de Sistema - InvestTools
     de cada grupo efetivo do último dia dos mês. Neste caso, é possível verificar quais grupos precisarão, ou não, de aportes 
     de acordo com a posição totalizada vs o percentual previsto do grupo na carteira.
 
-3. Cenário proposto
+3. Contexto proposto
 
     3.1. Objetivos
 
