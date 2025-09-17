@@ -5,7 +5,7 @@ Proposta de Sistema - InvestTools
 
     1.1. Visão Geral
 
-        Sempre que é feito uma compra, ou venda de ativos na B3 é registrado numa planilha as 
+        Sempre que é feito uma compra, ou venda de ativos na B3 o registro é feito numa planilha com as 
         informações da negociação: Ticker do ativo, evento (compra/venda), data da negociação, 
         quantidade (unidades) negociada, valor unitário da negociação e agente custodiante (banco/corretora) responsável
         pelo ativo. 
@@ -14,53 +14,65 @@ Proposta de Sistema - InvestTools
         controle de compra/venda, total de quotas e preço médio separado.
 
         Além das compras de ativos na B3, também é feito outro controle em cima das compras de ativos de renda fixa, como:
-        CDB, LCI/LCA, Debentures, CRI, CRA, Tesouro direto, etc. Esse controle diverge das compras de ativos da B3, porque
+        CDB, LCI/LCA, Debentures, CRI, CRA, Tesouro direto, etc. Esse controle diverge das compras dos ativos da B3, porque
         cada compra é tratado de forma individualizada, não havendo controle de preço médio, nem venda desses ativos. 
         Neste caso informamos os seguintes dados da compra: Tipo da aplicação (CDB, LCI, LCA, etc..), Banco Emissor do ativo, 
-        Taxa negociada (IPCA+, Juros Pré-fixado, ou Juros Pós-fixado), vencimento da aplicação e saldo aportado.
+        Taxa negociada (IPCA+, Juros Pré-fixado, ou Juros Pós-fixado), data da compra, vencimento da aplicação, banco/corretora 
+        custodiante e o saldo aportado.
 
-2. Contexto Atual
+2. Contexto Proposto
 
-    Periodicamente são realizadas negociações de compra/venda de ativos de renda fixa (CDB, LCI, LCA, Debentures, CRI, CRA, 
+    Periodicamente são realizadas negociações de compra/venda dos ativos de renda fixa (CDB, LCI, LCA, Debentures, CRI, CRA, 
     Tesouro Direto) e variável (ações, ETFs, Fundos imobiliário, etc.).
 
-    Sempre que ocorre uma compra/venda de ativos de renda variável, o sistema guardará os detalhes da compra, como: código 
+    Sempre que ocorrer uma compra/venda de ativos de renda variável, é informado ao sistema os detalhes da negociação, como: código 
     do ativo, data da compra, quantidade adquirida, preço unitário da compra e o agente custodiante do ativo. 
-    Com essas transações o sistema calcula o preço médio de cada ativo.
+    Com essas informações o sistema calcula o preço médio de cada ativo.
 
-    As compras de ativos de renda fixa serão registrados no sistema com as seguintes informações: Tipo da aplicação 
+    As compras de ativos de renda fixa são registradas no sistema com as seguintes informações: Tipo da aplicação 
     (CDB, LCI, LCA, etc..), emissor (banco/financeira) do ativo, tipo da Taxa negociada (IPCA+, Juros Pré-fixado, ou Juros Pós-fixado), 
-    taxa contratada, vencimento da aplicação e saldo aportado.
+    taxa contratada, agente custodiante, vencimento da aplicação e saldo aportado.
 
-    Para que possamos manter um controle amigável desses ativos, configuramos as carteiras de investimentos. As 
-    carteiras tem grupos de investimentos. Os grupos configurados são construídos conforme a escolha do usuário, ou seja, 
-    com grupos personalizados. Por exemplo: 
+
+    Para que possamos manter um controle amigável desses ativos, configuramos as carteiras de investimentos:
+
+        . Cada carteira é associada a um, ou vários agentes custodiante.  
+
+        . As carteiras internamente são subdivididas por grupos de investimentos. Os grupos da carteira são configurados de forma personalizada, 
+            conforme a escolha do usuário.
+
+            Por exemplo: 
+            
+                Carteira Corretora Toro é composta pelos grupos:
+
+                    . Reserva de Oportunidade
+
+                    . Fundos Imobiliário
+
+                    . Ações
+
+                    . Oportunidade
+
+        . Para cada grupo da carteira é dado um percentual de acumulo, dessa forma acompanhamos a evolução de acumulo de cada grupo,
+            se o total de ativos estão, ou não dentro do que foi configurado inicialmente.
     
-        Carteira Corretora Toro é composta pelos grupos:
+        . A associação da composição dos ativos da carteira é feita dentro de cada grupo identificando da seguinte forma:
+        
+            . Renda variável: pelo código do ativo, carteira e grupo que ele será alocado. 
 
-            . Reserva de Oportunidade
+            . Renda fixa: pelo tipo do ativo (CDB, LCI, LCA, Debentures, CRI, CRA, Tesouro Direto), carteira e grupo. 
+            
+                . Sempre que houver uma aquisição de um ativo de renda fixa; ao informarmos os dados da compra, o sistema solicita a carteira
+                    e o grupo que este ativo pertencerá.
 
-            . Fundos Imobiliário
+    Mensalmente, preferencialmente no último dia de cada mês, é feito a prestação de conta das carteiras. Para cada ativo da carteira é fornecido
+    o valor atualizado para aquele mês.
 
-            . Ações
 
-            . Oportunidade
 
-    Cada carteira é associada a um, ou vários agentes custodiante. 
-    
-    A associação dos ativos negociados é feita dentro de cada grupo com a identificação dos ativos:
-    
-        . Renda variável: pelo código do ativo
 
-        . Renda fixa: pelo tipo do ativo (CDB, LCI, LCA, Debentures, CRI, CRA, Tesouro Direto)
 
-    Quando um ativo de renda variável for negociado em diversos agentes custodiantes, o sistema agrupará os ativos oriundos do
-    agente configurado na carteira.
-
-    Para cada grupo da carteira é dado um percentual de acumulo, dessa forma acompanhamos a evolução de acumulo de cada grupo,
-    se o total de ativos estão, ou não dentro do que foi configurado inicialmente.
-
-->    Conforme explicado no item 1.1. Visão Geral, ao realizarmos uma negociação em renda variável, ou fixa, 
+    Conforme explicado no item 1.1. Visão Geral, ao realizarmos uma negociação em renda variável, ou fixa, 
     essas informações são agrupadas nas carteiras de investimentos.
 
     Cada carteira é dividida em grupos de ativos, por exemplo: Renda Fixa, Fundos de Investimentos, Ações, Rerverva de 
@@ -74,7 +86,7 @@ Proposta de Sistema - InvestTools
     de cada grupo efetivo do último dia dos mês. Neste caso, é possível verificar quais grupos precisarão, ou não, de aportes 
     de acordo com a posição totalizada vs o percentual previsto do grupo na carteira.
 
-3. Contexto proposto
+3. Sistema proposto
 
     3.1. Objetivos
 
@@ -91,7 +103,7 @@ Proposta de Sistema - InvestTools
 
     3.2. Descrição do Sistema Proposto
 
-        3.2.1. Novo Cenário
+        3.2.1. Novo Contexto
 
             Todas as vezes que o usuário se autenticar, com usuário e senha, o sistema associará as informações do investidor
             (investimentos, carteiras, etc) com o usuário atual. Assim, todas as informações fornecidas abaixo
