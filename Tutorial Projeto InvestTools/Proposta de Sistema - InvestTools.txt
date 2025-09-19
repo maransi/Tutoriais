@@ -137,11 +137,11 @@ Proposta de Sistema - InvestTools
                 o sistema filtrará todas as informações referente ao investidor que está associado ao usuário logado. Caso não existe um investidor 
                 associado ao usuário logado, o sistema solicitará o investidor desejada para associar ao usuário logado.
                 
-                Somente usuários com super acessos não terão um investidor associado, somente este tipo de usuário poderá fazer o acesso aleatório dos perfis 
-                dos investidores. Caso o usuário logado e autenticado com sucesso não possuir direitos de super usuário, o sistema não permitirá que ele seja
-                autenticado, informará a ausência da associação do usuário com um investidor especifico e o redirecionará para a tela de login.
+                Somente usuários com super acessos poderão fazer a escolha do investidor após a autenticação, este tipo de usuário poderá fazer o acesso aleatório 
+                aos perfis dos investidores. Caso o usuário logado e autenticado com sucesso não possuir direitos de super usuário, o sistema não permitirá 
+                que ele seja autenticado, informará a ausência da associação do usuário com um investidor especifico e o redirecionará para a tela de login.
 
-                Somente a partir da autenticação com sucesso é feito a liberação dos acessos as funcionalidades internas do sistema, iniciando pelo 
+                A partir da autenticação com sucesso e o usuário é feito a liberação dos acessos as funcionalidades internas do sistema, iniciando pelo 
                 dashboard.
 
             3.2.1.2. Dashboard
@@ -149,13 +149,13 @@ Proposta de Sistema - InvestTools
                 A página de dashboard será a página home do sistema. Nela haverá um gráfico de crescimento para cada carteira do investidor nos últimos 12 meses, 
                 baseado nas posições apresentadas mensalmente.
 
-                Abaixo de cada gráfico de crescimento, será apresentado outro gráfico de pizza com a distribuição percentual de cada grupo da última posição da
-                respectiva carteira. Ao acionar os grupos do gráfico, será exibido abaixo a relação de ativos que compoe o grupo, com: O tiker/identificação 
-                do ativo e o total financeiro acumulado.
+                Abaixo de cada gráfico de crescimento, será apresentado outro gráfico de pizza com a distribuição em percentual de cada grupo da última posição da
+                respectiva carteira. Ao acionar os grupos do gráfico, será exibido abaixo a relação de ativos que compoem o grupo, com: O tiker/identificação 
+                do ativo e o total financeiro acumulado conforme a última posição.
 
             3.2.1.1. Investidores
 
-                Haverá um cadastro de investidores no sistema. 
+                O cadastro de investidores 
 
 
             3.2.1.1. Investimentos em Renda Variável
