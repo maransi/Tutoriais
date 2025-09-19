@@ -65,41 +65,25 @@ Proposta de Sistema - InvestTools
                 . Sempre que houver uma aquisição de um ativo de renda fixa; ao informarmos os dados da compra, o sistema solicita a carteira
                     e o grupo que este ativo pertencerá.
 
-    Mensalmente, preferencialmente no último dia de cada mês, é feito a prestação de conta das carteiras. Para cada ativo da carteira é fornecido
-    o valor atualizado para aquele mês.
-
-
-
-
-
-    Conforme explicado no item 1.1. Visão Geral, ao realizarmos uma negociação em renda variável, ou fixa, 
-    essas informações são agrupadas nas carteiras de investimentos.
-
-    Cada carteira é dividida em grupos de ativos, por exemplo: Renda Fixa, Fundos de Investimentos, Ações, Rerverva de 
-    oportunidade, etc. Não existe um padrão para a divisão das carteiras, é feito a configuração de acordo com a necessidade
-    do investidor.
-    
-    As carteiras apresentam o total dos ativos no último dia útil de cada mês para acompanhar a evolução das aplicações. 
-    Devido a falta de automação, as informações são informadas manualmente para que seja feita a apresentação na carteira.
-
-    Cada grupo da carteira tem um percentual previsto de acumulo na carteira, que será comparado com o percentual totalizado
-    de cada grupo efetivo do último dia dos mês. Neste caso, é possível verificar quais grupos precisarão, ou não, de aportes 
-    de acordo com a posição totalizada vs o percentual previsto do grupo na carteira.
+    Mensalmente, preferencialmente no último dia de cada mês, é feito a prestação de conta das carteiras. Para cada ativo configurado na carteira  
+    é fornecido manualmente o valor atualizado naquele dia. Assim, teremos um comparativo mês, a mês da posição de todos os ativos.
 
 3. Sistema proposto
 
     3.1. Objetivos
 
-        . Compor o cadastro de ativos de renda variável para calcular o preço médio dos ativos comprados na B3.
+        . Compor o cadastro de ativos de renda variável e fixa 
+        
+        . Calcular o preço médio dos ativos de renda variável comprados na B3.
 
-        . Compor um cadastro de compra de ativos de renda fixa comprado 
+        . Compor o cadastro de compra de ativos de renda fixa comprado 
 
-        . Montagem das carteiras de investimentos, agrupando as compras de renda fixa e variável de acordo com configurações 
-            prévias, como: percentual de composição de cada grupo, ativos que compoe cada grupo, aportes realizado no mês,
-            rendimentos no mês (dividendos, JCP, juros renda fixa, etc.).
+        . Configuração de carteiras de investimentos, subdividindo por grupos e em cada grupo a composição dos ativos de renda fixa e variável.
 
-        . Controle para tomada de decisão de compra/venda de ações e fundos imobiliários; comparando informações como:
-            cotação, preço médio, valor da última compra, P/VP, Dividend Yield, etc.
+        . Manutenção das carteiras de investimentos no mês, apresentando: a situação financeira de cada ativo na data do apontamento; os rendimentos obtidos
+            no mês com dividendos, JCP, juros renda fixa, etc.; e os aportes realizados em cada ativo da carteira.
+
+        . Calculo do percentual acumulado em cada grupo de acordo com a posição informada no mês.
 
     3.2. Descrição do Sistema Proposto
 
@@ -116,12 +100,6 @@ Proposta de Sistema - InvestTools
             a composição de cada uma, dividindo percentualmente e monetariamente por grupos; ou seja, para cada 
             carteira será apresentado dois gráfico dividido por grupo, um percentualmente e outro financeiramente.
 
-            O "Dashboard" apresentará um gráfico do crescimento da(s) do investidor nos últimos 12 meses, baseado 
-            no preço de mercado.
-
-            No mesmo "dashboard" será apresentado um resumo, em forma de grade, dos ativos de renda 
-            variável ordenado pelo total do preço de compra, do maior para o menor, logo abaixo do respectivo 
-            gráfico de grupo monetário. 
 
             Haverá no sistema um cadastro de investidores, nele configuramos as informações, como: Nome, endereço, 
             usuário do sistema ( que servirá para associar o usuário do sistema com o investidor ), conta(s) de investimento
@@ -146,9 +124,38 @@ Proposta de Sistema - InvestTools
 [Comparativo de Ativos de Renda Variável para Compra]
 
 
-        3.2.2. Funcionalidades
+        3.2.1. Funcionalidades
+
+            3.2.1.1. Controle de acesso dos usuário
+
+                O acesso dos usuários ao sistema será realizado através da autenticação com login e senha. Caso o usuário venha esquecer a senha haverá a 
+                possibilidade de resgatá-la acionando a opção "Esqueci a senha" na tela de login; ao fazer esse acesso, será enviado no seu email 
+                um link, que acionará uma página no sistema, que solicitará a nova senha e novamente a redigitação da senha; caso as duas senhas forem iguais, 
+                o sistema renovará a senha do usuário pela que foi digitada.
+
+                Após a autenticação feita com sucesso, o sistema localiza o investidor com a identificação do usuário logado, a partir desse momento
+                o sistema filtrará todas as informações referente ao investidor que está associado ao usuário logado. Caso não existe um investidor 
+                associado ao usuário logado, o sistema solicitará o investidor desejada para associar ao usuário logado.
+                
+                Somente usuários com super acessos não terão um investidor associado, somente este tipo de usuário poderá fazer o acesso aleatório dos perfis 
+                dos investidores. Caso o usuário logado e autenticado com sucesso não possuir direitos de super usuário, o sistema não permitirá que ele seja
+                autenticado, informará a ausência da associação do usuário com um investidor especifico e o redirecionará para a tela de login.
+
+                Somente a partir da autenticação com sucesso é feito a liberação dos acessos as funcionalidades internas do sistema, iniciando pelo 
+                dashboard.
+
+            3.2.1.2. Dashboard
+
+                A página de dashboard será a página home do sistema. Nela haverá um gráfico de crescimento para cada carteira do investidor nos últimos 12 meses, 
+                baseado nas posições apresentadas mensalmente.
+
+                Abaixo de cada gráfico de crescimento, será apresentado outro gráfico de pizza com a distribuição percentual de cada grupo da última posição da
+                respectiva carteira. Ao acionar os grupos do gráfico, será exibido abaixo a relação de ativos que compoe o grupo, com: O tiker/identificação 
+                do ativo e o total financeiro acumulado.
 
             3.2.1.1. Investidores
+
+                Haverá um cadastro de investidores no sistema. 
 
 
             3.2.1.1. Investimentos em Renda Variável
