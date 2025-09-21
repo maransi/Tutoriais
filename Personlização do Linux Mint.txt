@@ -242,10 +242,6 @@ Personlização do Linux Mint
 
             . No caso do WSL:
             
-                . Acesse o powershell como administrador e acesse a pasta:
-
-                    C:\Windows\Fonts
-
                 . Descompacte o arquivo zip, selecione todos os arquivos de fontes, dê um clique direito e faça a instalação das fontes
 
                 . Acesse as configurações do terminal WSL da distribuição sendo 
