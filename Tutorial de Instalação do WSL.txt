@@ -298,6 +298,10 @@ Tutorial WSL ( Windows Subsystem Linux )
 
         . Feche e abra o terminal
 
+        . Para reconfigurar o "zsh" digite o comando abaixo:
+
+            p10k reconfigure
+
 . Instalando o Fish Shell
 
     . Adicione o Fish Shell Repositório

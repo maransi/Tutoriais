@@ -288,3 +288,7 @@ Personlização do Linux Mint
     . Acesse o arquivo ~/.zshrc e insira na última linha o conteúdo abaixo:
 
         neofetch
+
+    . Para reconfigurar o "zsh" digite o comando abaixo:
+
+        p10k reconfigure
