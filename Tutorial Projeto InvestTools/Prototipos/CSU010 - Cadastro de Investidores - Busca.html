@@ -1,121 +1,105 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formulário de Investidores</title>
+  <meta charset="UTF-8">
+  <title>Cadastro de Investidores</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- Toastr CSS -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <!-- Toastr CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- jQuery Mask -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
-<!-- jQuery Mask Money -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"></script>
-
-<!-- jQuery Validate -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-
-<!-- Toastr JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-<!-- Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
-<style>
+  <style>
     label { font-weight: bold; }
-    .action-btns button { margin-right: 5px; }
-    .form-search-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-    .form-search-group > div { display: flex; flex-direction: column; }
-    .form-search-group .btn-group { flex-direction: row; gap: 5px; }
-</style>
+    /* Ajusta margens do DataTables */
+    .dataTables_wrapper {
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+  </style>
 </head>
-<body>
-<div class="container my-4">
-    <h2>Cadastro e Consulta de Investidores</h2>
-
-    <!-- Caixa do formulário de pesquisa -->
-    <div class="card mb-3">
-        <div class="card-body">
-            <form id="formPesquisa">
-                <div class="form-search-group">
-                    <div>
-                        <label for="cpfInvestidor" class="form-label">CPF do Investidor</label>
-                        <input type="text" class="form-control" id="cpfInvestidor" name="cpfInvestidor" placeholder="000.000.000-00">
-                    </div>
-                    <div>
-                        <label for="nomeInvestidor" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="nomeInvestidor" name="nomeInvestidor">
-                    </div>
-                    <div>
-                        <label for="usuarioInvestidor" class="form-label">Usuário</label>
-                        <input type="text" class="form-control" id="usuarioInvestidor" name="usuarioInvestidor">
-                    </div>
-                    <div class="btn-group mt-4">
-                        <button type="button" class="btn btn-primary" id="btnPesquisar">Pesquisar</button>
-                        <button type="button" class="btn btn-success" id="btnNovo" data-bs-toggle="modal" data-bs-target="#modalInvestidor">Novo</button>
-                        <button type="button" class="btn btn-secondary" id="btnLimpar">Limpar</button>
-                    </div>
+<body class="container-fluid py-4 px-5">
+    <div class="col-12 justify-content-center">
+        <!-- Caixa de Filtros -->
+        <div class="card mb-2 col-12 col-lg-12">
+            <div class="card-header bg-primary text-white">
+                Filtros de Pesquisa
+            </div>
+            <div class="card-body">
+                <form id="form-filtro" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label for="filtro-cpf">CPF do Investidor</label>
+                    <input type="text" id="filtro-cpf" name="filtro-cpf" class="form-control">
                 </div>
-            </form>
+                <div class="col-md-4">
+                    <label for="filtro-nome">Nome</label>
+                    <input type="text" id="filtro-nome" name="filtro-nome" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label for="filtro-usuario">Usuário</label>
+                    <input type="text" id="filtro-usuario" name="filtro-usuario" class="form-control">
+                </div>
+                <div class="col-md-4 d-flex flex-wrap gap-2">
+                    <button type="button" id="btnPesquisar" class="btn btn-primary flex-shrink-0">Pesquisar</button>
+                    <button type="button" id="btnNovo" class="btn btn-success flex-shrink-0">Novo</button>
+                    <button type="reset" id="btnLimpar" class="btn btn-secondary flex-shrink-0">Limpar</button>
+                </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <!-- Tabela de resultados -->
-    <div class="table-responsive">
-        <table class="table table-bordered" id="tabelaInvestidores">
-            <thead class="table-light">
-                <tr>
+        <!-- Caixa da Tabela -->
+        <div class="card col-12 col-lg-12">
+            <div class="card-header bg-secondary text-white">
+                Lista de Investidores
+            </div>
+            <div class="card-body">
+                <table id="tabela-investidores" class="display table table-striped" style="width:100%">
+                <thead>
+                    <tr>
                     <th>CPF</th>
                     <th>Nome</th>
                     <th>Usuário</th>
                     <th>Total das Carteiras</th>
                     <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Dados simulados aparecerão aqui -->
-            </tbody>
-        </table>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- Modal para cadastro/edição -->
-<div class="modal fade" id="modalInvestidor" tabindex="-1" aria-labelledby="modalInvestidorLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <form id="formInvestidor">
+  <!-- Modal -->
+  <div class="modal fade" id="modalInvestidor" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="form-investidor" class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalInvestidorLabel">Investidor</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          <h5 class="modal-title">Cadastro de Investidor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-            <div class="mb-3">
-                <label for="modalCpf" class="form-label">CPF</label>
-                <input type="text" class="form-control" id="modalCpf" name="modalCpf" required>
-            </div>
-            <div class="mb-3">
-                <label for="modalNome" class="form-label">Nome</label>
-                <input type="text" class="form-control" id="modalNome" name="modalNome" required>
-            </div>
-            <div class="mb-3">
-                <label for="modalUsuario" class="form-label">Usuário</label>
-                <input type="text" class="form-control" id="modalUsuario" name="modalUsuario" required>
-            </div>
-            <div class="mb-3">
-                <label for="modalTotalCarteiras" class="form-label">Total das Carteiras</label>
-                <input type="text" class="form-control" id="modalTotalCarteiras" name="modalTotalCarteiras" required>
-            </div>
+          <div class="mb-3">
+            <label for="cpf">CPF</label>
+            <input type="text" id="cpf" name="cpf" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" name="nome" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="usuario">Usuário</label>
+            <input type="text" id="usuario" name="usuario" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="total_carteiras">Total das Carteiras</label>
+            <input type="text" id="total_carteiras" name="total_carteiras" class="form-control" required>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Salvar</button>
@@ -124,176 +108,118 @@
       </form>
     </div>
   </div>
-</div>
 
-<!-- Modal de Confirmação de Exclusão -->
-<div class="modal fade" id="modalExcluir" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalExcluirLabel">Confirmação de Exclusão</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        Tem certeza que deseja excluir este investidor?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" id="btnConfirmarExcluir">Sim</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não</button>
-      </div>
-    </div>
-  </div>
-</div>
+  <!-- Bibliotecas JS -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-<script>
-// Configuração do Toastr para aparecer no canto inferior direito
-toastr.options = {
-    "closeButton": true,
-    "debug": false,
-    "newestOnTop": false,
-    "progressBar": true,
-    "positionClass": "toast-bottom-right",
-    "preventDuplicates": false,
-    "onclick": null,
-    "showDuration": "300",
-    "hideDuration": "1000",
-    "timeOut": "3000",
-    "extendedTimeOut": "1000",
-    "showEasing": "swing",
-    "hideEasing": "linear",
-    "showMethod": "fadeIn",
-    "hideMethod": "fadeOut"
-};
+  <!-- Script principal -->
+  <script>
+    $(document).ready(function() {
+      // Máscaras
+      $("#filtro-cpf, #cpf").mask("000.000.000-00");
+      $("#total_carteiras").maskMoney({ prefix: "", decimal: ",", thousands: "." });
 
-// Função para validar CPF
-function validarCPF(cpf) {
-    cpf = cpf.replace(/[^\d]+/g,'');
-    if(cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
-    let soma = 0, resto;
-    for(let i=1;i<=9;i++) soma += parseInt(cpf.substring(i-1,i))*(11-i);
-    resto = (soma*10)%11;
-    if(resto===10 || resto===11) resto=0;
-    if(resto!==parseInt(cpf.substring(9,10))) return false;
-    soma = 0;
-    for(let i=1;i<=10;i++) soma += parseInt(cpf.substring(i-1,i))*(12-i);
-    resto = (soma*10)%11;
-    if(resto===10 || resto===11) resto=0;
-    if(resto!==parseInt(cpf.substring(10,11))) return false;
-    return true;
-}
+      // Toastr config
+      toastr.options = { positionClass: "toast-bottom-right", timeOut: 2500 };
 
-$(document).ready(function(){
-
-    // Máscaras
-    $('#cpfInvestidor, #modalCpf').mask('000.000.000-00');
-    $('#modalTotalCarteiras').maskMoney({prefix:'R$ ', allowNegative: false, thousands:'.', decimal:',', affixesStay: true});
-
-    // Validação CPF personalizada
-    $.validator.addMethod("cpfValido", function(value, element){
-        return this.optional(element) || validarCPF(value);
-    });
-
-    // Aviso de CPF inválido ao perder o foco
-    $('#cpfInvestidor').on('blur', function(){
-        let cpf = $(this).val();
-        if(cpf && !validarCPF(cpf)){
-            toastr.error('CPF inválido!');
+      // DataTable configurado
+      var tabela = $("#tabela-investidores").DataTable({
+        searching: false,
+        language: {
+          lengthMenu: "Mostrar _MENU_ registros por página",
+          zeroRecords: "Nenhum registro encontrado",
+          info: "Mostrando página _PAGE_ de _PAGES_",
+          infoEmpty: "Nenhum registro disponível",
+          infoFiltered: "(filtrado de _MAX_ registros no total)",
+          paginate: {
+            first: "Primeira",
+            last: "Última",
+            next: "Próxima",
+            previous: "Anterior"
+          }
         }
-    });
+      });
 
-    // Limpar campos
-    $('#btnLimpar').click(function(){
-        $('#formPesquisa')[0].reset();
-        $('#tabelaInvestidores tbody').empty(); // Limpa a grade
-    });
+      // Pesquisar (simula dados fictícios)
+      $("#btnPesquisar").click(function() {
+        tabela.clear().draw();
+        tabela.row.add([
+          "123.456.789-00",
+          "João da Silva",
+          "joaosilva",
+          "10.000,00",
+          `<button class="btn btn-sm btn-warning btn-editar">✏️</button>
+           <button class="btn btn-sm btn-danger btn-excluir">🗑️</button>`
+        ]).draw();
 
-    // Botão Novo limpa o modal
-    $('#btnNovo').click(function(){
-        $('#formInvestidor')[0].reset();
-    });
+        tabela.row.add([
+          "123.456.789-00",
+          "João da Silva",
+          "joaosilva",
+          "10.000,00",
+          `<button class="btn btn-sm btn-warning btn-editar">✏️</button>
+           <button class="btn btn-sm btn-danger btn-excluir">🗑️</button>`
+        ]).draw();
+        tabela.row.add([
+          "123.456.789-00",
+          "João da Silva",
+          "joaosilva",
+          "10.000,00",
+          `<button class="btn btn-sm btn-warning btn-editar">✏️</button>
+           <button class="btn btn-sm btn-danger btn-excluir">🗑️</button>`
+        ]).draw();
+        tabela.row.add([
+          "123.456.789-00",
+          "João da Silva",
+          "joaosilva",
+          "10.000,00",
+          `<button class="btn btn-sm btn-warning btn-editar">✏️</button>
+           <button class="btn btn-sm btn-danger btn-excluir">🗑️</button>`
+        ]).draw();
 
-    // Validação do formulário do modal
-    $('#formInvestidor').validate({
-        rules: { modalCpf: { required: true, cpfValido: true } },
-        messages: { modalCpf: { cpfValido: "CPF inválido!" } },
+
+        toastr.success("Dados carregados com sucesso!");
+      });
+
+      // Novo
+      $("#btnNovo").click(function() {
+        $("#form-investidor")[0].reset();
+        $("#modalInvestidor").modal("show");
+      });
+
+      // Editar
+      $("#tabela-investidores").on("click", ".btn-editar", function() {
+        var data = tabela.row($(this).parents("tr")).data();
+        $("#cpf").val(data[0]);
+        $("#nome").val(data[1]);
+        $("#usuario").val(data[2]);
+        $("#total_carteiras").val(data[3]);
+        $("#modalInvestidor").modal("show");
+      });
+
+      // Excluir
+      $("#tabela-investidores").on("click", ".btn-excluir", function() {
+        if (confirm("Deseja realmente excluir este investidor?")) {
+          tabela.row($(this).parents("tr")).remove().draw();
+          toastr.warning("Investidor excluído.");
+        }
+      });
+
+      // Validação do formulário modal
+      $("#form-investidor").validate({
         submitHandler: function(form) {
-            let investidor = {
-                cpf: $('#modalCpf').val(),
-                nome: $('#modalNome').val(),
-                usuario: $('#modalUsuario').val(),
-                total: $('#modalTotalCarteiras').val()
-            };
-            toastr.success('Investidor salvo com sucesso!');
-            $('#modalInvestidor').modal('hide');
-            adicionarOuAtualizarTabela(investidor);
+          toastr.success("Investidor salvo com sucesso!");
+          $("#modalInvestidor").modal("hide");
+          return false;
         }
+      });
     });
-
-    // Função para adicionar ou atualizar a tabela
-    function adicionarOuAtualizarTabela(investidor){
-        let linha = `<tr data-cpf="${investidor.cpf}">
-                        <td>${investidor.cpf}</td>
-                        <td>${investidor.nome}</td>
-                        <td>${investidor.usuario}</td>
-                        <td>${investidor.total}</td>
-                        <td class="action-btns">
-                            <button class="btn btn-warning btn-sm btnEditar" title="Editar"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-danger btn-sm btnExcluir" title="Excluir"><i class="bi bi-trash"></i></button>
-                        </td>
-                    </tr>`;
-        $('#tabelaInvestidores tbody tr[data-cpf="'+investidor.cpf+'"]').remove();
-        $('#tabelaInvestidores tbody').append(linha);
-    }
-
-    // Botão pesquisar
-    $('#btnPesquisar').click(function(){
-        let cpf = $('#cpfInvestidor').val();
-
-        // Limpa a tabela
-        $('#tabelaInvestidores tbody').empty();
-
-        // Valida CPF
-        if(cpf && !validarCPF(cpf)){
-            toastr.error('CPF inválido!');
-            return;
-        }
-
-        // Dados simulados
-        let dadosSimulados = [
-            {cpf:'123.456.789-00', nome:'Marco Antonio', usuario:'marco123', total:'R$ 10.000,00'},
-            {cpf:'987.654.321-00', nome:'João Silva', usuario:'joaos', total:'R$ 5.000,00'}
-        ];
-        dadosSimulados.forEach(investidor => adicionarOuAtualizarTabela(investidor));
-        toastr.info('Dados simulados carregados!');
-    });
-
-    // Edição e exclusão
-    $('#tabelaInvestidores').on('click', '.btnEditar', function(){
-        let linha = $(this).closest('tr');
-        $('#modalCpf').val(linha.find('td:eq(0)').text());
-        $('#modalNome').val(linha.find('td:eq(1)').text());
-        $('#modalUsuario').val(linha.find('td:eq(2)').text());
-        $('#modalTotalCarteiras').val(linha.find('td:eq(3)').text());
-        $('#modalInvestidor').modal('show');
-    });
-
-    let linhaParaExcluir = null;
-
-    $('#tabelaInvestidores').on('click', '.btnExcluir', function(){
-        linhaParaExcluir = $(this).closest('tr');
-        $('#modalExcluir').modal('show');
-    });
-
-    $('#btnConfirmarExcluir').click(function(){
-        if(linhaParaExcluir){
-            linhaParaExcluir.remove();
-            toastr.warning('Investidor excluído!');
-            linhaParaExcluir = null;
-            $('#modalExcluir').modal('hide');
-        }
-    });
-
-});
-</script>
+  </script>
 </body>
 </html>

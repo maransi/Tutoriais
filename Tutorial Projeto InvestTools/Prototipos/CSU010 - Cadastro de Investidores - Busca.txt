@@ -1,20 +1,4 @@
-Prompt: Crie o formulário abaixo em html responsivo, utilizando:
-
-    Bibliteoca Bootstrap
-    Para os campos que precisem de mascara, utilize a biblioteca JQUERY MASK
-    As labels dos campos, deixe-os em negrito
-    Na coluna ações, coloque dois botões com icones, um de editar e outro de excluir
-    Para os campos numéricos, utilize a biblioteca "JQuery Mask Money"
-    Para notificação utilize a biblioteca "Toastr", localizada em  "https://codeseven.github.io/toastr/"
-    Para validação de campos utilize a biblioteca "JQuery Validate"
-
-    O botão "Limpar" reinicia o conteúdo dos campos editáveis.
-    O botão "Pesquisar" simulará a exibição de dados ficticios na grade logo abaixo
-    O botão "Novo", ao pressioná-lo, abrirá um formulário modal com os dados do investidor vazios
-    Os botões da coluna "Ações":
-        O botão "Editar", ao pressioná-lo, abrirá o mesmo formulário do botão novo, porém com os dados do item selecionado
-        O botão "Excluir", ao pressioná-lo, solicitará a autorização para eliminar o investidor do item selecionado
-
+Prompt: Crie o formulário conforme layout abaixo em html responsivo, utilizando:
 
 +-----------------------------------------------------------------------------------------------------------------------------------------------+
 |   CPF do Investidor   Nome                                    Usuário                                       +----------+  +------+ +--------+ |
@@ -41,4 +25,24 @@ Prompt: Crie o formulário abaixo em html responsivo, utilizando:
 |                       |                                           |                                    |                         |            |
 +-----------------------------------------------------------------------------------------------------------------------------------------------+
 
+    Bibliotecas para serem utilizadas:
+
+        Biblioteca Bootstrap
+        Para os campos que precisem de mascara, utilize a biblioteca JQUERY MASK
+        As labels dos campos, deixe-os em negrito
+        Na coluna ações, coloque dois botões com icones, um de editar e outro de excluir
+        Para os campos numéricos, utilize a biblioteca "JQuery Mask Money"
+        Para notificação utilize a biblioteca "Toastr", localizada em  "https://codeseven.github.io/toastr/"
+        Para validação de campos utilize a biblioteca "JQuery Validate"
+        Utilize JQuery Datatable para exibir a lista dos investidores, na grade de investidores. Essa biblioteca está localizada em "//cdn.datatables.net/2.3.4/js/dataTables.min.js"
+
+    Eventos:
+
+        O botão "Limpar" reinicia o conteúdo dos campos editáveis.
+        O botão "Pesquisar" simulará a exibição de dados ficticios na grade logo abaixo
+        O botão "Novo", ao pressioná-lo, abrirá um formulário modal com os dados do investidor vazios
+        Os botões Limpar, Pesquisar e Novo devem ficar todos na horizontal, um ao lado do outro, na mesma linha dos campos de pesquisa
+        Os botões da coluna "Ações":
+            O botão "Editar", ao pressioná-lo, abrirá o mesmo formulário do botão novo, porém com os dados do item selecionado
+            O botão "Excluir", ao pressioná-lo, solicitará a autorização para eliminar o investidor do item selecionado
 
