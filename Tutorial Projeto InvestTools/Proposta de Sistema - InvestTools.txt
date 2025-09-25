@@ -155,8 +155,17 @@ Proposta de Sistema - InvestTools
 
             3.2.1.1. Investidores
 
-                O cadastro de investidores 
+                O cadastro de investidores conterá as informações básicas do responsável pelas carteiras de investimento, como:
 
+                    CPF
+                    Nome
+                    Usuário associado ao investidor
+                    Totalização das carteiras
+                    Relação de contas de investimento
+                        Apelido da conta
+                        Banco
+                        Agência
+                        No. da conta
 
             3.2.1.1. Investimentos em Renda Variável
 
