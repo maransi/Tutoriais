@@ -45,4 +45,13 @@ Prompt: Crie o formulário conforme layout abaixo em html responsivo, utilizando
         Os botões da coluna "Ações":
             O botão "Editar", ao pressioná-lo, abrirá o mesmo formulário do botão novo, porém com os dados do item selecionado
             O botão "Excluir", ao pressioná-lo, solicitará a autorização para eliminar o investidor do item selecionado
+            O botão "Contas", ao pressioná-lo, abrirá um formulário com a relação de contas do investidor, com as seguintes informações:
+                Apelido da conta
+                Banco
+                Agência
+                No. da conta
+        O cadastro de contas utilizará a mesma lógica da interação do cadastro de investidores, com botões de novo, editar e eliminar:
+            Utilize na grade de contas a biblioteca JQuery Datatables. 
+            Ao acionar o botão de "Contas" abra o formulário de contas utilizando um formulário modal.
+            Apresente 5 contas fictícias na exibição da grade.
 
