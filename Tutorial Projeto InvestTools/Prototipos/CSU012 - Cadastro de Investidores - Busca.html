@@ -15,11 +15,29 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
   <style>
-    label { font-weight: bold; }
+    label{ 
+        font-weight: bold; 
+        font-size: small;    
+    }
     .dataTables_wrapper {
       margin-left: 1rem;
       margin-right: 1rem;
     }
+    table.dataTable th {
+        font-size: small;
+    }
+    table.dataTable td {
+        font-size: small;
+    }
+    /*
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+      font-size: 30pt;
+    }
+    */
+    .dataTables_paginate {
+      font-size: medium;
+    }
+
   </style>
 </head>
 <body class="container-fluid py-4 px-5">
@@ -119,9 +137,9 @@
             <div class="card">
               <div class="card-header bg-primary text-white">Lista de Contas</div>
               <div class="card-body">
-                <table id="tabela-contas" class="display table table-striped" style="width:100%">
+                <table id="tabela-contas" class="display compact hover " style="width:100%">
                   <thead>
-                    <tr>
+                    <tr> 
                       <th>Apelido</th>
                       <th>Banco</th>
                       <th>Agência</th>
@@ -153,19 +171,19 @@
               <div class="card-body">
                 <div class="mb-3">
                   <label for="apelido">Apelido</label>
-                  <input type="text" id="apelido" name="apelido" class="form-control" required>
+                  <input type="text" id="apelido" name="apelido" class="form-control form-control-sm bg-light" required>
                 </div>
                 <div class="mb-3">
                   <label for="banco">Banco</label>
-                  <input type="text" id="banco" name="banco" class="form-control" required>
+                  <input type="text" id="banco" name="banco" class="form-control form-control-sm bg-light" required>
                 </div>
                 <div class="mb-3">
                   <label for="agencia">Agência</label>
-                  <input type="text" id="agencia" name="agencia" class="form-control" required>
+                  <input type="text" id="agencia" name="agencia" class="form-control  form-control-sm bg-light" required>
                 </div>
                 <div class="mb-3">
                   <label for="numero_conta">Número da Conta</label>
-                  <input type="text" id="numero_conta" name="numero_conta" class="form-control" required>
+                  <input type="text" id="numero_conta" name="numero_conta" class="form-control form-control-sm bg-light" required>
                 </div>
               </div>
             </div>
@@ -180,6 +198,7 @@
 
     <!-- JS -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-..." crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
@@ -189,6 +208,10 @@
 
     <script>
       $(document).ready(function() {
+        // Ativar todos os tooltips na página
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        const tooltipList = [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el))
+
         $("#filtro-cpf, #cpf").mask("000.000.000-00");
         $("#total_carteiras").maskMoney({ prefix: "", decimal: ",", thousands: "." });
 
@@ -197,6 +220,7 @@
         // DataTable Investidores
         var tabela = $("#tabela-investidores").DataTable({
           searching: false,
+          info: false,
           language: {
             lengthMenu: "Mostrar _MENU_ registros por página",
             zeroRecords: "Nenhum registro encontrado",
@@ -212,9 +236,14 @@
         // DataTable Contas
         var tabelaContas = $("#tabela-contas").DataTable({
           searching: false,
-          paging: false,
+          paging: false, 
           info: false,
-          language: { zeroRecords: "Nenhuma conta encontrada" }
+          language: { zeroRecords: "Nenhuma conta encontrada",
+          paginate: {
+              first: "Primeira", last: "Última",
+              next: "Próxima", previous: "Anterior"
+          }
+        }
         });
 
         // Dados fictícios de contas
@@ -231,9 +260,11 @@
           tabela.clear().draw();
           tabela.row.add([
             "123.456.789-00", "João da Silva", "joaosilva", "10.000,00",
-            `<button class="btn btn-sm btn-warning btn-editar">✏️</button>
-             <button class="btn btn-sm btn-danger btn-excluir">🗑️</button>
-             <button class="btn btn-sm btn-info btn-contas">💳 Contas</button>`
+            `<button class="btn btn-sm btn-light btn-editar">✏️</button>
+             <button class="btn btn-sm btn-light btn-excluir">🗑️</button>
+             <button    type="button"
+                        class="btn btn-sm btn-light btn-contas"
+                        title="Contas de Investimento">💳</button>`
           ]).draw();
           toastr.success("Dados carregados com sucesso!");
         });
