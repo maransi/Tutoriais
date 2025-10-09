@@ -1,6 +1,10 @@
 08. Dockerizando o Projeto
 --------------------------
 
+. Realize o teste do link abaixo, para colocar o MySQL e a aplicação ASP.NET na mesma imagem:
+
+    https://chatgpt.com/share/68e7d23b-ceec-800f-a3ef-a43c557a10e7
+
 . Crie o arquivo "Dockerfile" com o conteúdo abaixo na pasta do projeto "InvestTools.Web":
 
     FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
