@@ -1,0 +1,190 @@
+Tutorial Projeto InvestTools - Criando o projeto
+------------------------------------------------
+
+. Play Lists:
+
+    #Identity
+    https://www.youtube.com/watch?v=y0Ai-2f0oXQ&list=PLJ4k1IC8GhW0bOvBC4Z4hTvn1fVKGE7or
+
+    #C# Generics
+    https://www.youtube.com/watch?v=xlq2hGoeA0g&list=PLJ4k1IC8GhW0zYgGxzd1Mszo5UUPTFB8y
+
+    #Programação Paralela
+    https://www.youtube.com/watch?v=7K9hxhLqz2A&list=PLJ4k1IC8GhW1Wj-dGT5UTLvZuRzBCHf6b
+
+    #LINQ - Fundamentos
+    https://www.youtube.com/watch?v=Mi2_wpcawGw&list=PLJ4k1IC8GhW0yky43O7TeNwRvaVrHdOmJ
+
+    #NET 6 - LINQ novos recursos
+    https://www.youtube.com/watch?v=E7j72kx0Ryo&list=PLJ4k1IC8GhW2Ebz7tArjJf80TdxJdyNMQ
+
+    #Fast Report
+    https://www.youtube.com/watch?v=4K2h9jb65Bg&list=PLJ4k1IC8GhW3cMUhddOMIrZwtkOQiG55a
+
+    #Microservices
+    https://www.youtube.com/watch?v=ZHiz0nQerYs&list=PLJ4k1IC8GhW24-nppbX0n0OE3DBGhsYEs
+
+    #Loja virtual ASP.NET Core com Microservice
+    https://www.youtube.com/watch?v=jap8tXIAMi4&list=PLJ4k1IC8GhW1UtPi9nwwW9l4TwRLR9Nxg
+
+    #Kubernetes
+    https://www.youtube.com/watch?v=fXYKWH70Uoo&list=PLJ4k1IC8GhW3vTpsfKl1gw2f5TlPugkVW
+
+    #Docker - Ambiente .Net
+    https://www.youtube.com/watch?v=VbEhMVcWOFs&list=PLJ4k1IC8GhW1ImrDakh7_iFkllFULG4-h
+
+    #Minimal APIs
+    https://www.youtube.com/watch?v=Ha9-Udmvim4&list=PLJ4k1IC8GhW0GuisO9DvYTkyf99BI9ZZr
+
+    #Design Patterns
+    https://www.youtube.com/watch?v=1Z8oiIA_L28&list=PLJ4k1IC8GhW1L7fOWe238fetknEfBmG1I
+
+    #Design Patterns Criacionais Gof
+    https://www.youtube.com/watch?v=JZ8JmIr7uJ0&list=PLJ4k1IC8GhW0uku4PsG_R3krP7QbSzfYr
+
+    #ASP .NET Core
+    https://www.youtube.com/watch?v=wBVOIkGgGYU&list=PLJ4k1IC8GhW2Nu9ZVqmujPMVFwLOcYOqj
+
+
+. Configurando o ambiente:
+
+    . Instalação para as versões acima do Ubuntu 22.04
+
+        wget https://dot.net/v1/dotnet-install.sh
+        chmod +x dotnet-install.sh
+
+        ./dotnet-install.sh -c 8.0
+
+        dotnet --version
+
+        # insira as linhas abaixo no arquivo ".bashrc"
+        export PATH="home/$USER/.dotnet:/home/$USER/.dotnet/tools:$PATH"
+        export DOTNET_ROOT=/home/$USER/.dotnet/
+
+        source ~/.bashrc
+
+        sudo ln -s /home/$USER/.dotnet/dotnet /usr/bin/dotnet
+
+        dotnet --version
+        dotnet --list-runtimes
+        dotnet --list-sdks
+
+
+    . Instalação das extensões do VSCode
+
+            C# 
+            C# Extensions (JosKreativ)
+            C# XML Documentation Comments
+            C# Snippets
+            vscode-solution-explorer
+            ASP.NET Helper
+            RapidApi
+            Bracket Pair Colorization Toggler
+            Razor Snippets
+            Libman
+            Docker
+            vscode-icons (Opcional)
+            VZ Dotnet File Template
+            Auto-Using for C#
+            Error Lens
+
+    . Instalação do Nodejs
+
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | $SHELL
+
+        echo 'export PATH="/home/$USER/.nvm:$PATH"' >> ~/.bashrc
+        echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc 
+
+        source ~/.bashrc
+
+        nvm --version
+
+        # Para instalar a versão lts mais recente
+        nvm install --lts
+
+        # Se quiser instalar uma versão especifica, utilize:
+        # nvm install 18.20.4
+
+        # Se quiser listar as versões do node disponivel no repositorio remoto
+        # nvm ls-remote
+
+        # Se quiser listar as versões instalada na máquina atual
+        # nvm ls
+
+        # Para usar uma versão instalada na máquina atual
+        # nvm use 20.17.0
+
+        # Para desinstalar uma versão do node js
+        # nvm uninstall 18.20.4
+
+        node -v
+        npm -v
+
+    . Instalando o MySQL
+
+        # Criando container com nome o banco de dados MySQL
+        docker container run -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 --name investToolsDb -d mysql:8
+        docker start investToolsDb
+
+        docker ps -a
+        docker exec -it investToolsDb bash	
+        mysql -u root -p
+
+        docker stop investToolsDb
+
+
+. Na pasta de projetos, execute os comandos abaixo para criar a solução:
+
+    mkdir InvestTools
+
+    cd InvestTools
+
+    dotnet new sln -n "InvestTools"
+
+    dotnet new mvc -o InvestTools.Web -n investTools.Web -f net8.0
+    dotnet sln add ./InvestTools.Web/
+
+. Execute os comandos abaixo dentro do projeto "InvestTools.Web"
+
+    dotnet new gitignore --force
+
+    cd InvestTools.Web
+
+    dotnet add package Microsoft.EntityFrameworkCore --version 9.0.9
+    dotnet add package Microsoft.EntityFrameworkCore.Tools --version 9.0.9
+
+    dotnet add package Microsoft.EntityFrameworkCore.Design --version 9.0.9
+
+    dotnet add package Pomelo.EntityFrameworkCore.MySql --version 9.0.0
+
+. Levante e execute o projeto:
+
+    dotnet clean
+    dotnet restore
+    dotnet build
+
+. Caso ocorra alguma msg de warning (   Warning: Locale 'ru' does not match any known cultures.
+                                        Warning: Failed to read or parse localization file .... )
+    . Execute o comando abaixo:
+
+        chmod -R u+r /home/marco/.dotnet/templates/ 
+
+    . Atualize o ".csproj" com a linha abaixo
+
+        <Project Sdk="Microsoft.NET.Sdk.Web">
+
+            <PropertyGroup>
+                <TargetFramework>net8.0</TargetFramework>
+                <Nullable>enable</Nullable>
+                <ImplicitUsings>enable</ImplicitUsings>
+
+                <!-- Insira a linha abaixo -->
+                <NoWarn>$(NoWarn);NETSDK1188</NoWarn>
+            </PropertyGroup>
+
+        </Project>
+
+. Acesse a pasta da solution e execute o comando abaixo:
+
+    dotnet run --project /InvestTools.Web/
+
