@@ -206,6 +206,18 @@ Tutorial Projeto InvestTools - Criando o Banco de Dados
         }
     }
 
+. Acesse o MySQL e execute os comandos abaixo:
+
+    docker start investToolsDb
+    
+    docker exec -it investToolsDb mysql -u root -p
+
+    CREATE USER 'root'@'172.17.0.1' IDENTIFIED BY 'root'; 
+    GRANT ALL PRIVILEGES ON *.* TO 'root'@'172.17.0.1' WITH GRANT OPTION;
+    FLUSH PRIVILEGES;
+
+
+
 . Execute o comando abaixo na pasta raiz do projeto:
 
     dotnet tool install --global dotnet-ef
