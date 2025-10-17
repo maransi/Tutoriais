@@ -1,0 +1,215 @@
+Tutorial Projeto InvestTools - Criando o Banco de Dados
+-------------------------------------------------------
+
+. Acesse os arquivos "appsettings.Development.json" e insira a linha abaixo:
+
+
+    // IMPORTANTE: Caso ocorra algum problema na identificação do servidor "mysql" como localhost, use o fisico do container.
+    //              Utilize o comando "docker exec mysqldb hostname -I" para encontrar o IP do container
+    //              ou
+    //             Execute o comando:   docker container inspect mysqldb |grep -i "IPAddress\|Gateway"
+    //
+    //              Outra dica importante: Caso ocorra o erro "Authentication method 'caching_sha2_password' failed.", acrescente aos
+    //              parâmetros de autenticação do "DotNetCoreMySQLAppConnection" o item "; AllowPublicKeyRetrieval=True". Isto ocorre 
+    //              ao utilizar o container docker "MySQL:8.XX"
+    //
+    // IMPORTANTE: As configurações de "Development" existentes nos "Properties/launchSetting.json" não está apontando
+    //                para o arquivo "appsetings.Development.json", talvez isto ocorra devido ao comando "dotnet ef migrations..."
+    //                enxergar somente o arquivo "appsetings.json"
+    //
+    // IMPORTANTE: Quando for executar "dotnet ef migrations add CreationInicial" o comando irá procurar sempre os parâmetros de conexão no arquivo
+    //              "appsettings.json". Nesse caso somos obrigados a criar a conexão nos dois arquivos "appsetings.json" e "appsetings.Development.json"
+
+    {
+        "Logging": {
+            "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+            }
+        },
+        // Linha inserida
+        "ConnectionStrings": {
+            "default": "server=localhost;port=3306;database=investTools;uid=root;pwd=root;Persist Security Info=false;Connect Timeout=300;SSL Mode=None;AllowPublicKeyRetrieval=True;"
+        }
+        ...
+    }
+
+. Crie a pasta "Utils" na raiz do projeto
+
+. Crie a interface "AuditEntity.cs" na pasta "Utils" como abaixo:
+
+    using System.ComponentModel;
+    using System.ComponentModel.DataAnnotations.Schema;
+
+    namespace investTools.Web.Utils;
+
+    public abstract class AuditEntity
+    {
+
+        [Column("dataInclusao", TypeName = "DATETIME")]
+        // [DefaultValue("current_timestamp")]
+        // [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime? DataInclusao { get; set; }
+
+
+        [Column("dataAlteracao", TypeName = "DATETIME")]
+        public DateTime? DataAlteracao { get; set; }
+    }
+
+. Adicione as linhas abaixo na classe "Program.cs":
+
+    using Microsoft.EntityFrameworkCore;                                                // Linha inserida
+
+    ...
+    var builder = WebApplication.CreateBuilder(args);
+
+    var connectionString = builder.Configuration.GetConnectionString("default");  // Linha inserida
+
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>                          // Linha inserida
+        options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+    ...
+
+
+. Crie a pasta "Data" na raiz do projeto e crie a classe "ApplicationDbContext.cs" como abaixo:
+
+    using Microsoft.EntityFrameworkCore;
+
+    namespace investTools.Web.Data;
+
+    public class ApplicationDbContext : DbContext
+    {
+
+        private readonly IConfiguration _config;
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options,
+                                    IConfiguration config)
+            : base(options)
+        {
+            _config = config;
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            var connectionString = _config.GetConnectionString("default");
+
+            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+            
+            optionsBuilder.LogTo(Console.WriteLine);
+        }
+    }
+
+
+. Crie o Model "Investidor" dentro da pasta "Models" como abaixo:
+
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+    using investTools.Web.Utils;
+    using Microsoft.EntityFrameworkCore;
+
+    namespace investTools.Web.Models;
+
+    [Table("Investidor")]
+    [Index( nameof(CPF),  IsUnique=true )]
+    public class Investidor  : AuditEntity
+    {
+        [Key]
+        [DatabaseGenerated( DatabaseGeneratedOption.Identity )]
+        [Column("investidorId")]
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "Este Campo é Obrigatório")]
+        [MaxLength(11, ErrorMessage = "Este Campo de Conter 11 Caracteres")]
+        [MinLength(11, ErrorMessage = "Este Campo de Conter 11 Caracteres")]
+        [Column("cpf", TypeName = "VARCHAR(11)")]
+        public string? CPF { get; set; }
+
+        [Required(ErrorMessage = "Este Campo é Obrigatório")]
+        [StringLength(50)]
+        [Column("nome", TypeName = "VARCHAR(50)")]
+        public string? Nome { get; set; }
+
+        [Precision(15, 2)]
+        [Column("renda", TypeName = "DECIMAL(15,2)")]
+        public decimal? Renda { get; set; }
+
+        [Precision(15, 2)]
+        [Column("aporteMensal", TypeName = "DECIMAL(15,2)")]
+        public decimal AporteMensal{ get; set; }
+    }
+
+. Inclua as linhas abaixo dentro da classe "ApplicationDbContext.cs":
+
+    using investTools.Web.Models;                    // LInha inserida
+    using investTools.Web.Utils;                     // Linha inserida
+    using investTools.Web.Data;
+
+    ...
+    public class ApplicationDbContext : DbContext
+    {
+
+        public DbSet<Investidor>? Investidores { get; set; }    // Linha inserida
+
+        ...
+
+        public override int SaveChanges()                   // Método Incluido
+        {
+            var entries = ChangeTracker
+                .Entries()
+                .Where(e => e.Entity is AuditEntity && (
+                        e.State == EntityState.Added
+                        || e.State == EntityState.Modified));
+
+            foreach (var entityEntry in entries)
+            {
+                ((AuditEntity)entityEntry.Entity).DataAlteracao = DateTime.Now;
+
+                if (entityEntry.State == EntityState.Added)
+                {
+                    ((AuditEntity)entityEntry.Entity).DataInclusao = DateTime.Now;
+                }
+            }
+
+            return base.SaveChanges();
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)   // Método Incluido
+        {
+            var insertedEntries = this.ChangeTracker.Entries()
+                                .Where(x => x.State == EntityState.Added)
+                                .Select(x => x.Entity);
+
+            foreach (var insertedEntry in insertedEntries)
+            {
+                var auditableEntity = insertedEntry as AuditEntity;
+                //If the inserted object is an Auditable. 
+                if (auditableEntity != null)
+                {
+                    auditableEntity.DataInclusao = DateTime.Now;
+                }
+            }
+
+
+            var modifiedEntries = this.ChangeTracker.Entries()
+                    .Where(x => x.State == EntityState.Modified)
+                    .Select(x => x.Entity);
+
+            foreach (var modifiedEntry in modifiedEntries)
+            {
+                //If the inserted object is an Auditable. 
+                var auditableEntity = modifiedEntry as AuditEntity;
+                if (auditableEntity != null)
+                {
+                    auditableEntity.DataAlteracao = DateTime.Now;
+                }
+            }
+            return base.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+. Execute o comando abaixo na pasta raiz do projeto:
+
+    dotnet tool install --global dotnet-ef
+    dotnet ef migrations add CreationInitial
+    dotnet ef database update
+
+
