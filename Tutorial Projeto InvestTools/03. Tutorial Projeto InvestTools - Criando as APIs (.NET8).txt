@@ -279,6 +279,10 @@ Tutorial Projeto InvestTools - Criando as APIs
         }
     }
 
+. Levante o projeto na pasta raiz da solution:
+
+    dotnet run --project ./InvestTools.Web
+
 . Acesse o Postman e execute as URLs abaixo:
 
     Method: GET
