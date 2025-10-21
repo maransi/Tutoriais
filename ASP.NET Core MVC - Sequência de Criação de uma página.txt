@@ -1,0 +1,118 @@
+Sequência de Criação de uma página ASP.NET Core MVC
+---------------------------------------------------
+
+1. Criar o Model, na pasta "Models"
+
+    1.1. Verificar o funcionamento da criação dos Models em "Working with Real Data Using Entity Framework Core 6"
+
+2. Crie a interface para o Repository na pasta "Models"
+
+3. Crie a classe Repository implentando a interface acima, na pasta "Models"
+
+4. Adicione os Repositories, como injeção de dependência, no Program.cs:
+
+    builder.Services.AddScoped<ICategoryRepository, MockCategoryRepository>(); 
+
+5. Crie a classe controle, dentro da pasta "Controllers"
+
+                        +----> Tem o padrão "Controller" no nome da classe
+                        |
+                    ----------
+    public class PieController: Controller          // Normalmente armazenadas na pasta "Controllers"
+    {                               |
+                                    +---> Extende a class "Controller
+
+        private readonly IPieRepository _pieRepository;
+
+        public PieController( IPieRepository pieRepository )
+        {
+            _pieRepository = pieRepository;
+        }
+
+        public ViewResult Index()
+        {           |
+                    +-------------> ViewResult é um subtipo de ActionResult, neste caso o único retorno possível seria uma "View()".
+                                    Se fosse a classe genérica "ActionResult" o retorno poderia ser além de uma "ViewResult" também:
+
+                                    PartialViewResult, ContentResult, etc.
+
+            return View();      // Executará o objeto "Index.cshtml" da pasta "Views/Pie"
+        }
+    }
+
+6. Crie a View (template com a extensão *.cshtml que contém marcações HTM) na pasta  "Views" e dentro da subpasta equivalente 
+    ao controller "Views/Pie" por exemplo:
+
+    public class PieController: Controller
+    {
+
+        public ViewResult List()   // Action
+        {
+            ViewBag.CurrentCategory = "Cheese cakes"; --+      
+                                                        |
+            return View( _pieRepository.AllPies );      |      // View to show: Views/Pie/Index.cshtml
+        }                       |                       |
+    }                           |                       |    
+                                |                       |
+                                V                       |
+    @model IEnumerable<bethanysPieShop.Models.Pie>      |
+                                                        |
+    <!DOCTYPE html>                                     |
+                                                        |
+    <html>                                              |
+                                                        |
+    <head>                                              |
+        <meta name="viewport"                           |
+                content="width=device-width" />         |
+        <title>Bethany´s Pie Shop</title>               |
+    </head>                                             |
+                                                        |
+    <body>                                              |
+        <h1>@ViewBag.CurrentCategory</h1>       <-------+
+
+
+        @foreach( var pie in Model )
+        {
+        <div>
+            <h2>@pie.Name </h2>
+            <h3>@pie.Price.ToString("c") </h3>
+            <h4>@pie.Category.CategoryName </h4>
+        </div>
+        }
+
+    </body>
+
+    </html>
+
+    6.1. Caso haja necessidade de enviar mais informações para a View, além dos dados, 
+            podemos fazer uso das classes "ViewModels". Para mais detalhes consulte o 
+            tutorial "ASP.NET Core 6 Fundamentals .NET"
+
+        using bethanysPieShop.ViewModels;   // Linha inserida
+        ...
+        public IActionResult List()
+        {
+            // ViewBag.CurrentCategory = "Cheese cakes";       // Linha apagada
+
+            // return View( _pieRepository.AllPies );           // Linha apagada
+
+            PieListViewModel piesListViewModel = new PieListViewModel( _pieRepository.AllPies, "Cheese cakes");     // Linha inserida
+
+            return View( piesListViewModel );           // Linha inserida
+        }
+
+7. Verificar o funcionamento do Layout, nos itens:
+
+    . Usando o _Layout.cshtml
+
+    . Trabalhando com _ViewStart
+
+    . Trabalhnado com "ViewImports"
+
+
+
+
+
+
+
+
