@@ -1631,8 +1631,6 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             . Após a alteração da senha, faça o login com a nova senha.
 
-PAREI AQUI
-
     . Criando o formulário "Email Confirmation":
 
         https://code-maze.com/email-confirmation-aspnet-core-identity/
@@ -1828,10 +1826,12 @@ PAREI AQUI
 
             . Faça login no sitema com a nova conta para ver se o acesso ao "Dashboard" ficará disponível.
 
+PAREI AQUI
+
         . A confirmação do Email terá que obrigatoriamente ser feita em 2 horas, a partir do envio do email, devido o 
             token expirar. Vamos realizar novas configurações para aumentar esse tempo.
 
-            . Crie a pasta "Services.CustomTokenPrividers"
+            . Crie a pasta "Services.CustomTokenProviders"
 
             . Crie a classe "EmailConfirmationTokenProvider.cs" abaixo dentro da pasta "Services.CustomTokenPrividers":
 
@@ -1927,10 +1927,8 @@ PAREI AQUI
                 if (ModelState.IsValid)
                 {
 
-                    // Linha inserida
                     var currentUser = userManager.FindByNameAsync(model.Email);
 
-                    // If inserido
                     if ( !currentUser.Result.EmailConfirmed )
                     {
                         ModelState.AddModelError(string.Empty, "Conta não Confirmada, Favor Verificar seu Email");
@@ -1972,6 +1970,9 @@ PAREI AQUI
                     ModelState.AddModelError("", "Invalid Login Attempt");
                     return View();
                 }
+
+                // Linha apagada
+                // return View(model);
             }
 
             ...
