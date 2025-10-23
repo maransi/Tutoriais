@@ -1,0 +1,2073 @@
+Tutorial Projeto InvestTools - Adequação ao Identity
+----------------------------------------------------
+
+    . Baseado no video e site abaixo:
+
+        https://www.youtube.com/watch?v=RnxwwohOwaM&t=14s
+
+        https://code-maze.com/asp-net-core-identity-series/
+
+    . Execute o comando abaixo na pasta raiz do projeto "InvestTools.Web":
+
+        dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 8.0.21
+
+        dotnet add package Microsoft.AspNetCore.Identity.UI --version 8.0.21
+
+    . Execute os comandos abaixo para verificar se os pacotes foram instalados com sucesso:
+
+        dotnet clean
+        dotnet restore
+        dotnet build
+
+    . Acesse a classe "ApplicationDbContext.cs" e altere a linha abaixo:
+
+        using Microsoft.AspNetCore.Identity.EntityFrameworkCore;                    // Linha inserida
+
+        ...
+        public class AppDbContext: IdentityDbContext                                // DbContext       // Linha aterada, substitução da interfae "DbContext" pela "IdentityDbContext"
+        ...
+
+    . Faça a alteração abaixo na classe "Program.cs":
+
+        ...
+        using Microsoft.AspNetCore.Identity;                                        // Linha inserida
+        using Microsoft.Extensions.DependencyInjection;                             // Linha inserida
+        ...
+
+        builder.Services.AddDbContext<AppDbContext>( options => {                           
+            options.UseSqlite( 
+                builder.Configuration["ConnectionStrings:DefaultConnection"]);
+        });
+     
+        builder.Services.AddDefaultIdentity<IdentityUser>()                         // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+            .AddEntityFrameworkStores<ApplicationDbContext>();                      // Linha inserida (Tem que ser colocada debaixo do "AddDbContext")
+
+        builder.Services.ConfigureApplicationCookie(options =>                      // Linha inserida
+        {                                                                           // Linha inserida
+            // Cookie settings
+            options.Cookie.HttpOnly = true;                                         // Linha inserida
+            options.Cookie.Name = "InvestTools.Cookies";                            // Linha inserida
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(5);                       // Linha inserida
+
+            options.LoginPath = "/Account/Login";                                   // Linha inserida
+            options.LogoutPath = "/Account/Logout";                                 // Linha inserida
+            options.AccessDeniedPath = "/Account/AccessDenied";                     // Linha inserida
+            options.SlidingExpiration = true;                                       // Linha inserida
+        });
+
+        builder.Services.Configure<IdentityOptions>( options => 
+        {
+            options.Password.RequiredLength = 6;                                    // Linha inserida
+            options.Password.RequiredUniqueChars = 3;                               // Linha inserida
+            options.Password.RequireNonAlphanumeric = false;                        // Linha inserida
+            options.Password.RequireDigit = false;                                  // Linha inserida
+            options.Password.RequireUppercase = false;                              // Linha inserida
+        });
+
+        var app = builder.Build();
+
+        ...
+        app.UseAuthentication();                                    
+        app.UseAuthorization();                                                     // Linha inserida
+
+        app.MapControllerRoute(                                                         // Linha inserida
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.MapRazorPages();                                                        // Linha inserida
+                    
+        app.Run();
+
+
+    . Na raiz do projeto execute os comandos abaixo:
+
+        dotnet clean
+
+        dotnet build
+
+        dotnet ef migrations add IdentityMigration
+        #dotnet ef migrations add IdentityMigration --project [Project Infrastruture] -s [Project UI] --verbose
+
+        dotnet ef database update
+
+    . Acesse o banco e verifique se as tabelas do "Identity" foram criadas.
+
+        . Modelo de dados gerado:
+
+            +----------------------+        +------------------+    +-----------------------+          
+            |   AspNetRoleClaims   |--------|   AspNetRoles    |    |   AspNetUserLogins    |
+            +----------------------+        +------------------+    +-----------------------+          
+                                                    |                         |
+                                                    |               +-----------------------+       +-----------------------+
+                                                    |               |   AspNetUsers         |-------|   AspNetUserTokens    |
+                                                    |               +-----------------------+       +-----------------------+
+                                                    |                         |         |
+                                            +------------------+              |         |           +-----------------------+
+                                            |  AspNetUserRoles |--------------+         +-----------|    AspNetUserClaims   |
+                                            +------------------+                                    +-----------------------+
+
+    . Execute o comando abaixo na pasta raiz do projeto:
+
+        dotnet-aspnet-codegenerator identity --dbContext AppDbContext --files "Account.Login;Account.Logout;Account.Register"
+
+    . Acesse a classe "InvestidorController" e insira a linha abaixo:
+
+        ...
+        using Microsoft.AspNetCore.Authorization;       // Linha inseriada
+        ...
+
+        namespace investTools.Web.Controllers
+        {
+            [Authorize]                                     // Linha inseriada
+            public class InvestidorController : Controller
+            {
+                ...
+            }
+        }
+
+    . Levante a aplicação e tente acessar o cadastro de investidores.
+
+        . Ocorrerá um erro devido não estar logado na aplicação. O ASP.Net tenta desviar para a página de Login para fazer a 
+            autenticação, porém não temos uma página de Login ainda.
+
+    . Crie dentro da pasta "ViewModels" a classe "RegisterViewModel" como abaixo, esta classe se comportará como um "DTO":
+
+        using System.ComponentModel.DataAnnotations;
+
+        namespace investTools.Web.ViewModels;
+
+        public class RegisterViewModel
+        {
+            public string? FirstName { get; set; }
+            public string? LastName { get; set; }
+
+            [Required]
+            [EmailAddress]
+            public string? Email { get; set; }
+
+            [Required]
+            [DataType(DataType.Password)]
+            public string? Password { get; set; }
+
+            [DataType(DataType.Password)]
+            [Display(Name = "Confirme a senha")]
+            [Compare("Password", ErrorMessage = "As senhas não conferem")]
+            public string? ConfirmPassword { get; set; }
+        }
+        
+    . Crie dentro da pasta "ViewModels" a classe "LoginViewModel" como abaixo:
+
+        using System.ComponentModel.DataAnnotations;
+
+        namespace investTools.Web.ViewModels;
+
+        public class LoginViewModel
+        {
+            [Required(ErrorMessage = "O email é obrigatório")]
+            [EmailAddress(ErrorMessage = "Email inválido")]
+            public string? Email { get; set; }
+
+            [Required(ErrorMessage = "A senha é obrigatória")]
+            [DataType(DataType.Password)]
+            public string? Password { get; set; }
+
+            [Display(Name = "Lembrar-me")]
+            public bool RememberMe{ get; set; }
+        }
+
+    . Crie o "Controller" "AccountController" abaixo na pasta "Controllers":
+
+        using investTools.Web.ViewModels;
+        using Microsoft.AspNetCore.Identity;
+        using Microsoft.AspNetCore.Mvc;
+
+        namespace investTools.Web.Controllers;
+
+        public class AccountController : Controller
+        {
+            private readonly UserManager<IdentityUser> userManager;
+            private readonly SignInManager<IdentityUser> signInManager;
+
+            public AccountController(UserManager<IdentityUser> userManager,
+                                                SignInManager<IdentityUser> signInManager)
+            {
+                this.userManager = userManager;
+                this.signInManager = signInManager;
+            }
+
+            [HttpGet]
+            public IActionResult Register()
+            {
+                return View();
+            }
+
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Register(RegisterViewModel model)
+            {
+                if (ModelState.IsValid)
+                {
+                    // Copia os dados do RegisterViewModel para o IdentityUser
+                    var user = new IdentityUser
+                    {
+                        UserName = model.Email,
+                        Email = model.Email
+                    };
+
+                    // Copia os dados do usuário na tabela AspNetUsers
+                    var result = await userManager.CreateAsync(user, model.Password);
+
+                    // Se o usuário foi criado com sucesso, faz o login do usuário
+                    // usando o serviço SignInManager e redireciona para o Método /action Index
+                    if (result.Succeeded)
+                    {
+                        await signInManager.SignInAsync(user, isPersistent: false);
+
+                        return RedirectToAction("Index", "home");
+
+                    }
+
+                    // Se houver erros então inclui no ModelState
+                    // que será exibido pela tag helper summary na validação
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+
+                return View(model);
+            }
+
+            [HttpGet]
+            public IActionResult Login()
+            {
+                return View();
+            }
+
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Login(LoginViewModel model)
+            {
+                if (ModelState.IsValid)
+                {
+                    var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("index", "home");
+                    }
+
+                    ModelState.AddModelError(string.Empty, "Login Inválido");
+                }
+
+                return View(model);
+            }
+
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Logout()
+            {
+                await signInManager.SignOutAsync();
+
+                return RedirectToAction("login", "account");
+            }
+
+        }
+
+    . Crie a página "Razor Page" "_LayoutAuthentication.cshtml" na pasta "Views/Shared":
+
+        <!DOCTYPE html>
+        <html lang="en">
+
+        <head>
+
+            <meta charset="utf-8">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+            <meta name="description" content="">
+            <meta name="author" content="">
+
+            <title>@ViewData["Title"] - Controle de Investimentos</title>
+
+            @await RenderSectionAsync("header", required: false)
+        </head>
+
+        <body id="page-top">
+
+            <!-- Page Wrapper -->
+            <div id="wrapper">
+                <!-- Content Wrapper -->
+                <div id="content-wrapper" class="d-flex flex-column">
+
+                    <!-- Main Content -->
+                    <div id="content">
+                        <!-- Begin Page Content -->
+                        <div class="container-fluid">
+
+                            @RenderBody()
+
+                        </div>
+                        <!-- /.container-fluid -->
+
+                    </div>
+                    <!-- End of Main Content -->
+
+                    <!-- Footer -->
+                    <footer class="sticky-footer bg-white">
+                        <div class="container my-auto">
+                            <div class="copyright text-center my-auto">
+                                <span>Copyright &copy; InvestTools for Web 2023</span>
+                            </div>
+                        </div>
+                    </footer>
+                    <!-- End of Footer -->
+
+                </div>
+                <!-- End of Content Wrapper -->
+
+            </div>
+            <!-- End of Page Wrapper -->
+
+            <!-- Scroll to Top Button-->
+            <a class="scroll-to-top rounded" href="#page-top">
+                <i class="fas fa-angle-up"></i>
+            </a>
+
+            @await RenderSectionAsync("Scripts", required: false)
+        </body>
+
+        </html>
+
+
+
+    . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Register.cshtml".
+
+        @model investTools.Web.ViewModels.RegisterViewModel;
+
+        @{
+            ViewBag.Title = "Novo Conta";
+            Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+        }
+
+        @section header{
+            <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+            <link
+                href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                rel="stylesheet">
+
+            <!-- Custom styles for this page -->
+            <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+            <!-- Custom styles for this template -->
+            <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+        }
+
+
+        <body class="bg-gradient-primary">
+
+            <div class="container">
+
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">Nova Conta!</h1>
+                                    </div>
+                                    <form class="user" 
+                                            method="post" 
+                                            name="register" 
+                                            id="register"
+                                            asp-controller="account"
+                                            asp-action="register">
+                                        <div asp-validation-summary="All" class="text-danger"></div>
+
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <!-- <input type="text" class="form-control form-control-user" id="exampleFirstName"
+                                                    placeholder="First Name"> -->
+                                                <input asp-for="FirstName" 
+                                                        class="form-control form-control-user" 
+                                                        id="exampleFirstName"
+                                                        placeholder="Primeiro Nome"/>
+                                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <!-- <input type="text" class="form-control form-control-user" id="exampleLastName"
+                                                    placeholder="Last Name"> -->
+                                                <input asp-for="LastName" 
+                                                        class="form-control form-control-user" 
+                                                        id="exampleLastName"
+                                                        placeholder="Último Nome" />
+                                                <span asp-validation-for="LastName" class="text-danger"></span>
+                                            </div>
+                                        </div> 
+                                        <div class="form-group">
+                                            <!-- <input type="email" class="form-control form-control-user" id="exampleInputEmail"
+                                            placeholder="Email Address"> -->
+                                            <input asp-for="Email" 
+                                                    class="form-control form-control-user" 
+                                                    id="exampleInputEmail"
+                                                    placeholder="Endereço de Email" />
+                                            <span asp-validation-for="Email" 
+                                                    class="text-danger">
+                                            </span>                                    
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                                <input asp-for="Password" 
+                                                        class="form-control form-control-user"
+                                                        id="exampleInputPassword" 
+                                                        placeholder="Senha" />
+                                                <span asp-validation-for="Password" class="text-danger" ></span>
+                                                <!-- <input type="password" class="form-control form-control-user"
+                                                    id="exampleInputPassword" placeholder="Password"> -->
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <input asp-for="ConfirmPassword" 
+                                                        class="form-control form-control-user"
+                                                        id="exampleRepeatPassword" 
+                                                        placeholder="Repeta a Senha" />
+                                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                                <!-- <input type="password" class="form-control form-control-user"
+                                                    id="exampleRepeatPassword" placeholder="Repeat Password"> -->
+                                            </div>
+                                        </div>
+                                        <a  class="btn btn-primary btn-user btn-block" 
+                                            onClick="document.getElementById('register').submit();">
+                                            Registrar Conta
+                                        </a>
+                                    </form>
+                                    <hr>
+                                    <div class="text-center">
+                                        <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha?</a>
+                                    </div>
+                                    <div class="text-center">
+                                        <a class="small" asp-controller="account" asp-action="login">Já tem uma conta? Login!</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </body>
+
+        @section Scripts{
+            <!-- Bootstrap core JavaScript-->
+            <script src="~/vendor/jquery/jquery.min.js"></script>
+            <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+            <!-- Core plugin JavaScript-->
+            <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+            <!-- Custom scripts for all pages-->
+            <script src="~/js/sb-admin-2.min.js"></script>
+
+            <!-- Page level plugins -->
+            <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+            <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+            <!-- Page level custom scripts -->
+            <script src="~/js/demo/datatables-demo.js"></script>
+
+            <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
+            <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+            <script src="~/js/site.js" asp-append-version="true"></script>
+        }
+
+    . Crie a pasta "Views/Account" e dentro dela crie a "Razor View" "Login.cshtml".
+
+        @model investTools.Web.ViewModels.LoginViewModel;
+
+        @{
+            ViewBag.Title = "Login";
+            Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+        }
+
+        @section header{
+            <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+            <link
+                href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                rel="stylesheet">
+
+            <!-- Custom styles for this page -->
+            <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+            <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+            <!-- Custom styles for this template -->
+            <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+        }
+
+        <body class="bg-gradient-primary">
+
+            <div class="container">
+
+                <!-- Outer Row -->
+                <div class="row justify-content-center">
+
+                    <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                        <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                            <div class="card-body p-0">
+                                <!-- Nested Row within Card Body -->
+                                <div class="row col-lg-12">
+                                    <div class="col-lg-12">
+                                        <div class="p-5">
+                                            <div class="text-center">
+                                                <h1 class="h4 text-gray-900 mb-4">Seja Bem Vindo</h1>
+                                            </div>
+                                            <form method="post" id="login" class="user" asp-controller="account"
+                                                asp-action="login">
+                                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                                <div class="form-group">
+                                                    <!-- <input type="email" class="form-control form-control-user"
+                                                                id="exampleInputEmail" aria-describedby="emailHelp"
+                                                                placeholder="Enter Email Address..."> -->
+
+                                                    <input type="email" asp-for="Email" class="form-control form-control-user"
+                                                        id="exampleInputEmail" aria-describedby="emailHelp"
+                                                        placeholder="Entre com o Email..." />
+                                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <!-- <input type="password" class="form-control form-control-user"
+                                                                id="exampleInputPassword" placeholder="Password"> -->
+
+                                                    <input type="password" asp-for="Password"
+                                                        class="form-control form-control-user" id="exampleInputPassword"
+                                                        placeholder="Senha..." />
+                                                    <span asp-validation-for="Password" class="text-danger"></span>
+
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-checkbox small">
+                                                        <!-- <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                                <label class="custom-control-label" for="customCheck">Remember Me</label> -->
+
+                                                        <input type="checkbox" class="custom-control-input" id="customCheck"
+                                                            asp-for="RememberMe">
+                                                        <label class="custom-control-label" for="customCheck">Lembrar
+                                                            Senha</label>
+                                                    </div>
+                                                </div>
+                                                <a class="btn btn-primary btn-user btn-block"
+                                                    onClick="document.getElementById('login').submit();">
+                                                    Login
+                                                </a>
+                                            </form>
+                                            <hr>
+                                            <div class="text-center">
+                                                <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha?</a>
+                                            </div>
+                                            <div class="text-center">
+                                                <a class="small" asp-controller="account" asp-action="register">Nova Conta!</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </body>
+
+        @section Scripts{
+            <!-- Bootstrap core JavaScript-->
+            <script src="~/vendor/jquery/jquery.min.js"></script>
+            <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+            <!-- Core plugin JavaScript-->
+            <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+            <!-- Custom scripts for all pages-->
+            <script src="~/js/sb-admin-2.min.js"></script>
+
+            <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
+            <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+            <script src="~/js/site.js" asp-append-version="true"></script>
+        }
+
+
+    . Crie dentro da pasta "View/Shared" a Razor View "_LoginPartial.cshtml" abaixo:
+
+        @using Microsoft.AspNetCore.Identity
+
+        @inject SignInManager<IdentityUser> SignInManager
+        @inject UserManager<IdentityUser> UserManager
+
+        <ul class="navbar-nav ml-auto">
+
+
+            <li class="nav-item dropdown no-arrow">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="mr-2 d-none d-lg-inline text-gray-600 small">@User.Identity.Name</span>
+                        <img class="img-profile rounded-circle"
+                            src="~/img/undraw_profile.svg">
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                        aria-labelledby="userDropdown">
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Profile
+                        </a>
+                        <a class="dropdown-item" href="#">
+                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Settings
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" 
+                            data-toggle="modal" 
+                            data-target="#logoutModal">
+                            <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Logout
+                        </a>
+                    </div>
+
+                }
+                else
+                {
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <!-- <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span> -->
+                        <img class="img-profile rounded-circle"
+                            src="~/img/undraw_profile.svg">
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                        aria-labelledby="userDropdown">
+                        <a class="dropdown-item" 
+                            asp-controller="Account" 
+                            asp-action="Login">
+                            <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Login
+                        </a>
+                        <a class="dropdown-item" 
+                            asp-controller="Account" 
+                            asp-action="Register">
+                            <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                            Nova Conta
+                        </a>
+                    </div>
+                }
+
+            </li>
+        </ul>
+
+    . Insira a linha abaixo na "Razor View" "/View/Shared/_Layout.cshtml"
+
+        ...
+        <div id="wrapper">
+
+            <!-- Sidebar -->
+            <partial name="_SidebarMenu" />
+            <!-- End of Sidebar -->
+
+
+
+            <!-- Content Wrapper -->
+            <div id="content-wrapper" class="d-flex flex-column">
+
+                <!-- Main Content -->
+                <div id="content">
+
+                    <!-- Topbar -->
+                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                        
+                        <!-- Sidebar Toggle (Topbar) -->
+                        <form class="form-inline">
+                            <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                        </form>
+
+
+
+
+                        <!-- Linha Inserida -->
+
+                        <!-- Topbar Navbar -->
+                        <partial name="_LoginPartial.cshtml"/>
+                        <!-- End of Topbar -->
+
+                        <!-- Fim da Inserção -->
+
+
+
+        ...
+
+    . Execute o projeto e faça os testes abaixo:
+
+        . Teste as telas de Login e Register
+
+        . Teste as funcionalidades do sistema
+
+        . Teste a funcionalidade do cadastro de Investidores, autenticado e não autenticado. 
+
+            . Observe o comportamento quando não estiver autenticado, pois deverá desviar para a tela de Login.
+
+
+    . Crie a "Razor View" "/View/Shared/_ConfirmationLogoutPartial.cshtml" com o conteúdo abaixo:
+
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Confirma Logout?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Selecione o Logout para Finalizar a sua Sessão</div>
+                    <div class="modal-footer">
+                        <form id="logout" 
+                                method="post"
+                                asp-controller="Account" 
+                                asp-action="Logout">
+                            <button class="btn btn-secondary" 
+                                    type="button" 
+                                    data-dismiss="modal">Cancel</button>
+                            <a class="btn btn-primary" 
+                                onClick="document.getElementById('logout').submit();">Logout</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    . Altere a "Razor View" "/View/Shared/_Layout.cshtml" com o conteúdo abaixo:
+
+        <!-- Scroll to Top Button-->
+        <a class="scroll-to-top rounded" href="#page-top">
+            <i class="fas fa-angle-up"></i>
+        </a>
+
+
+        <!-- Linha Alterada -->
+        <!-- Logout Modal-->
+        <partial name="_ConfirmationLogoutPartial.cshtml" />    ----+
+                                                                    | 
+                                                                    |   Substitui
+                                                                    |
+        <!-- Apague o conteúdo da "Logout Modal" -->        <-------+
+
+        <!-- Logout Modal-->
+        <!--
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Confirma Logout?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Selecione o Logout para Finalizar a sua Sessão</div>
+                    <div class="modal-footer">
+                        <form id="logout" 
+                                method="post"
+                                asp-controller="Account" 
+                                asp-action="Logout">
+                            <button class="btn btn-secondary" 
+                                    type="button" 
+                                    data-dismiss="modal">Cancel</button>
+                            <a class="btn btn-primary" 
+                                onClick="document.getElementById('logout').submit();">Logout</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        -->
+
+        <!-- Fim da Eliminação -->
+
+
+    . Insira a linha abaixo na classe "HomeController.cshtml":
+
+        using Microsoft.AspNetCore.Authorization;               // Linha inserida
+
+        [Authorize]                                             // Linha inserida
+        public class HomeController : Controller
+        {
+            private readonly ILogger<HomeController> _logger;
+
+            ...
+        }
+
+    . Execute o projeto e veja se as telas de Login e Register estão saindo sem Layout.
+
+        . Verifique se todas as operações de links sendo acessadas somente quando o usuário estiver autenticado.
+
+    . Criando o serviço de "emails":
+
+        . Certifique-se que a conta de email do "Google", responsável pelo envio dos emails (from), está configurada com 
+            autenticação em 2 fatores e com a senha de "app" que utilizaremos esteja registrada na sua conta.
+
+            . Importante: para criar uma senha de app, você precisa ter a verificação em duas etapas ativada na sua Conta do Google.
+
+            . Se você usar a verificação em duas etapas e receber um erro de "senha incorreta" ao fazer login, tente usar uma senha de app.
+
+            . Acesse "Gerenciar Sua Conta do Google"
+
+            . Selecione "Segurança".
+
+            . Selecione Verificação em duas etapas.
+
+            . Na parte de baixo da página, selecione Senhas de app.
+            
+            . Insira um nome que ajude você a lembrar onde usará a senha de app.
+
+            . Clique em Gerar.
+
+            . Para inserir a senha de app, siga as instruções na tela. Essa senha é o código de 16 caracteres que é gerado no seu dispositivo.
+            
+            . Selecione Concluído.
+
+            . Se você configurou a verificação em duas etapas, mas não encontra a opção para adicionar uma senha de app, pode ser porque:
+
+                . Sua Conta do Google tem a verificação em duas etapas configurada apenas para chaves de segurança;
+
+                . Você fez login em uma conta do trabalho, da escola ou de outra organização;
+
+                . A Proteção Avançada está ativada para sua conta.
+            
+                . Dica: normalmente, é necessário digitar a senha de app uma vez por app ou dispositivo.
+
+        . Execute o comando abaixo na pasta raiz do projeto "InvestTools.Web":
+
+            # Pacote responsável pelo envio dos emails
+            dotnet add package NETCore.MailKit --version 2.1.0
+
+        . Crie a pasta "Services.Email" na raiz do projeto "InvestTools.Web"
+
+        . Crie a classe "EmailConfiguration" abaixo na pasta "Services.Email":
+
+            using System;
+            using System.Collections.Generic;
+            using System.Text;
+
+            namespace investTools.Web.Services.Email;
+
+            public class EmailConfiguration
+            {
+                public string? From { get; set; }
+                public string? SmtpServer { get; set; }
+                public int Port { get; set; }
+                public string? UserName { get; set; }
+                public string? Password { get; set; }
+            }
+
+        . Insira as linhas abaixo no arquivo "appsettings.json":
+
+            {
+                "EmailConfiguration": {
+                    "From": "4por4.marco@gmail.com",
+                    "SmtpServer": "smtp.gmail.com",
+                    "Port": 465,
+                    "Username": "4por4.marco@gmail.com",
+                    "Password": "[Senha de App]"
+                },
+                ...
+            }
+
+        . Insira as linhas abaixo na classe "Program.cs":
+
+            using investTools.Web.Services.Email;               // Linha inserida
+
+            ...
+            var builder = WebApplication.CreateBuilder(args);
+
+            var emailConfig = builder.Configuration             // Linha inserida
+                    .GetSection("EmailConfiguration")
+                    .Get<EmailConfiguration>();
+                    
+            builder.Services.AddSingleton(emailConfig);         // Linha inserida
+            ...
+
+        . Crie a Classe "Message" na pasta "Services.Email"
+
+            using Microsoft.AspNetCore.Http;
+            using MimeKit;
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Text;
+
+            namespace investTools.Web.Services.Email;
+
+            public class Message
+            {
+                public List<MailboxAddress> To { get; set; }
+                public string Subject { get; set; }
+                public string Content { get; set; }
+
+                public IFormFileCollection Attachments { get; set; }
+
+                public Message(IEnumerable<string> to, string subject, string content, IFormFileCollection attachments)
+                {
+                    To = new List<MailboxAddress>();
+
+                    To.AddRange(to.Select(x => new MailboxAddress("email", x)));
+                    Subject = subject;
+                    Content = content;
+                    Attachments = attachments;
+                }
+            }
+
+        . Crie a interface abaixo "IEmailSender" na pasta "Services.Email":
+
+            using System;
+            using System.Collections.Generic;
+            using System.Text;
+            using System.Threading.Tasks;
+
+            namespace investTools.Web.Services.Email;
+
+            public interface IEmailSender
+            {
+                void SendEmail(Message message);
+                Task SendEmailAsync(Message message);
+            }
+
+        . Crie a classe abaixo "EmailSender"  na pasta "Services.Email":
+
+            using MailKit.Net.Smtp;
+            using MimeKit;
+            using System;
+            using System.IO;
+            using System.Linq;
+            using System.Threading.Tasks;
+
+            namespace investTools.Web.Services.Email;
+
+            public class EmailSender : IEmailSender
+            {
+                private readonly EmailConfiguration _emailConfig;
+
+                public EmailSender(EmailConfiguration emailConfig)
+                {
+                    _emailConfig = emailConfig;
+                }
+
+                public void SendEmail(Message message)
+                {
+                    var emailMessage = CreateEmailMessage(message);
+
+                    Send(emailMessage);
+                }
+
+                public async Task SendEmailAsync(Message message)
+                {
+                    var mailMessage = CreateEmailMessage(message);
+
+                    await SendAsync(mailMessage);
+                }
+
+                private MimeMessage CreateEmailMessage(Message message)
+                {
+                    var emailMessage = new MimeMessage();
+                    emailMessage.From.Add(new MailboxAddress("email", _emailConfig.From));
+                    emailMessage.To.AddRange(message.To);
+                    emailMessage.Subject = message.Subject;
+
+                    var bodyBuilder = new BodyBuilder { HtmlBody = string.Format("<h2 style='color:red;'>{0}</h2>", message.Content) };
+
+                    if (message.Attachments != null && message.Attachments.Any())
+                    {
+                        byte[] fileBytes;
+                        foreach (var attachment in message.Attachments)
+                        {
+                            using (var ms = new MemoryStream())
+                            {
+                                attachment.CopyTo(ms);
+                                fileBytes = ms.ToArray();
+                            }
+
+                            bodyBuilder.Attachments.Add(attachment.FileName, fileBytes, ContentType.Parse(attachment.ContentType));
+                        }
+                    }
+
+                    emailMessage.Body = bodyBuilder.ToMessageBody();
+                    return emailMessage;
+                }
+
+                private void Send(MimeMessage mailMessage)
+                {
+                    using (var client = new SmtpClient())
+                    {
+                        try
+                        {
+                            client.Connect(_emailConfig.SmtpServer, _emailConfig.Port, true);
+                            client.AuthenticationMechanisms.Remove("XOAUTH2");
+                            client.Authenticate(_emailConfig.UserName, _emailConfig.Password);
+
+                            client.Send(mailMessage);
+                        }
+                        catch
+                        {
+                            //log an error message or throw an exception, or both.
+                            throw;
+                        }
+                        finally
+                        {
+                            client.Disconnect(true);
+                            client.Dispose();
+                        }
+                    }
+                }
+
+                private async Task SendAsync(MimeMessage mailMessage)
+                {
+                    using (var client = new SmtpClient())
+                    {
+                        try
+                        {
+                            await client.ConnectAsync(_emailConfig.SmtpServer, _emailConfig.Port, true);
+                            client.AuthenticationMechanisms.Remove("XOAUTH2");
+                            await client.AuthenticateAsync(_emailConfig.UserName, _emailConfig.Password);
+
+                            await client.SendAsync(mailMessage);
+                        }
+                        catch
+                        {
+                            //log an error message or throw an exception, or both.
+                            throw;
+                        }
+                        finally
+                        {
+                            await client.DisconnectAsync(true);
+                            client.Dispose();
+                        }
+                    }
+                }
+            }
+
+        . Insira a linha abaixo na classe "Program.cs":
+
+            ...
+            using investTools.Web.Services.Email;                                                       // Linha inserida
+
+            var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddScoped<IEmailSender, EmailSender>();                    // Linha inserida
+            builder.Services.AddScoped<IInvestidorRepository, InvestidorRepository>();      
+            ...
+
+    . Criando o formulário de "Forgot Password" 
+
+        . Crie a classe abaixo "ForgotPasswordModel" na pasta "ViewModels":
+
+            using System.ComponentModel.DataAnnotations;
+
+            namespace investTools.Web.ViewModels
+            {
+                public class ForgotPasswordModel
+                {
+                    [Required]
+                    [EmailAddress]
+                    public string? Email { get; set; }
+                }
+            }
+
+        . Insira as linhas abaixo na classe "AccountController":
+
+            [HttpGet]
+            public IActionResult ForgotPassword()
+            {
+                return View();
+            }
+
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
+            {
+                return View(forgotPasswordModel);
+            }
+
+            public IActionResult ForgotPasswordConfirmation()
+            {
+                return View();
+            }
+
+        . Insira a "View" "ForgotPassword.cshtml" abaixo na pasta "View/Account":
+
+            @model investTools.Web.ViewModels.ForgotPasswordModel
+
+            @{
+                ViewBag.Title = "Esqueceu a Senha";
+                Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+            }
+
+            @section header{
+                <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
+
+                <!-- Custom styles for this page -->
+                <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+                <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+                <!-- Custom styles for this template -->
+                <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+            }
+
+
+            <body class="bg-gradient-primary">
+
+                <div class="container">
+
+                    <div class="card o-hidden border-0 shadow-lg my-5">
+                        <div class="card-body p-0">
+                            <!-- Nested Row within Card Body -->
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="p-5">
+                                        <div class="text-center">
+                                            <h1 class="h4 text-gray-900 mb-4">Esqueceu a Senha</h1>
+                                        </div>
+                                        <form asp-action="ForgotPassword">
+                                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                            <div class="form-group">
+                                                <label asp-for="Email" class="control-label"></label>
+                                                <input asp-for="Email" class="form-control" />
+                                                <span asp-validation-for="Email" class="text-danger"></span>
+                                            </div>
+                                            <div class="form-group">
+                                                <input type="submit" value="Submit" class="btn btn-primary" />
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </body>
+
+            @section Scripts {
+                <script src="~/lib/jquery-validation/dist/jquery.validate.minjs"></script>
+                <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+                <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+                <!-- Core plugin JavaScript-->
+                <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+                <!-- Custom scripts for all pages-->
+                <script src="~/js/sb-admin-2.min.js"></script>
+
+                <!-- Page level plugins -->
+                <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+
+                <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
+                <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+                <script src="~/js/site.js" asp-append-version="true"></script>
+            }
+    
+        . Insira a "View" "ForgotPasswordConfirmation.cshtml" abaixo na pasta "View/Account":
+
+            @{
+                ViewBag.Title = "Esqueceu a Senha";
+                Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+            }
+
+            @section header{
+                <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
+
+                <!-- Custom styles for this page -->
+                <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+                <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+                <!-- Custom styles for this template -->
+                <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+            }
+
+            <body class="bg-gradient-primary">
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row col-lg-12">
+                                        <div class="col-lg-12">
+                                            <div class="p-5">
+                                                <h1>Confirmação de Reinicialização de Senha</h1>
+
+                                                <p>
+                                                    Enviamos um "Link" para o seu Email. Favor verificá-lo para reiniciar a sua senha.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+
+        . Altere os links abaixo na classe "Login.cshtml":
+
+            <!DOCTYPE html>
+            <html lang="en">
+
+            <head>
+                ...
+            </head>
+
+            <body class="bg-gradient-primary">
+
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class="col-xl-10 col-lg-12 col-md-9">
+
+                            <div class="card o-hidden border-0 shadow-lg my-5">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row">
+                                        <div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
+                                        <div class="col-lg-6">
+                                            <div class="p-5">
+                                                <div class="text-center">
+                                                    <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                                </div>
+                                                <form class="user">
+                                                ...
+                                                </form>
+
+
+
+
+                                                <hr>
+                                                <div class="text-center">
+
+                                                    <!-- Link alterado -->
+                                                    <a class="small" asp-area="" asp-controller="Account" asp-action="ForgotPassword">Esqueceu a Senha</a>
+
+                                                </div>
+                                                <div class="text-center">
+
+                                                    <!-- Link alterado -->
+                                                    <a class="small" asp-area="" asp-controller="Account" asp-action="Register">Nova Conta</a>
+
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- Bootstrap core JavaScript-->
+                <script src="~/vendor/jquery/jquery.min.js"></script>
+                <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+                <!-- Core plugin JavaScript-->
+                <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+                <!-- Custom scripts for all pages-->
+                <script src="~/js/sb-admin-2.min.js"></script>
+
+            </body>
+
+            </html>
+
+        . Altere os links abaixo na classe "Register.cshtml":
+
+            <hr>
+            <div class="text-center">
+
+                <!-- Link alterado -->
+                <a class="small" asp-controller="account" asp-action="ForgotPassword">Esqueceu a Senha? Login!</a>
+            </div>
+            <div class="text-center">
+                <a class="small" asp-controller="account" asp-action="login">Já tem uma conta? Login!</a>
+            </div>
+
+        . Execute o projeto e verifique se a chamada da página de "Esqueceu a Senha" está funcionando a chamada dos formulários de 
+            "Login" e "Register"
+
+        . Altere a classe "AcountController" como abaixo:
+
+            using investTools.Web.Services.Email;           // Linha inserida
+            ...
+
+            namespace investTools.Web.Controllers;
+
+            public class AccountController : Controller
+            {
+                private readonly UserManager<IdentityUser> userManager;
+                private readonly SignInManager<IdentityUser> signInManager;
+                private readonly IEmailSender emailSender;                  // Linha inserida
+
+                public AccountController(UserManager<IdentityUser> userManager,
+                                                    SignInManager<IdentityUser> signInManager,
+                                                    IEmailSender emailSender)                   // Linha inserida
+                {
+                    this.userManager = userManager;
+                    this.signInManager = signInManager;
+                    this.emailSender = emailSender;                         // Linha inserida
+                }
+
+                ...
+
+                [HttpPost]
+                [ValidateAntiForgeryToken]
+                public async Task<IActionResult> ForgotPassword(ForgotPasswordModel forgotPasswordModel)
+                {
+                    // Linha eliminada
+                    // return View(forgotPasswordModel);        
+
+                    // Linhas abaixo inseridas
+                    if (!ModelState.IsValid)
+                        return View(forgotPasswordModel);
+
+                    var user = await userManager.FindByEmailAsync(forgotPasswordModel.Email);
+                    if (user == null)
+                        return RedirectToAction(nameof(ForgotPasswordConfirmation));
+
+                    var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+                    // Linha com erro temporariamente, nos passos abaixo vem o acerto qdo fizermos o "Reset Password"
+                    var callback = Url.Action(nameof(ResetPassword), "Account", new { token, email = user.Email }, Request.Scheme); 
+
+                    var message = new Message(new string[] { user.Email }, "Reset password token", callback, null);
+                    await emailSender.SendEmailAsync(message);
+
+                    return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                }
+
+                ...
+            }
+
+        . Insira a linha abaixo na classe "Program.cs":
+
+            ...
+            builder.Services.AddDefaultIdentity<IdentityUser>()                         
+                .AddEntityFrameworkStores<ApplicationDbContext>()                      
+                .AddDefaultTokenProviders();                            // Linha inserida
+
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>       // Linha inserida
+                                    opt.TokenLifespan = TimeSpan.FromHours(2));         // Linha inserida
+            ...
+
+    . Criando o formulário "Reset Password" 
+
+        https://code-maze.com/password-reset-aspnet-core-identity/
+        https://github.com/CodeMazeBlog/identity-aspnetcore/tree/password-reset-identity
+
+        . Crie a classe "ViewModel" "ResetPasswordModel" abaixo na pasta "ViewModels"
+        
+            using System;
+            using System.Collections.Generic;
+            using System.ComponentModel.DataAnnotations;
+            using System.Linq;
+            using System.Threading.Tasks;
+
+            namespace investTools.Web.ViewModels;
+
+            public class ResetPasswordModel
+            {
+                [Required]
+                [DataType(DataType.Password)]
+                public string? Password { get; set; }
+
+                [DataType(DataType.Password)]
+                [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+                public string? ConfirmPassword { get; set; }
+
+                public string? Email { get; set; }
+                public string? Token { get; set; }
+            }
+
+        . Insira os metodos abaixo na classe "AcccountController":
+
+            using investTools.Web.ViewModels;   // Linha inserida
+
+            namespace investTools.Web.Controllers;
+
+            public class AccountController : Controller
+            {
+                ...
+
+                [HttpGet]
+                public IActionResult ResetPassword(string token, string email)                              // Metodo inserido
+                {
+                    var model = new ResetPasswordModel { Token = token, Email = email };
+                    return View(model);
+                }
+
+                [HttpPost]
+                [ValidateAntiForgeryToken]
+                public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)       // Metodo inserido
+                {
+                    if (!ModelState.IsValid)
+                        return View(resetPasswordModel);
+
+                    var user = await userManager.FindByEmailAsync(resetPasswordModel.Email);
+                    if (user == null)
+                        RedirectToAction(nameof(ResetPasswordConfirmation));
+
+                    var resetPassResult = await userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+                    if (!resetPassResult.Succeeded)
+                    {
+                        foreach (var error in resetPassResult.Errors)
+                        {
+                            ModelState.TryAddModelError(error.Code, error.Description);
+                        }
+
+                        return View();
+                    }
+
+                    return RedirectToAction(nameof(ResetPasswordConfirmation));
+                }
+
+                [HttpGet]
+                public IActionResult ResetPasswordConfirmation()                                            // Metodo inserido
+                {
+                    return View();
+                }
+            }
+
+        . Insira a "View" "ResetPassword.cshtml" abaixo na pasta "View/Account":
+
+            @model investTools.Web.ViewModels.ResetPasswordModel
+
+            @{
+                ViewBag.Title = "Renovação de Senha";
+                Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+            }
+
+            @section header{
+                <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
+
+                <!-- Custom styles for this page -->
+                <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+                <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+                <!-- Custom styles for this template -->
+                <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+            }
+
+            <body class="bg-gradient-primary">
+
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row col-lg-12">
+                                        <div class="col-lg-12">
+                                            <div class="p-5">
+                                                <h1>Renovação de Senha</h1>
+
+                                                <div class="row">
+                                                    <div class="col-md-4">
+                                                        <form asp-action="ResetPassword">
+                                                            <div asp-validation-summary="All" class="text-danger"></div>
+                                                            <div class="form-group">
+                                                                <label asp-for="Password" class="control-label"></label>
+                                                                <input asp-for="Password" class="form-control" />
+                                                                <span asp-validation-for="Password" class="text-danger"></span>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label asp-for="ConfirmPassword" class="control-label"></label>
+                                                                <input asp-for="ConfirmPassword" class="form-control" />
+                                                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                                            </div>
+                                                            <input type="hidden" asp-for="Email" class="form-control" />
+                                                            <input type="hidden" asp-for="Token" class="form-control" />
+                                                            <div class="form-group">
+                                                                <input type="submit" value="Confirmar" class="btn btn-primary" />
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+
+            @section Scripts {
+                <script src="~/lib/jquery-validation/dist/jquery.validate.minjs"></script>
+                <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+                <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+                <!-- Core plugin JavaScript-->
+                <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+                <!-- Custom scripts for all pages-->
+                <script src="~/js/sb-admin-2.min.js"></script>
+
+                <!-- Page level plugins -->
+                <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+
+                <!-- <script src="~/lib/jquery/dist/jquery.min.js"></script> -->
+                <!-- <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> -->
+                <script src="~/js/site.js" asp-append-version="true"></script>
+            }
+
+        . Insira a "View" "ResetPasswordConfirmation.cshtml" abaixo na pasta "View/Account":
+
+            @{
+                ViewBag.Title = "Renovação de Senha";
+                Layout = "~/Views/Shared/_LayoutAuthentication.cshtml";
+            }
+
+            @section header{
+                <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+                <link
+                    href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+                    rel="stylesheet">
+
+                <!-- Custom styles for this page -->
+                <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+                <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+                <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+                <!-- Custom styles for this template -->
+                <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+            }
+
+            <body class="bg-gradient-primary">
+
+                <div class="container">
+
+                    <!-- Outer Row -->
+                    <div class="row justify-content-center">
+
+                        <div class="col-xl-10 col-lg-12 col-md-9 ">
+
+                            <div class="card o-hidden border-0 shadow-lg my-5  justify-content-center">
+                                <div class="card-body p-0">
+                                    <!-- Nested Row within Card Body -->
+                                    <div class="row col-lg-12">
+                                        <div class="col-lg-12">
+                                            <div class="p-5">
+
+                                                <h1>Confirmação do Reinicio de Senha</h1>
+
+                                                <p>
+                                                    Sua Senha foi Reiniciada. Favor Acionar o Link ao Lado <a asp-action="Login">Click aqui para Fazer o Login</a>.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
+
+        . Execute o projeto e verifique se o funcionamento do "Reset Password":
+
+            . Acione o link do "Esqueceu a Senha"
+
+            . Após informar a conta/email no formulário de "Esqueceu a Senha", acesse o email para verificar se foi o link de 
+                "Reset"
+
+            . Faça o teste da alteração da senha pelo link do passo anterior.
+
+            . Após a alteração da senha, faça o login com a nova senha.
+
+PAREI AQUI
+
+    . Criando o formulário "Email Confirmation":
+
+        https://code-maze.com/email-confirmation-aspnet-core-identity/
+        https://github.com/CodeMazeBlog/identity-aspnetcore/tree/email-confirmation-identity
+        
+        . Acesse a classe "Program.cs" e insira a linha abaixo:
+
+            ...
+            builder.Services.Configure<IdentityOptions>( options => 
+            {
+                options.Password.RequiredLength = 6;                                    
+                options.Password.RequiredUniqueChars = 3;                               
+                options.Password.RequireNonAlphanumeric = false;                       
+                options.Password.RequireDigit = false;
+                options.Password.RequireUppercase = false;
+
+                options.SignIn.RequireConfirmedEmail = true;                // Linha inserida
+            });
+
+        . Execute o projeto, tente fazer login com alguns dos logins cadastrado e vveja que agora nenhum login estão validos, 
+            pois todos estão marcados no banco de dados como "EmailConfirmation" false.
+
+        . Altere o método "Login" da classe "AccountController.cs" como abaixo:
+
+            ...
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Login(LoginViewModel model)
+            {
+                if (ModelState.IsValid)
+                {
+
+
+                    // Linha inserida
+                    var currentUser = userManager.FindByNameAsync(model.Email);
+
+                    // If inserido
+                    if ( !currentUser.Result.EmailConfirmed )
+                    {
+                        ModelState.AddModelError(string.Empty, "Conta não Confirmada, Favor Verificar seu Email");
+
+                        return View();
+                    }
+
+
+
+
+                    var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("index", "home");
+                    }
+                    else            // Else inserido
+                    {
+                        ModelState.AddModelError("", "Invalid Login Attempt");
+                        return View();
+                    }
+
+                    // Linha excluida
+                    // ModelState.AddModelError(string.Empty, "Login Inválido");
+                }
+                else                // Else inserido
+                {
+                    return View(model);
+                }
+            }
+            ...
+
+        . Altere o método "Register" abaixo da classe "AccountController":
+
+            ...
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Register(RegisterViewModel model)
+            {
+                if (ModelState.IsValid)
+                {
+                    // Copia os dados do RegisterViewModel para o IdentityUser
+                    var user = new IdentityUser
+                    {
+                        UserName = model.Email,
+                        Email = model.Email
+                    };
+
+                    // Copia os dados do usuário na tabela AspNetUsers
+                    var result = await userManager.CreateAsync(user, model.Password);
+
+                    // Se o usuário foi criado com sucesso, faz o login do usuário
+                    // usando o serviço SignInManager e redireciona para o Método /action Index
+                    if (result.Succeeded)
+                    {
+                        // Linha Eliminada
+                        // await signInManager.SignInAsync(user, isPersistent: false);
+
+
+
+
+                        // Linha inserida
+                        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);   
+
+                        // Linha inserida
+                        var confirmationLink = Url.Action(nameof(ConfirmEmail), "Account", new { token, email = user.Email }, Request.Scheme);
+
+                        // Linha inserida
+                        var message = new Message(new string[] { user.Email }, "Link para Confirmação da sua Conta", confirmationLink, null);
+
+                        // Linha inserida
+                        await emailSender.SendEmailAsync(message);
+
+
+
+                        // Linha eliminada
+                        // return RedirectToAction("Index", "home");
+
+                        // Linha inserida
+                        return RedirectToAction(nameof(SuccessRegistration));
+
+                    }
+
+                    // Se houver erros então inclui no ModelState
+                    // que será exibido pela tag helper summary na validação
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+
+                return View(model);
+            }
+
+        . Insira os métodos abaixo na classe "AccountController.cs":
+
+            [HttpGet]
+            public async Task<IActionResult> ConfirmEmail(string token, string email)
+            {
+                var user = await userManager.FindByEmailAsync(email);
+
+                if (user == null)
+                    return View("Error");
+
+                var result = await userManager.ConfirmEmailAsync(user, token);
+
+                return View(result.Succeeded ? nameof(ConfirmEmail) : "Error");
+            }
+
+            [HttpGet]
+            public IActionResult SuccessRegistration()
+            {
+                return View();
+            }
+
+        . Insira a "Razor Page" "ConfirmEmail.cshtml" abaixo na pasta "View/Account"
+
+            <h1>Confirmação de Conta</h1>
+
+            <div>
+                <p>
+                    Obrigado por Confirmar a sua Conta. <a asp-action="Login">Click aqui para Fazer o Login</a>.
+                </p>
+            </div>
+
+        . Insira a "Razor Page" "SuccessRegistration.cshtml" abaixo na pasta "View/Account"
+
+            <h1>Registro Realizado com Sucesso</h1>
+
+            <p>
+                Enviamos um "Link" para o seu Email. Favor verificá-lo antes de iniciar as atividades.
+            </p>
+
+        . Insira o metodo "Error" na classe "AccountController.cs":
+
+            [HttpGet]
+            public IActionResult Error()
+            {
+                return View();
+            }
+
+        . Insira a "Razor Page" "Error.cshtml" abaixo na pasta "View/Account":
+
+            <h1 class="text-danger">Error.</h1>
+            <h2 class="text-danger">An error occurred while processing your request.</h2>
+
+        . Execute o projeto e verifique se os procedimentos de confirmação de email estão sendo atendidos.
+
+            . Cadastre um novo email no gmail, ou outro servidor de emails.
+
+            . Cadastre uma nova conta dentro do sistema para o email do passo anterior.
+
+            . Acesse a conta de email criada e verifique se o link de confirmação de email enviado com sucesso
+
+            . Clique no link do passo anterior.
+
+            . Faça login no sitema com a nova conta para ver se o acesso ao "Dashboard" ficará disponível.
+
+        . A confirmação do Email terá que obrigatoriamente ser feita em 2 horas, a partir do envio do email, devido o 
+            token expirar. Vamos realizar novas configurações para aumentar esse tempo.
+
+            . Crie a pasta "Services.CustomTokenPrividers"
+
+            . Crie a classe "EmailConfirmationTokenProvider.cs" abaixo dentro da pasta "Services.CustomTokenPrividers":
+
+                using Microsoft.AspNetCore.DataProtection;
+                using Microsoft.AspNetCore.Identity;
+                using Microsoft.Extensions.Logging;
+                using Microsoft.Extensions.Options;
+
+                namespace investTools.Web.Services.CustomTokenProviders
+                {
+                    public class EmailConfirmationTokenProvider<TUser> : DataProtectorTokenProvider<TUser> where TUser : class
+                    {
+                        public EmailConfirmationTokenProvider(IDataProtectionProvider dataProtectionProvider, 
+                            IOptions<EmailConfirmationTokenProviderOptions> options, 
+                            ILogger<DataProtectorTokenProvider<TUser>> logger) 
+                            : base(dataProtectionProvider, options, logger)
+                        {
+                        }
+                    }
+
+                    public class EmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
+                    {
+
+                    }
+                }
+
+            . Insira as linhas abaixo na classe "Program.cs":
+
+                ...
+                using investTools.Web.Services.CustomTokenProviders;                             // Linha inserida
+                ...
+
+                builder.Services.AddDefaultIdentity<IdentityUser>()            
+                    .AddEntityFrameworkStores<ApplicationDbContext>()         
+                    .AddDefaultTokenProviders()
+                    .AddTokenProvider<EmailConfirmationTokenProvider<IdentityUser>>("emailconfirmation");   // Linha inserida
+
+                builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+                opt.TokenLifespan = TimeSpan.FromHours(2));
+
+                builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>                    // Linha inserida
+                    opt.TokenLifespan = TimeSpan.FromDays(14));
+
+                ...
+                builder.Services.Configure<IdentityOptions>( options => 
+                {
+                    options.Password.RequiredLength = 6;                                    
+                    options.Password.RequiredUniqueChars = 3;                               
+                    options.Password.RequireNonAlphanumeric = false;                       
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireUppercase = false;
+
+                    options.SignIn.RequireConfirmedEmail = true;
+
+                    options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";                    // Linha inserida
+                });
+                ...
+
+    . Criando o formulário "User Lockout":
+
+        https://code-maze.com/user-lockout-aspnet-core-identity/
+        https://github.com/CodeMazeBlog/identity-aspnetcore/tree/user-lockout-identity
+
+
+        . Insira as linhas abaixo na classe "Program.cs":
+
+            ...
+            builder.Services.Configure<IdentityOptions>( options => 
+            {
+                options.Password.RequiredLength = 6;                                    
+                options.Password.RequiredUniqueChars = 3;                               
+                options.Password.RequireNonAlphanumeric = false;                       
+                options.Password.RequireDigit = false;
+                options.Password.RequireUppercase = false;
+
+                options.SignIn.RequireConfirmedEmail = true;
+
+                options.Tokens.EmailConfirmationTokenProvider = "emailconfirmation";    
+
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);   // Linha inserida
+                options.Lockout.MaxFailedAccessAttempts = 3;                        // Linha inserida
+                options.Lockout.AllowedForNewUsers = true;                          // Linha inserida
+            });
+            ...
+
+        . Altere o método "Login" da classe "AccountController":
+
+            ...
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> Login(LoginViewModel model)
+            {
+                if (ModelState.IsValid)
+                {
+
+                    // Linha inserida
+                    var currentUser = userManager.FindByNameAsync(model.Email);
+
+                    // If inserido
+                    if ( !currentUser.Result.EmailConfirmed )
+                    {
+                        ModelState.AddModelError(string.Empty, "Conta não Confirmada, Favor Verificar seu Email");
+
+                        return View();
+                    }
+
+                    // Linha alterada, ultimo parâmetro passou ficar com o valor "True"
+                    var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, true);
+
+
+                    // If inserido
+                    if (result.IsLockedOut)
+                    {
+                        var forgotPassLink = Url.Action(nameof(ForgotPassword),"Account", new { }, Request.Scheme);
+
+                        var content = string.Format("Your account is locked out, to reset your password, please click this link: {0}", forgotPassLink);
+
+                        var message = new Message(new string[] { model.Email }, "Locked out account information", content, null);
+
+                        await emailSender.SendEmailAsync(message);
+
+                        ModelState.AddModelError("", "The account is locked out");
+
+                        return View();
+                    } 
+                    else if (result.Succeeded)          // If alterado
+                    {
+                        return RedirectToAction("index", "home");
+                    }
+                    else                                // Else inserido
+                    {
+                        ModelState.AddModelError("", "Invalid Login Attempt");
+                        return View();
+                    }
+                } 
+                else                                    // Else Alterado
+                {
+                    ModelState.AddModelError("", "Invalid Login Attempt");
+                    return View();
+                }
+            }
+
+            ...
+
+        . Insira as linhas abaixo no método "ResetPassword" da classe "AccountController":
+
+            # https://andyp.dev/posts/lock-unlock-user-accounts-in-asp-net-core-identity
+
+
+            ...
+            [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> ResetPassword(ResetPasswordModel resetPasswordModel)
+            {
+                if (!ModelState.IsValid)
+                    return View(resetPasswordModel);
+
+                var user = await userManager.FindByEmailAsync(resetPasswordModel.Email);
+                if (user == null)
+                    RedirectToAction(nameof(ResetPasswordConfirmation));
+
+                var resetPassResult = await userManager.ResetPasswordAsync(user, resetPasswordModel.Token, resetPasswordModel.Password);
+
+
+
+
+                // LInha inserida
+                var setLockoutEndDateTask = await userManager.SetLockoutEndDateAsync(user, null ); // DateTime.Now - TimeSpan.FromMinutes(1));
+
+
+
+
+
+                if (!resetPassResult.Succeeded)
+                {
+                    foreach (var error in resetPassResult.Errors)
+                    {
+                        ModelState.TryAddModelError(error.Code, error.Description);
+                    }
+
+                    return View();
+                }
+
+                // var result = await userManager.ConfirmEmailAsync(user, token);
+
+                return RedirectToAction(nameof(ResetPasswordConfirmation));
+            }
+
+        . Levante a aplicação e faça o teste de "Lockout Password":
+
+            . Faça várias tentativas de login com email errado até bloqueá-lo.
+
+            . Acesse o email da conta bloqueada e acione o link de desbloqueio enviado.
+
+            . Faça o desbloquei e tente acessar o sistema com a conta desbloqueada.
+
+1. Fazer o UserLockout
+
+2. Melhorando o controle de segurança
+
+    https://owasp.org/www-community/attacks/csrf
+
+https://tutorials.eu/how-to-send-emails-in-asp-net-web-applications/
+
+https://code-maze.com/aspnetcore-send-email/
+https://github.com/CodeMazeBlog/email-attachments-aspnet-core/blob/master/EmailApp/EmailService/EmailConfiguration.cs
+
+https://code-maze.com/password-reset-aspnet-core-identity/
+https://github.com/CodeMazeBlog/identity-aspnetcore/blob/password-reset-identity/IdentityByExamples/IdentityByExamples/Views/Account/ForgotPassword.cshtml
+
+https://www.yogihosting.com/aspnet-core-identity-password-reset/
+https://dotnettutorials.net/lesson/reset-user-password-in-asp-net-identity-using-forget-password/
+
+
+https://www.youtube.com/watch?v=0W0yAz7fu04
+https://www.youtube.com/watch?v=MChbBMLS2FQ&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU&index=111
+https://www.youtube.com/watch?v=4IgC2Q5-yDE&list=PL6n9fhu94yhVkdrusLaQsfERmL_Jh4XmU
+
+
+
+
+
+https://programmingcsharp.com/implement-identity-on-existing-asp-project/
+
+
+
+
+
+
+https://code-maze.com/user-registration-aspnet-core-identity/
+https://code-maze.com/asp-net-core-identity-series/
+
+https://www.tutorialspoint.com/asp.net_core/asp.net_core_user_registration.htm
+https://www.tutorialspoint.com/asp.net_core/asp.net_core_create_a_user.htm
+https://www.tutorialspoint.com/asp.net_core/asp.net_core_log_in_and_log_out.htm
+
+https://www.freecodespot.com/blog/asp-net-core-identity/#III_Login_and_Registration_using_Identity_in_ASPNET_Core_31
+
+23.00

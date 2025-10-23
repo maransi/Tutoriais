@@ -10,14 +10,14 @@ Tutorial InvestTools - Scaffolding
 
         cd ./InvestTools.Web/
 
-        dotnet add package Microsoft.VisualStudio.Web.CodeGenerators.Mvc --version 6.0.10
+        dotnet add package Microsoft.VisualStudio.Web.CodeGenerators.Mvc 
 
-        dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design --version 6.0.10
+        dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design 
 
         # Só execute a linha abaixo somente uma vez, as demais vezes não será necessário
-        #dotnet tool install --global dotnet-aspnet-codegenerator --version 6.0.10
+        #dotnet tool install --global dotnet-aspnet-codegenerator 
 
-        dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.12
+        dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 8.0.21
 
         dotnet clean
 
