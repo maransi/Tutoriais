@@ -639,7 +639,6 @@ Parte 4 - Montagem das APIs
 
         }
 
-
     5. Crie dentro da pasta "Models" a interface "IClienteRepository.cs" como abaixo:
 
         namespace MvcDatatable.Web.Models;
@@ -781,28 +780,6 @@ Parte 4 - Montagem das APIs
             public List<string> Errors { get; private set; } = new();
         }
 
-    10. Crie a classe "DataResponse" abaixo na pasta "MvcDatatable.Utils":
-
-        namespace MvcDatatable.Web.Utils;
-
-        public class DataResponse<T>
-        {
-            public List<T> Data { get; set; }
-        }
-
-    11. Configure a injeção de dependência da classe acima no "Program.cs":
-
-        ...
-        var builder = WebApplication.CreateBuilder(args);
-
-        builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
-
-        builder.Services.AddScoped<DataResponse<Cliente>>();                    // Linha inserida
-
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");  
-        ...
-
-
     12. Crie a pasta "Extensions" na raiz do projeto e crie a classe "ModelStateExtension.cs" abaixo:
 
         using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -833,13 +810,9 @@ Parte 4 - Montagem das APIs
         public class ClienteAPIController : ControllerBase
         {
             private readonly IClienteRepository _clienteRepository;
-            // private readonly DataResponse<Cliente> _dataResponse;
-
-            // public ClienteAPIController(IClienteRepository clienteRepository, DataResponse<Cliente> dataResponse)
             public ClienteAPIController(IClienteRepository clienteRepository)
             {
                 _clienteRepository = clienteRepository;
-                // _dataResponse = dataResponse;
             }
 
             [HttpGet("v1")]
@@ -848,10 +821,6 @@ Parte 4 - Montagem das APIs
                 try
                 {
                     var clientes = await _clienteRepository.GetAllAsync();
-
-                    // _dataResponse.Data = clientes;
-
-                    // return Ok(_dataResponse);
 
                     return Ok(new
                     {
@@ -961,6 +930,9 @@ Parte 4 - Montagem das APIs
                                     .AsNoTracking()
                                     .FirstOrDefaultAsync(x => x.Codigo == model.Codigo );
 
+            if (cliente == null)
+                throw new Exception("Cliente não encontrado");
+
             cliente.Cpf = model.Cpf;
             cliente.Nome = model.Nome;
             cliente.DataNascimento = DateTime.Parse(model.DataNascimento);
@@ -991,7 +963,7 @@ Parte 4 - Montagem das APIs
 
         ...
         [HttpPut("v1/{codigo}")]
-        public async Task<ActionResult<Cliente>> Put( [FromBody] CreateClienteViewModel model,
+        public async Task<ActionResult<Cliente>> PutAsync( [FromBody] CreateClienteViewModel model,
                                                         [FromRoute] int codigo)
         {
             if (!ModelState.IsValid)
@@ -1166,6 +1138,8 @@ Parte 4 - Montagem das APIs
                 }     
 
             . Clique no botão "Execute"
+
+PAREI AQUI
 
 Parte 5 - Criando página web utilizando  Datatable JQuery com paginação no client
 ---------------------------------------------------------------------------------
@@ -3160,8 +3134,6 @@ Parte 8. Realizando a validação dos campos
 
             http://localhost:[porta]/Cliente/List
 
-
-// PAREI AQUI
 
 Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 --------------------------------------------------------------

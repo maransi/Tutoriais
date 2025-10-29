@@ -19,3 +19,5 @@ https://codewithmukesh.com/blog/jquery-datatable-in-aspnet-core/
 
 # Observar como foi feito a montagem do botão (View/Edit/Delete) da linha do grid
 https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
+
+

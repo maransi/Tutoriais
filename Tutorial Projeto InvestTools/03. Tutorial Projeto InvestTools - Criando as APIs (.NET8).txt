@@ -7,12 +7,12 @@ Tutorial Projeto InvestTools - Criando as APIs
 
     public interface IRepository<T, K, C> where T : AuditEntity
     {
-        Task<int> InsertAsync(C item);
-        Task<T> UpdateAsync(T item);
-        Task<bool> DeleteAsync(K id);
-        Task<T> GetByIdAsync(K id);
+        Task<int> InsertAsync(C viewModel);
+        Task<T> UpdateAsync(C viewModel);
+        Task<bool> DeleteAsync(C viewModel);
+        Task<T> GetByIdAsync(C viewModel);
         Task<List<T>> GetAllAsync();
-        Task<bool> ExistAsync(K id);
+        Task<bool> ExistAsync(C viewModel);
     }
 
 . Crie a pasta "ViewModels" na raiz do projeto.
@@ -46,18 +46,22 @@ Tutorial Projeto InvestTools - Criando as APIs
         {
             Errors.Add(error);
         }
-        public T Data { get; private set; }
+        public T? Data { get; private set; }
         public List<string> Errors { get; private set; } = new();
     }
 
 . Crie a classe "CreateInvestidorViewModel.cs" dentro da pasta "ViewModels"
 
+    using System.ComponentModel;
     using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
     namespace investTools.Web.ViewModels;
 
     public class CreateInvestidorViewModel
     {
+        public int Id {get; set;}
+
         [Required(ErrorMessage = "Este Campo é Obrigatório")]
         [MaxLength(11, ErrorMessage = "Este Campo de Conter 11 Caracteres")]
         [MinLength(11, ErrorMessage = "Este Campo de Conter 11 Caracteres")]
@@ -67,11 +71,21 @@ Tutorial Projeto InvestTools - Criando as APIs
         [StringLength(50)]
         public string? Nome { get; set; }
 
+        public DateTime DataNascimento { get; set; }
+
+        [Range(1540, 1000000, ErrorMessage = "Renda deve ser maior que R$ 1.540,00")]
+        [DisplayFormat(DataFormatString = "{0:C}")]
         public decimal? Renda { get; set; }
 
-        public decimal AporteMensal{ get; set; }
+        [Range(1540, 1000000, ErrorMessage = "Salário deve ser maior que R$ 1.540,00")]
+        [DefaultValue(0)]
+        public decimal? AporteMensal { get; set; }
 
+        [Required(ErrorMessage = "E-Mail é obrigatório")]
+        [EmailAddress(ErrorMessage = "Invalido endereço de E-Mail")]
+        public string? Email { get; set; }
     }
+
 
 . Crie dentro da pasta "Models" a interface "IInvestidorRepository.cs" como abaixo:
 
@@ -103,12 +117,12 @@ Tutorial Projeto InvestTools - Criando as APIs
             _context = context;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(CreateInvestidorViewModel Model)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> ExistAsync(int id)
+        public async Task<bool> ExistAsync(CreateInvestidorViewModel model)
         {
             throw new NotImplementedException();
         }
@@ -122,37 +136,38 @@ Tutorial Projeto InvestTools - Criando as APIs
             return investidores;
         }
 
-        public Task<Investidor> GetByIdAsync(int id)
+        public async Task<Investidor> GetByIdAsync(CreateInvestidorViewModel model)
         {
-            throw new NotImplementedException();
+            var investidor = await _context.Investidores
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(i => i.CPF == model.CPF);
+            if (investidor == null)
+                throw new Exception("Investidor não encontrado");
+
+            return investidor;
         }
 
         public async Task<int> InsertAsync(CreateInvestidorViewModel model)
         {
-            // try
-            // {
-                var investidor = new Investidor
-                {
-                    CPF = model.CPF,
-                    Nome = model.Nome,
-                    Renda = model.Renda,
-                    AporteMensal = model.AporteMensal,
-                    DataInclusao = DateTime.Now
-                };
+            var investidor = new Investidor
+            {
+                CPF = model.CPF,
+                Nome = model.Nome,
+                DataNascimento = model.DataNascimento,
+                Renda = model.Renda,
+                AporteMensal = model.AporteMensal,
+                DataInclusao = DateTime.Now,
+                Email = model.Email
+            };
 
-                await _context.AddAsync( investidor );
+            await _context.AddAsync( investidor );
 
-                var savechangesresult = await _context.SaveChangesAsync();
+            var savechangesresult = await _context.SaveChangesAsync();
 
-                return savechangesresult;
-            // }
-            // catch( Microsoft.EntityFrameworkCore.DbUpdateException ex)
-            // {
-                // throw new Exception( ex.Message );
-            // }
+            return savechangesresult;
         }
 
-        public Task<Investidor> UpdateAsync(Investidor item)
+        public async Task<Investidor> UpdateAsync(CreateInvestidorViewModel item)
         {
             throw new NotImplementedException();
         }
@@ -252,22 +267,24 @@ Tutorial Projeto InvestTools - Criando as APIs
         }
 
         [HttpPost("v1")]
-        public async Task<ActionResult<Investidor>> PostAsync( [FromBody] CreateInvestidorViewModel model )
+        public async Task<ActionResult<Investidor>> PostAsync([FromBody] CreateInvestidorViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new ResultViewModel<Investidor>(ModelState.GetErrors()));
 
             try
             {
-                var resultRet = await _investidorRepository.InsertAsync( model );
+                var resultRet = await _investidorRepository.InsertAsync(model);
 
-                if (resultRet > 0 )
+                var investidor = await _investidorRepository.GetByIdAsync(model);
+
+                if (investidor != null)
                 {
-                    return Created($"investidor/v1/cpf/{model.CPF}", new ResultViewModel<CreateInvestidorViewModel>(model));
+                    return Created($"investidor/v1/cpf/{investidor.CPF}", new ResultViewModel<Investidor>(investidor));
                 }
                 else
                 {
-                    return StatusCode(500, new ResultViewModel<Investidor>($"Ocorreu o seguinte erro "));  // Linha alterada
+                    return StatusCode(500, new ResultViewModel<Investidor>($"Ocorreu o seguinte erro "));  
                 }
 
             }
@@ -292,11 +309,222 @@ Tutorial Projeto InvestTools - Criando as APIs
     Method: POST
     Url: https://localhost:[porta]/investidorAPI/api/v1
     Body.raw: 
+    Method: GET
+    Url: https://localhost:[porta]/investidorAPI/api/v1
+
+
+    Method: POST
+    Url: https://localhost:[porta]/investidorAPI/api/v1
+    Body.raw: 
             {
                 "CPF": "00011122231",
                 "Nome": "JOSE DA SILVA",
+                "DataNascimento": "1900-01-01",
                 "Renda": 1000,
-                "AporteMensal":200
+                "AporteMensal":200,
+                "Email": "jose.silva@email.com"
             }       
     Type: JSON
+
+. Altere o método abaixo na classe "InvestidorAPIController.cs":
+
+    ...
+    [HttpGet("v1")]
+    public async Task<ActionResult<List<Investidor>>> GetAllAsync()
+    {
+        try
+        {
+            var investidores = await _investidorRepository.GetAllAsync();
+
+            // Linha eliminada
+            // return Ok(new ResultViewModel<List<Investidor>>(investidores));
+
+            // Linha inserida
+            return Ok(new
+            {
+                Data = investidores
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new ResultViewModel<List<Investidor>>($"Ocorreu o seguinte erro [ {ex.Message} ]"));
+        }
+    }
+    ...
+
+. Levante o projeto na pasta raiz da solution:
+
+    dotnet run --project ./InvestTools.Web
+
+. Acesse o Postman e execute as URLs abaixo:
+
+    Method: GET
+    Url: https://localhost:[porta]/investidorAPI/api/v1
+
+
+    Method: POST
+    Url: https://localhost:[porta]/investidorAPI/api/v1
+    Body.raw: 
+                {
+                    "CPF": "00011122231",
+                    "Nome": "JOSE DA SILVA",
+                    "DataNascimento": "1900-01-01",
+                    "Renda": 1000,
+                    "AporteMensal":200,
+                    "Email": "jose.silva@email.com"
+                }       
+    Type: JSON
+
+. Altere os métodos abaixo na classe "InvestidorRepository.cs":
+
+    ...
+    // Método alterado
+    public async Task<Investidor> GetByIdAsync(CreateInvestidorViewModel model)
+    {
+        try
+        {
+            var investidor = await _context.Investidores
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(i => i.CPF == model.CPF);
+            if (investidor == null)
+                throw new Exception("Investidor não encontrado");
+
+            return investidor;
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+    }
+    ...
+
+    // Método alterado - inserido o corpo do método
+    public async Task<Investidor> UpdateAsync(CreateInvestidorViewModel item)
+    {
+        var investidor = await _context.Investidores
+                                    .FirstOrDefaultAsync(i => i.CPF == item.CPF);
+
+        if (investidor == null)
+            throw new Exception("Investidor não encontrado");
+
+        investidor.Nome = item.Nome;
+        investidor.DataNascimento = item.DataNascimento;
+        investidor.Renda = item.Renda;
+        investidor.AporteMensal = item.AporteMensal;
+        investidor.Email = item.Email;
+        investidor.DataAlteracao = DateTime.Now;
+
+        _context.Investidores.Update(investidor);
+        await _context.SaveChangesAsync();
+
+        return investidor;
+
+    }
+    ...
+
+. Inclua o método abaixo na classe "InvestidorAPIController.cs":
+
+    ...
+    [HttpPut("v1")]
+    public async Task<ActionResult<Investidor>> PutAsync([FromBody] CreateInvestidorViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new ResultViewModel<Investidor>(ModelState.GetErrors()));
+
+        try
+        {
+            var investidor = await _investidorRepository.GetByIdAsync(model);
+
+            if (investidor == null)
+                return NotFound(new ResultViewModel<Investidor>("Investidor não encontrado"));
+
+            var resultRet = await _investidorRepository.UpdateAsync(model);
+
+            investidor = await _investidorRepository.GetByIdAsync(model);   
+            
+            return Ok(new ResultViewModel<Investidor>(investidor));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new ResultViewModel<Investidor>($"Ocorreu o seguinte erro [ {ex.Message} ]"));  // Linha alterada
+        }
+    }
+    ...
+
+. Acesse o Postman e execute as URLs abaixo:
+
+    Method: GET
+    Url: https://localhost:[porta]/investidorAPI/api/v1
+
+
+    Method: PUT
+    Url: https://localhost:[porta]/investidorAPI/api/v1
+    Body.raw: 
+                {
+                    "CPF": "00011122231",
+                    "Nome": "JOAO DA SILVA",
+                    "DataNascimento": "1900-01-01",
+                    "Renda": 1000,
+                    "AporteMensal":200,
+                    "Email": "joao.silva@email.com"
+                }       
+    Type: JSON
+
+. Atualize o método "DeleteAsync" com o código abaixo na classe "InvestidorRepository":
+
+        ...
+        public async Task<bool> DeleteAsync(CreateClienteViewModel model)
+        {
+
+            var investidor = await _context.Investidores
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(x => x.CPF == model.CPF );
+
+            _context.Investidores.Remove(investidor);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+        ...
+
+. Atualize o método "Delete" com o código abaixo na classe "InvestidorAPIController":
+
+        ...
+        [HttpDelete("v1")]
+        public async Task<ActionResult> Delete([FromBody] CreateInvestidorViewModel model)
+        {
+            try
+            {
+                var investidor = await _investidorRepository.GetByIdAsync(model);
+
+                if (investidor == null)
+                    return NotFound(new ResultViewModel<Investidor>("Investidor não encontrado"));
+
+                await _investidorRepository.DeleteAsync( model );
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResultViewModel<Investidor>(ex.Message));
+            }
+        }
+        ...
+
+. Acesse o Postman e execute as URLs abaixo:
+
+        Method: DELETE
+        Url: http://localhost:[porta]/investidorAPI/api/v1
+        Body.raw: 
+                    {
+                        "CPF": "00011122231",
+                        "Nome": "JOAO DA SILVA",
+                        "DataNascimento": "1900-01-01",
+                        "Renda": 1000,
+                        "AporteMensal":200,
+                        "Email": "joao.silva@email.com"
+                    }       
+        Type: JSON
+
 
