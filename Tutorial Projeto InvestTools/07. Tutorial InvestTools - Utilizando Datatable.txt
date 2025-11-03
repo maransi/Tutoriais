@@ -21,3 +21,720 @@ https://codewithmukesh.com/blog/jquery-datatable-in-aspnet-core/
 https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
 
+. Crie o controller "InvestidorController.cs" abaixo dentro da pasta "Controllers/Web/Investidor":
+
+        using investTools.Web.Models;
+        using Microsoft.AspNetCore.Mvc;
+
+        namespace investTools.Web.Controllers.Web.Investidor; 
+
+        public class InvestidorController : Controller
+        {
+
+            private readonly IInvestidorRepository _investidorRepository;
+
+            public InvestidorController(IInvestidorRepository InvestidorRepository)
+            {
+                _investidorRepository = InvestidorRepository;
+            }
+
+
+            public IActionResult List()
+            {
+                ViewBag.Title = "Investidores';
+
+                return View();
+            }
+        }
+
+. Crie a página "Views/Investidor/List.cshtml" com o código abaixo:
+
+    @{
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    @section header {
+        <!-- Custom styles for this page -->
+        <link href="~/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    }
+
+    <!-- Begin Page Content -->
+    <div class="container-fluid">
+
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">@ViewBag.Title</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="investidorTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>CPF</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Data de Nasc</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- /.container-fluid -->
+
+    @section Scripts {
+        <!-- Page level plugins -->
+        <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+        <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+        <!-- Page level custom scripts -->
+        <script src="~/js/demo/datatables-demo.js"></script>
+        <script src="~/js/index.js"></script>
+
+    }
+
+. Crie o arquivo "index.js" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
+
+    $(document).ready(function () {
+        $('#investidorTable').DataTable({
+            processing: true,
+            destroy: true,
+            scrollY: "369px",
+            select: true,
+            sAjaxDataProp: "data",
+            info: false,
+            language: {
+                decimal: ",",
+                thousands: "."
+            },
+            pagingType: "full_numbers",
+            language: {
+                "url": "/js/Portuguese.json"
+            },
+            sPaginationType: "bootstrap",
+            contentType: "application/json; charset=utf-8",
+            aLengthMenu: [[7, 10, 20, 100, -1],
+            [7, 10, 20, 100, "Todos"]],
+            pageLength: 7,
+            lengthChange: true,
+            ajax: {
+                url: '/investidorAPI/api/v1', // Replace with your ASP.NET API endpoint
+                type: 'GET'
+            },
+            columns: [
+                { data: 'cpf', 
+                    width: "15%", 
+                    center: true,
+                    render: function (data, type, row) {
+                                    if (!data) return '';
+                                        return data.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+                            } 
+                },
+                { data: 'nome', width: "30%" },
+                { data: 'email', width: "20%" },
+                { data: 'dataNascimento', 
+                    width: "15%",
+                    render: function (data, type, row) {
+                        if (!data) return '';
+                        // Exibe no formato dd/MM/yyyy
+                        const date = new Date(data);
+                        return date.toLocaleDateString('pt-BR');
+                    } 
+                },
+                {
+                    data: null,
+                    width: "20%",
+                    render: function (data, type, row) {
+                        return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/img/Open-Button.png"  title="Abrir/Editar" alt="Editar"  width="24" height="24"></a>&nbsp&nbsp&nbsp' +
+                            '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/img/Delete-Button.png" title="Eliminar" alt="Excluir" width="24" height="24"></a>';
+                        // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
+                        // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
+                    }
+                }
+            ],
+            columnDefs: [{
+                "className": "small",
+                "targets": "_all"
+            }],
+            colReorder: true
+
+        });
+
+    });
+
+. Crie o arquivo "Portuguese.json" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
+
+    {
+        "sProcessing":   "Carregando...",
+        "sLengthMenu":   "Mostrar _MENU_ registros",
+        "sZeroRecords":  "Não foram encontrados resultados",
+        "sInfo":         "Mostrando de _START_ até _END_ de _TOTAL_ registos",
+        "sInfoEmpty":    "Mostrando de 0 até 0 de 0 registos",
+        "sInfoFiltered": "(filtrado de _MAX_ registos no total)",
+        "sInfoPostFix":  "",
+        "sSearch":       "Procurar:",
+        "sUrl":          "",
+        "oPaginate": {
+            "sFirst":    "Primeiro",
+            "sPrevious": "Anterior",
+            "sNext":     "Seguinte",
+            "sLast":     "Último"
+        }
+    }    
+
+. Acesse a pagina "Views/Shared/_SidebarMenu.cshtml" e faça as alterações abaixo:
+
+    ...
+    <!-- Nav Item - Cadastro Collapse Menu -->
+    <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true"
+            aria-controls="collapseTwo">
+            <i class="fas fa-fw fa-cog"></i>
+            <span>Perfil</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Investidores</h6>
+
+                
+                <!-- Altere os parâmetros do "asp-controller" e "asp-action" -->
+
+                <a class="collapse-item" asp-area="" asp-controller="Investidor" asp-action="List">Dados do Investidor</a>
+                <a class="collapse-item" asp-area="" asp-controller="Home" asp-action="Carteira">Carteiras de Investimento</a>
+            </div>
+        </div>
+    </li>
+    ...
+
+
+
+. Execute o projeto na pasta raiz da solution e verifique se a grid está funcionando:
+
+    dotnet run --project ./Investidor.Web   
+
+. Apague e altere as linhas abaixo no arquivo "index.js":
+
+    var table;
+
+    const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
+        table = $('#' + tableId).DataTable({
+            processing: true,
+            destroy: false,
+            scrollY: "369px",
+            select: true,
+            searching: true,
+            sAjaxDataProp: "data",
+            ordering: true,
+            dom: 'Blfrtip',
+            buttons: [{ extend: 'print', text: 'Imprimir' },
+                        { extend: 'copy', text: 'Copy to clipboard' },
+                        { extend: 'pdf', text: 'Criar PDF' },
+                        { extend: 'excel', text: 'Excel' },
+                        { extend: 'csv', text: 'Exportar para Excel' }
+            ],
+            layout:{
+                topEnd: {
+                    search: {
+                        placeholder: 'Pelo CPF, ou Nome...'
+                    }
+                }
+            },
+            info: false,
+            language: {
+                decimal: ",",
+                thousands: "."
+            },
+            pagingType: "full_numbers",
+            language: {
+                "url": "/js/Portuguese.json"
+            },
+            sPaginationType: "bootstrap",
+            contentType: "application/json; charset=utf-8",
+            aLengthMenu: [[pageLength, 10, 20, 100, -1],
+            [pageLength, 10, 20, 100, "Todos"]],
+            pageLength: pageLength,
+            lengthChange: true,
+            ajax: ajaxConfig,
+            columns: columnConfig,
+            "columnDefs": [{
+                "className": "small",
+                "targets": "_all"
+            }]
+        });
+    }
+
+. Crie o arquivo "wwwroot/js/investidor.js" como abaixo:
+
+    $(document).ready(function () {
+        LoadDataTable('investidorTable',
+            7,
+            {
+                url: '/investidorAPI/api/v1',
+                type: 'GET'
+            },
+            [
+                { data: 'cpf', 
+                    width: "15%", 
+                    center: true,
+                    render: function (data, type, row) {
+                                    if (!data) return '';
+                                        return data.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4");
+                            } 
+                },
+                { data: 'nome', width: "30%" },
+                { data: 'email', width: "20%" },
+                { data: 'dataNascimento', 
+                    width: "15%",
+                    render: function (data, type, row) {
+                                if (!data) return '';
+
+                                // Exibe no formato dd/MM/yyyy
+                                const date = new Date(data);
+                                
+                                return date.toLocaleDateString('pt-BR');
+                            } 
+                },
+                {
+                    data: null,
+                    width: "20%",
+                    render: function (data, type, row) {
+                        return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/img/Edit-Button.ico"  title="Abrir/Editar" alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
+                            '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/img/Delete-Button.png" title="Eliminar" alt="Excluir" width="30" height="30"></a>';
+                        // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
+                        // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
+                    }
+                }
+            ],
+        );
+    });
+
+. Insira o código javascript abaixo na página "Views/Investidor/List.cshtml"
+
+    ...
+
+    @section Scripts {
+        <!-- Page level plugins -->
+        <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+        <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+        <!-- Page level custom scripts -->
+        <script src="~/js/demo/datatables-demo.js"></script>
+        <script src="~/js/index.js"></script>
+
+        <!-- Linhas Inseridas -->
+
+        <script src="~/js/investidor.js"></script>
+        <script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.html5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.print.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    }
+
+. Execute o projeto na pasta raiz da solution:
+
+    dotnet run --project ./Investidor.Web
+
+. Acesse a página do "DataTable" e teste os novos botões de export, excel e print:
+
+. Criando a barra de ferramentas com botões de export e novo investidor:
+
+    . Altere o arquivo "List.cshtml" com as linhas abaixo:
+
+        <div class="col-md-12">
+            <div class="card shadow">
+
+                <!-- Bloco alterado -->
+
+                <div class="card-header py-3">
+                    <div class="row">
+                        <div class="col-2">
+                            <h5 class="m-0 font-weight-bold">@ViewBag.Title</h5>
+                        </div>
+                        <div class="col-10" style="text-align:end!important">
+                            <button id="btnPrint"     class="btn btn-secondary btn-sm">Imprimir</button>
+                            <button id="btnPdf"     class="btn btn-secondary btn-sm">PDF</button>
+                            <button id="btnExcel"   class="btn btn-secondary btn-sm">Excel</button>
+                            <button id="btnCsv"     class="btn btn-secondary btn-sm">CSV</button>
+                            <button id="btnAdd"     class="btn btn-primary btn-sm">Novo Investidor</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fim -->
+
+                <div class="card-body">
+                    ...
+                </div>
+
+                ...
+            </div>
+        </div>
+
+    . Apague e altere as linhas abaixo no arquivo "index.js":
+        
+        var table;
+
+        const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
+
+            table = $('#' + tableId).DataTable({
+                processing: true,
+                serverSide: true,                                           
+                destroy: false,
+                searching: true,
+                ordering: true,
+                paging: true,
+                // dom: 'Blfrtip',                                              // Linha apagada
+                // dom: 'Blp',                                                  // Linha apagada
+                buttons: [{ extend: 'print',    class:'buttons-print' },        // Linha alterada
+                            { extend: 'pdf',    class:'buttons-pdf' },          // Linha alterada
+                            { extend: 'excel',  class:'buttons-excel' },        // Linha alterada    
+                            { extend: 'csv',    class:'buttons-csv' }           // Linha alterada
+                ],
+                ...
+            });
+        };
+
+    . Inclua as linhas abaixo no arquivo "index.js":
+
+        const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
+            var table;
+
+
+            table = $('#' + tableId).DataTable({
+                ...
+            });
+        };
+
+        // Linhas incluidas
+
+        $('#btnExcel').on('click', function(){
+            table.button('.buttons-excel').trigger();
+        });
+    
+        $('#btnPrint').on('click', function(){
+            table.button('.buttons-print').trigger();
+        });
+    
+        $('#btnCsv').on('click', function(){
+            table.button('.buttons-csv').trigger();
+        });
+    
+        $('#btnPdf').on('click', function(){
+            table.button('.buttons-pdf').trigger();
+        });
+
+
+
+        // Fim
+
+
+    . Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./InvestTools.Web   
+
+    . Acesse a página do "DataTable" e teste os novos botões de export, excel e print:
+
+    . Adicione as funções abaixo no arquivo "index.js":
+
+        const LoadDataTable = (tableId, pageLength, ajaxConfig, columnConfig) => {
+            var table;
+
+
+            table = $('#' + tableId).DataTable({
+                ...
+            });
+        };
+
+
+
+        // Funções adicionadas 
+
+        // Remover qq caractere diferente de número
+        function removeNonNumeric(str) {
+            return str.replace(/\D/g, '');
+        }
+
+        // Validação do CPF
+        function validaCPF(cpf) {
+            cpf = removeNonNumeric(cpf);
+            if (cpf.length !== 11) return false;
+
+            let soma = 0;
+            let resto;
+            if (/^(\d)\1{10}$/.test(cpf)) return false;
+
+            for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i-1, i)) * (11 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+            soma = 0;
+            for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i-1, i)) * (12 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(cpf.substring(10, 11))) return false;
+
+            return true;
+        }
+
+        function cleanCurrency(valor) {
+            // Remove o símbolo "R$"
+            valor = valor.replace("R$", "");
+            
+            // Remove pontos e vírgulas
+            valor = valor.replace(/\./g, "").replace(/\,/g,".");
+
+            // Remove espaços em branco extras (caso existam)
+            valor = valor.trim();
+            
+            return valor;
+        }
+
+    . Insira a div abaixo no arquivo "List.cshtml":
+
+        ...
+
+        <!-- Div inserida -->
+        <div id="modalContainer"></div>
+
+        @section Scripts {
+            <!-- Page level plugins -->
+            <script src="~/vendor/datatables/jquery.dataTables.min.js"></script>
+            <script src="~/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+            <!-- Page level custom scripts -->
+            <script src="~/js/demo/datatables-demo.js"></script>
+            <script src="~/js/index.js"></script>
+            <script src="~/js/investidor.js"></script>
+
+            <script src="https://cdn.datatables.net/buttons/1.7.1/js/dataTables.buttons.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.html5.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+            <script src="https://cdn.datatables.net/buttons/1.7.1/js/buttons.print.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+        }    
+
+    . Crie o arquivo "_InvestidorModal.cshtml" dentro da pasta "Views/Shared" com o conteúdo abaixo:
+
+        <!-- Modal for adding/editing customers -->
+        <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="formModalLabel">Detalhes</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="investidorForm">
+                            <input type="hidden" id="investidorId" name="investidorId">
+
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="cpf">CPF</label>
+                                        <input type="text" class="form-control form-control-sm"
+                                            aria-label=".form-control-sm example" placeholder="123.456.789-00" id="cpf"
+                                            name="cpf" required>
+                                    </div>
+                                </div>
+                                <div class="col-9">
+                                    <div class="form-group">
+                                        <label for="nome">Nome</label>
+                                        <input type="text" class="form-control form-control-sm" id="nome" name="nome" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="email">Email</label>
+                                        <input type="email" class="form-control form-control-sm" id="email" name="email"
+                                            aria-describedby="emailHelp" placeholder="Seu email" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2">
+                                    <div class="form-group">
+                                        <label for="dataNascimento">Data Nasc</label>
+                                        <input type="date" class="form-control form-control-sm" id="dataNascimento"
+                                            name="dataNascimento" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="renda">Renda Mensal</label>
+                                        <input type="text" class="form-control form-control-sm" name="renda" id="renda">
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label for="renda">Aporte Mensal</label>
+                                        <input type="text" class="form-control form-control-sm" name="aporteMensal" id="aporteMensal">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" id="btnSave" data-action="save">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    . Insira o método abaixo no arquivo "InvestidorController.cs":
+
+        using investTools.Web.Models;
+        using Microsoft.AspNetCore.Mvc;
+
+        namespace investTools.Web.Controllers.Web.Investidor;
+
+        public class InvestidorController : Controller
+        {
+
+            private readonly IInvestidorRepository _investidorRepository;
+
+            public InvestidorController(IInvestidorRepository InvestidorRepository)
+            {
+                _investidorRepository = InvestidorRepository;
+            }
+
+
+            public IActionResult List()
+            {
+                ViewBag.Title = "Investidores";
+
+                return View();
+            }
+
+            // Método inserido
+            public IActionResult GetModalPartial()
+            {
+                return PartialView("_InvestidorModal");
+            }
+        }
+
+    . Altere o arquivo "wwwroot/js/investidor.js" como abaixo:
+
+        $(document).ready(function () {
+            LoadDataTable('investidorTable',
+                            ...
+            );
+
+            // Trecho de código abaixo inserido
+
+            var placeHolderElement = $("#modalContainer");
+
+            placeHolderElement.on('click', '[data-action="save"]', function (event) {
+                var url = '/investidorAPI/api/v1';
+
+                var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
+
+                var sendInfo = {
+                    codigo: $('#investidorId').val().trim() === '' ? null : $('#investidorId').val(),
+                    cpf: removeNonNumeric($('#cpf').val()),
+                    nome: $('#nome').val(),
+                    dataNascimento: $('#dataNascimento').val(),
+                    email: $('#email').val(),
+                    renda: cleanCurrency($('#renda').val()),
+                    aporteMensal: cleanCurrency($('#aporteMensal').val())
+                };
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: JSON.stringify(sendInfo),
+                    contentType: "application/json; charset=utf-8",
+                    success: function () {
+                        alert('Investidor incluido com sucesso!!!');
+                        $('#formModal').modal('hide');
+                        $('#investidorTable').DataTable().ajax.reload();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.responseText);
+                    }
+                });
+            });
+        
+
+            // Adiciona novo cliente pelo click do botão
+            $('#btnAdd').click(function () {
+                
+                $.get('/Investidor/GetModalPartial').done( function (data) {
+                    $('#modalContainer').html(data);
+
+                    document.getElementById('investidorForm').classList.remove("was-validated");
+                    $('#formModal').modal('show');
+                    $('#investidorForm')[0].reset(); // Clear the form
+                    $('#formModalLabel').text('Inclusão');
+                    $('#btnSave').text('Salvar');
+                    $('#investidorId').val(''); // Clear the hidden ID field
+                });
+                
+
+            });
+
+            // Save o cliente pelo click do botão
+            $('#btnSave').click(function () {
+                if (!validaCPF($('#cpf').val())) {
+                    alert('CPF inválido. Verifique o número digitado.');
+                    $('#cpf').focus();
+
+                    return;
+                }
+
+                var url = '/investidorAPI/api/v1';
+
+                var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
+
+                var sendInfo = {
+                    codigo: $('#investidorId').val().trim() === '' ? null : $('#investidorId').val(),
+                    cpf: removeNonNumeric($('#cpf').val()),
+                    nome: $('#nome').val(),
+                    dataNascimento: $('#dataNascimento').val(),
+                    email: $('#email').val(),
+                    renda: cleanCurrency($('#salario').val()),
+                    aporteMensal: cleanCurrency($('#salario').val())
+                };
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: JSON.stringify(sendInfo),
+                    contentType: "application/json; charset=utf-8",
+                    success: function () {
+                        alert('Investidor incluido com sucesso!!!');
+                        $('#formModal').modal('hide');
+                        $('#investidorTable').DataTable().ajax.reload();
+                    },
+                    error: function (request, status, error) {
+                        alert(request.responseText);
+                    }
+                });
+            });
+
+
+        });
+
+    . Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./InvestTools.Web   
+
+    . Verifique se os botões estão funcionando e se o "Novo Investidor" está sendo chamado corretamente.
+
+// PAREI AQUI
+    
