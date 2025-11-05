@@ -161,9 +161,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                 "targets": "_all"
             }],
             colReorder: true
-
         });
-
     });
 
 . Crie o arquivo "Portuguese.json" dentro da pasta "wwwwroot/js" com o conteúdo abaixo:
@@ -548,7 +546,12 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                                 <div class="col-9">
                                     <div class="form-group">
                                         <label for="nome">Nome</label>
-                                        <input type="text" class="form-control form-control-sm" id="nome" name="nome" required>
+                                        <input type="text" 
+                                                class="form-control form-control-sm" 
+                                                id="nome" 
+                                                name="nome" 
+                                                placeholder="Nome"
+                                                required>
                                     </div>
                                 </div>
                             </div>
@@ -557,31 +560,27 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                                     <div class="form-group">
                                         <label for="email">Email</label>
                                         <input type="email" class="form-control form-control-sm" id="email" name="email"
-                                            aria-describedby="emailHelp" placeholder="Seu email" required>
+                                            aria-describedby="emailHelp" placeholder="nome.sobrenome@email.com" required>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-2">
+                                <div class="col-3">
                                     <div class="form-group">
                                         <label for="dataNascimento">Data Nasc</label>
                                         <input type="date" class="form-control form-control-sm" id="dataNascimento"
                                             name="dataNascimento" required>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="row">
                                 <div class="col-3">
                                     <div class="form-group">
                                         <label for="renda">Renda Mensal</label>
-                                        <input type="text" class="form-control form-control-sm" name="renda" id="renda">
+                                        <input type="text" class="form-control form-control-sm" name="renda" id="renda" placeholder="R$ 0,00">
                                     </div>
                                 </div>
                                 <div class="col-3">
                                     <div class="form-group">
                                         <label for="renda">Aporte Mensal</label>
-                                        <input type="text" class="form-control form-control-sm" name="aporteMensal" id="aporteMensal">
+                                        <input type="text" class="form-control form-control-sm" name="aporteMensal" placeholder="R$ 0,00"
+                                            id="aporteMensal">
                                     </div>
                                 </div>
 
@@ -736,5 +735,116 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     . Verifique se os botões estão funcionando e se o "Novo Investidor" está sendo chamado corretamente.
 
-// PAREI AQUI
+. Colocando mascara no campos da tela de edição:
+
+
+    . Adicione as linhas abaixo no arquivo "List.cshtml":
+
+        ...
+        <!-- Linhas incluidas -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-maskmoney/3.0.2/jquery.maskMoney.min.js"></script>
+        <!-- Fim -->
+
+        <script src="~/js/index.js"></script>
+        <script src="~/js/investidor.js"></script>
+
+. Inclua e altere o código abaixo no arquivo "cliente.js":
+
+    $(document).ready(function(){
+        ...
+        $('#btnAdd').click(function () {
+
+            $.get('/Investidor/GetModalPartial').done(function (data) {
+                $('#modalContainer').html(data);
+
+                document.getElementById('investidorForm').classList.remove("was-validated");
+                $('#formModal').modal('show');
+                $('#investidorForm')[0].reset(); // Clear the form
+                $('#formModalLabel').text('Inclusão');
+                $('#btnSave').text('Salvar');
+                $('#investidorId').val(''); // Clear the hidden ID field
+
+                // Linhas inseridas
+                $("#cpf").mask("000.000.000-00");
+                $('#aporteMensal').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+                $('#renda').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+
+
+            });
+        });
+        ....
+    });
+
+        
     
+. Execute o projeto na pasta raiz da solution:
+
+    dotnet run --project ./InvestTools.Web   
+
+. Acesse a página do "DataTable" e teste as mascaras na inclusão:
+
+    http://localhost:[porta]
+
+. Altere o arquivo "index.js" com as linhas abaixo:
+
+    ...
+    function cleanCurrency(valor) {
+        ...
+    }
+
+    // Linhas inseridas
+    $.notify.defaults({
+        position: 'bottom right',
+        autoHide: true,
+        autoHideDelay: 8000
+    });
+
+. Altere o arquivo "investidor.js" com as linhas abaixo:
+
+    ....
+    placeHolderElement.on('click', '[data-action="save"]', function (event) {
+        var url = '/investidorAPI/api/v1';
+
+        var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
+
+        var sendInfo = {
+            codigo: $('#investidorId').val().trim() === '' ? null : $('#investidorId').val(),
+            cpf: removeNonNumeric($('#cpf').val()),
+            nome: $('#nome').val(),
+            dataNascimento: $('#dataNascimento').val(),
+            email: $('#email').val(),
+            renda: cleanCurrency($('#renda').val()),
+            aporteMensal: cleanCurrency($('#aporteMensal').val())
+        };
+
+        $.ajax({
+            url: url,
+            type: method,
+            data: JSON.stringify(sendInfo),
+            contentType: "application/json; charset=utf-8",
+            success: function () {
+                // alert('Investidor incluido com sucesso!!!');             // Linha eliminada
+                $.notify('Investidor incluido com sucesso!!!', 'success');    // Linha inserida
+                $('#formModal').modal('hide');
+                $('#investidorTable').DataTable().ajax.reload();
+            },
+            error: function (request, status, error) {
+                // alert(request.responseText);                             // Linha eliminada
+                $.notify(request.responseText, 'error');                    // LInha inserida
+
+            }
+        });
+    });
+    ....
+
+. Execute o projeto na pasta raiz da solution:
+
+    dotnet run --project ./InvestTools.Web   
+
+. Acesse a página do "Investidor", teste a inclusão colocando alguma informação incorreto, como a renda, ou 
+    o aporte abaixo de R$ 1.540,00, e observe mensagem de notificação. Depois faça a inclusão e verifique a
+    mensagem
+
+    http://localhost:[porta]
+

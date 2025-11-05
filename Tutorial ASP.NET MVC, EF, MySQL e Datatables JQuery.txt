@@ -2386,7 +2386,6 @@ Parte 7. Escalando o uso do "DataTable"
 
         http://localhost:[porta]/Cliente/List
 
-// PAREI AQUI
     . Criando a barra de ferramentas com botões de export e novo cliente:
 
         https://www.youtube.com/watch?v=4aajwYY2NxI&list=PL7yxJa4Na-irux26rILnjv0G33DrTC3Jq&index=15
@@ -2853,6 +2852,7 @@ Parte 7. Escalando o uso do "DataTable"
 
         http://localhost:[porta]/Cliente/List
 
+// PAREI AQUI
 
 Parte 8. Realizando a validação dos campos
 ------------------------------------------
