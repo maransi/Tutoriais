@@ -639,6 +639,13 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
             var placeHolderElement = $("#modalContainer");
 
             placeHolderElement.on('click', '[data-action="save"]', function (event) {
+                if (!validaCPF($('#cpf').val())) {
+                    alert('CPF inválido. Verifique o número digitado.');
+                    $('#cpf').focus();
+
+                    return;
+                }
+
                 var url = '/investidorAPI/api/v1';
 
                 var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
@@ -687,46 +694,6 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
             });
 
-            // Save o cliente pelo click do botão
-            $('#btnSave').click(function () {
-                if (!validaCPF($('#cpf').val())) {
-                    alert('CPF inválido. Verifique o número digitado.');
-                    $('#cpf').focus();
-
-                    return;
-                }
-
-                var url = '/investidorAPI/api/v1';
-
-                var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
-
-                var sendInfo = {
-                    codigo: $('#investidorId').val().trim() === '' ? null : $('#investidorId').val(),
-                    cpf: removeNonNumeric($('#cpf').val()),
-                    nome: $('#nome').val(),
-                    dataNascimento: $('#dataNascimento').val(),
-                    email: $('#email').val(),
-                    renda: cleanCurrency($('#salario').val()),
-                    aporteMensal: cleanCurrency($('#salario').val())
-                };
-
-                $.ajax({
-                    url: url,
-                    type: method,
-                    data: JSON.stringify(sendInfo),
-                    contentType: "application/json; charset=utf-8",
-                    success: function () {
-                        alert('Investidor incluido com sucesso!!!');
-                        $('#formModal').modal('hide');
-                        $('#investidorTable').DataTable().ajax.reload();
-                    },
-                    error: function (request, status, error) {
-                        alert(request.responseText);
-                    }
-                });
-            });
-
-
         });
 
     . Execute o projeto na pasta raiz da solution:
@@ -749,7 +716,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
         <script src="~/js/index.js"></script>
         <script src="~/js/investidor.js"></script>
 
-. Inclua e altere o código abaixo no arquivo "cliente.js":
+. Inclua e altere o código abaixo no arquivo "investidor.js":
 
     $(document).ready(function(){
         ...
@@ -769,6 +736,16 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                 $("#cpf").mask("000.000.000-00");
                 $('#aporteMensal').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
                 $('#renda').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+
+                // Evento incluido
+                $('#aporteMensal').on('focus', function() {  
+                    $(this).select();
+                });  
+
+                // Evento incluido
+                $('#renda').on('focus', function() {  
+                    $(this).select();
+                });  
 
 
             });
@@ -804,6 +781,14 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     ....
     placeHolderElement.on('click', '[data-action="save"]', function (event) {
+        if (!validaCPF($('#cpf').val())) {
+            $.notify('CPF inválido. Verifique o número digitado.', 'error');                    // LInha inserida
+
+            $('#cpf').focus();
+
+            return;
+        }
+        
         var url = '/investidorAPI/api/v1';
 
         var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
@@ -845,6 +830,393 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 . Acesse a página do "Investidor", teste a inclusão colocando alguma informação incorreto, como a renda, ou 
     o aporte abaixo de R$ 1.540,00, e observe mensagem de notificação. Depois faça a inclusão e verifique a
     mensagem
+
+    http://localhost:[porta]
+
+. Inclua e altere o código abaixo no arquivo "investidor.js":
+
+    ...
+    /*          Apague o conteúdo abaixo
+    var placeHolderElement = $("#modalContainer");
+
+    placeHolderElement.on('click', '[data-action="save"]', function (event) {
+        ...
+    });
+    */
+
+    $('#btnAdd').click(function () {
+
+        $.get('/Investidor/GetModalPartial').done(function (data) {
+            $('#modalContainer').html(data);
+
+            document.getElementById('investidorForm').classList.remove("was-validated");
+            $('#formModal').modal('show');
+            $('#investidorForm')[0].reset(); // Clear the form
+            $('#formModalLabel').text('Inclusão');
+            $('#btnSave').text('Salvar');
+            $('#investidorId').val(''); // Clear the hidden ID field
+
+            $("#cpf").mask("000.000.000-00");
+            $('#aporteMensal').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+            $('#renda').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+
+            $('#aporteMensal').on('focus', function() {  
+                $(this).select();
+            });  
+
+            $('#renda').on('focus', function() {  
+                $(this).select();
+            });  
+
+
+
+
+            // Função incluida
+            // Função associada ao Bootstrap para fazer o efeito de validação dos campos
+            (function () {
+                'use strict';
+                var form = document.getElementById('investidorForm');
+                var button = document.getElementById('btnSave');
+
+                button.addEventListener('click', function () {
+                    if (!form.checkValidity()) {
+                        form.classList.add('was-validated');
+                    } else {
+                        // alert('Formulário validado com sucesso!');
+                        Save();
+                    }
+                });
+            })();
+
+        });
+    });
+
+    // Função Incluida
+    const Save = () => {
+        if (!validaCPF($('#cpf').val())) {
+            $.notify('CPF inválido. Verifique o número digitado.', 'error');                    // LInha inserida
+            $('#cpf').focus();
+
+            return;
+        }
+        var url = '/investidorAPI/api/v1';
+
+        var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
+
+        var sendInfo = {
+            codigo: $('#investidorId').val().trim() === '' ? null : $('#investidorId').val(),
+            cpf: removeNonNumeric($('#cpf').val()),
+            nome: $('#nome').val(),
+            dataNascimento: $('#dataNascimento').val(),
+            email: $('#email').val(),
+            renda: cleanCurrency($('#renda').val()),
+            aporteMensal: cleanCurrency($('#aporteMensal').val())
+        };
+
+        $.ajax({
+            url: url,
+            type: method,
+            data: JSON.stringify(sendInfo),
+            contentType: "application/json; charset=utf-8",
+            success: function () {
+                // alert('Investidor incluido com sucesso!!!');
+                $.notify('Investidor incluido com sucesso!!!', 'success');
+                $('#formModal').modal('hide');
+                $('#investidorTable').DataTable().ajax.reload();
+            },
+            error: function (request, status, error) {
+                // alert(request.responseText);
+                $.notify(request.responseText, 'error');
+
+            }
+        });
+    };
+
+. Altere a Partial View "_InvestidorModal.cshtml" conforme abaixo:
+
+    <!-- Modal for adding/editing customers -->
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="formModalLabel">Detalhes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="investidorForm" novalidate>       <!-- Inserção do "novalidate" -->
+                        <input type="hidden" id="investidorId" name="investidorId">
+
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="cpf">CPF</label>
+                                    <input type="text" class="form-control form-control-sm"
+                                        aria-label=".form-control-sm example" placeholder="123.456.789-00" id="cpf"
+                                        name="cpf" required>
+
+                                    <!-- Tag Incluida -->    
+                                    <div class="invalid-feedback">
+                                        Campo CPF é Obrigatório
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-9">
+                                <div class="form-group">
+                                    <label for="nome">Nome</label>
+                                    <input type="text" 
+                                            class="form-control form-control-sm" 
+                                            id="nome" 
+                                            name="nome" 
+                                            placeholder="Nome"
+                                            required
+                                            minlength="5"  
+                                            maxlength="50"> <!-- Incluido -->
+
+                                        <!-- Tag Incluida -->    
+                                        <div class="invalid-feedback">
+                                            Campo Nome é Obrigatório e deve ter ao menos 5 caracteres
+                                        </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" class="form-control form-control-sm" id="email" name="email"
+                                        aria-describedby="emailHelp" placeholder="nome.sobrenome@email.com" required
+                                        email>                           <!-- Incluido -->
+
+                                    <!-- Tag Incluida -->    
+                                    <div class="invalid-feedback">
+                                        Campo E-Mail Inválido
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="dataNascimento">Data Nasc</label>
+                                    <input type="date" class="form-control form-control-sm" id="dataNascimento"
+                                        name="dataNascimento" required>
+
+                                    <!-- Tag Incluida -->    
+                                    <div class="invalid-feedback">
+                                        Campo Data Nasc é Obrigatório
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="renda">Renda Mensal</label>
+                                    <input type="text" class="form-control form-control-sm" name="renda" id="renda" placeholder="R$ 0,00"
+                                            required min="1540" max="1000000">           <!-- Incluido -->
+
+                                    <!-- Tag Incluida -->    
+                                    <div class="invalid-feedback">
+                                        Campo Renda Inválido. Renda deve ser entre R$ 1.540,00 e R$ 1.000.000,00
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="renda">Aporte Mensal</label>
+                                    <input type="text" class="form-control form-control-sm" name="aporteMensal" placeholder="R$ 0,00"
+                                        id="aporteMensal" 
+                                        required min="1540" max="1000000">              <!-- Incluido -->
+
+                                    <!-- Tag Incluida -->    
+                                    <div class="invalid-feedback">
+                                        Campo Aporte Mensal Inválido. O Aporte deve ser entre R$ 1.540,00 e R$ 1.000.000,00
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="btnSave" data-action="save">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+. Execute o projeto na pasta raiz da solution:
+
+    dotnet run --project ./InvesTools.Web   
+
+. Acesse a página e teste as validações na inclusão:
+
+    http://localhost:[porta]
+
+. Insira as linhas abaixo no arquivo "index.js":
+
+    // Evento Incluido
+    document.querySelectorAll('.remove-acento').forEach(function (input) {
+        input.addEventListener('input', function (event) {
+            let texto = event.target.value;
+
+            // Substituir acentos e "ç"
+            texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+            texto = texto.replace(/ç/g, 'c').replace(/Ç/g, 'C'); // Substitui "ç" por "c"
+
+            // Forçar texto em maiúsculas
+            // texto = texto.toUpperCase();
+
+            event.target.value = texto;
+        });
+    });
+
+    // Evento incluido
+    document.querySelectorAll(".maiusculo").forEach( function( input ) {
+        input.addEventListener('blur', function(){
+            input.value = input.value.toUpperCase();
+        });
+    });
+
+    // Evento incluido
+    document.querySelectorAll(".minusculo").forEach( function( input ) {
+        input.addEventListener('blur', function(){
+            input.value = input.value.toLowerCase();
+        });
+    });
+
+. Inclua as linhas abaixo no arquivo "site.css":
+
+    .maiusculo {
+        text-transform: uppercase;
+    }
+
+    .minusculo {
+        text-transform: lowercase;
+    }
+
+    /* Primeira letra de cada palavra maiúscula */
+    .capitalize {
+        text-transform: capitalize;
+    }
+
+. Altere o arquivo "_InvestidorModal.cshtml" inserindo a classe "remove-acento", "maisculo" e "minusculo" como abaixo:
+
+    <!-- Modal for adding/editing customers -->
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="formModalLabel">Detalhes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="investidorForm" novalidate>       
+                        <input type="hidden" id="investidorId" name="investidorId">
+
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="cpf">CPF</label>
+                                    <input type="text" class="form-control form-control-sm"
+                                        aria-label=".form-control-sm example" placeholder="123.456.789-00" id="cpf"
+                                        name="cpf" required>
+
+                                    <div class="invalid-feedback">
+                                        Campo CPF é Obrigatório
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-9">
+                                <div class="form-group">
+                                    <label for="nome">Nome</label>
+
+                                    <!-- Inserido as classes remove-acento e maisculo-->
+                                    <input type="text" 
+                                            class="form-control form-control-sm remove-acento maiusculo" 
+                                            id="nome" 
+                                            name="nome" 
+                                            placeholder="Nome"
+                                            required
+                                            minlength="5"  
+                                            maxlength="50"> 
+
+                                        <div class="invalid-feedback">
+                                            Campo Nome é Obrigatório e deve ter ao menos 5 caracteres
+                                        </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+
+                                    <!-- Inserido as classes remove-acento e minusculo -->
+                                    <input type="email" class="form-control form-control-sm  remove-acento minusculo" id="email" name="email"
+                                        aria-describedby="emailHelp" placeholder="nome.sobrenome@email.com" required
+                                        email>              
+
+                                    <div class="invalid-feedback">
+                                        Campo E-Mail Inválido
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="dataNascimento">Data Nasc</label>
+                                    <input type="date" class="form-control form-control-sm" id="dataNascimento"
+                                        name="dataNascimento" required>
+
+                                    <div class="invalid-feedback">
+                                        Campo Data Nasc é Obrigatório
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="renda">Renda Mensal</label>
+                                    <input type="text" class="form-control form-control-sm" name="renda" id="renda" placeholder="R$ 0,00"
+                                            required min="1540" max="1000000">           
+
+                                    <div class="invalid-feedback">
+                                        Campo Renda Inválido. Renda deve ser entre R$ 1.540,00 e R$ 1.000.000,00
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-group">
+                                    <label for="renda">Aporte Mensal</label>
+                                    <input type="text" class="form-control form-control-sm" name="aporteMensal" placeholder="R$ 0,00"
+                                        id="aporteMensal" 
+                                        required min="1540" max="1000000">              
+
+                                    <div class="invalid-feedback">
+                                        Campo Aporte Mensal Inválido. O Aporte deve ser entre R$ 1.540,00 e R$ 1.000.000,00
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="btnSave" data-action="save">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+. Execute o projeto na pasta raiz da solution:
+
+    dotnet run --project .InvestTools.Web   
+
+. Acesse a página dos Investidores e teste se as entradas do Nome estão aceitando somente letras maiúsculas e sem "ç"; e 
+    se o email ficou obrigatoriamente em minusculo
 
     http://localhost:[porta]
 

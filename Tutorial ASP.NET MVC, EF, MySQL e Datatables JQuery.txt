@@ -2852,7 +2852,6 @@ Parte 7. Escalando o uso do "DataTable"
 
         http://localhost:[porta]/Cliente/List
 
-// PAREI AQUI
 
 Parte 8. Realizando a validação dos campos
 ------------------------------------------
@@ -3764,7 +3763,7 @@ Parte 8. Realizando a validação dos campos
 
             http://localhost:[porta]/Cliente/List
 
-
+// PAREI AQUI
 Parte 9 - Inclusão das funcionalidades de Alteração e Exclusão
 --------------------------------------------------------------
 
