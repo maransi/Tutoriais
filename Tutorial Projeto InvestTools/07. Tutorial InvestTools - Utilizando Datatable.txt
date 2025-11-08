@@ -149,8 +149,8 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                     data: null,
                     width: "20%",
                     render: function (data, type, row) {
-                        return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/img/Open-Button.png"  title="Abrir/Editar" alt="Editar"  width="24" height="24"></a>&nbsp&nbsp&nbsp' +
-                            '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/img/Delete-Button.png" title="Eliminar" alt="Excluir" width="24" height="24"></a>';
+                        return '<a href="#" data-id="' + row.id + '" class="editBtn"><img src="/img/Open-Button.png"  title="Abrir/Editar" alt="Editar"  width="24" height="24"></a>&nbsp&nbsp&nbsp' +
+                            '<a href="#" data-id="' + row.id + '" class="deleteBtn"><img src="/img/Delete-Button.png" title="Eliminar" alt="Excluir" width="24" height="24"></a>';
                         // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
                         // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
                     }
@@ -300,8 +300,8 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                     data: null,
                     width: "20%",
                     render: function (data, type, row) {
-                        return '<a href="#" data-id="' + row.codigo + '" class="editBtn"><img src="/img/Edit-Button.ico"  title="Abrir/Editar" alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
-                            '<a href="#" data-id="' + row.codigo + '" class="deleteBtn"><img src="/img/Delete-Button.png" title="Eliminar" alt="Excluir" width="30" height="30"></a>';
+                        return '<a href="#" data-id="' + row.id + '" class="editBtn"><img src="/img/Edit-Button.ico"  title="Abrir/Editar" alt="Editar"  width="30" height="30"></a>&nbsp&nbsp&nbsp' +
+                            '<a href="#" data-id="' + row.id + '" class="deleteBtn"><img src="/img/Delete-Button.png" title="Eliminar" alt="Excluir" width="30" height="30"></a>';
                         // '<button class="btn btn-outline-primary btn-sm editBtn" data-id="' + row.id + '">Edit</button>' +
                         // '<button class="btn btn-outline-danger btn-sm deleteBtn" data-id="' + row.id + '">Delete</button>' +                        
                     }
@@ -635,7 +635,6 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
             );
 
             // Trecho de código abaixo inserido
-
             var placeHolderElement = $("#modalContainer");
 
             placeHolderElement.on('click', '[data-action="save"]', function (event) {
@@ -651,7 +650,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                 var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
 
                 var sendInfo = {
-                    codigo: $('#investidorId').val().trim() === '' ? null : $('#investidorId').val(),
+                    id: $('#investidorId').val().trim() === "" ? "0" : $('#investidorId').val(),
                     cpf: removeNonNumeric($('#cpf').val()),
                     nome: $('#nome').val(),
                     dataNascimento: $('#dataNascimento').val(),
@@ -666,7 +665,12 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                     data: JSON.stringify(sendInfo),
                     contentType: "application/json; charset=utf-8",
                     success: function () {
-                        alert('Investidor incluido com sucesso!!!');
+                        if (method === 'POST') {
+                            alert('Investidor incluido com sucesso!!!');
+                        } else {
+                            alert('Investidor alterado com sucesso!!!');
+                        }
+                                                
                         $('#formModal').modal('hide');
                         $('#investidorTable').DataTable().ajax.reload();
                     },
@@ -702,6 +706,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     . Verifique se os botões estão funcionando e se o "Novo Investidor" está sendo chamado corretamente.
 
+// PAREI AQUI
 . Colocando mascara no campos da tela de edição:
 
 
@@ -720,8 +725,9 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     $(document).ready(function(){
         ...
-        $('#btnAdd').click(function () {
 
+        // Função inserida
+        $.fn.GetModalPartial = function() {
             $.get('/Investidor/GetModalPartial').done(function (data) {
                 $('#modalContainer').html(data);
 
@@ -732,7 +738,6 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                 $('#btnSave').text('Salvar');
                 $('#investidorId').val(''); // Clear the hidden ID field
 
-                // Linhas inseridas
                 $("#cpf").mask("000.000.000-00");
                 $('#aporteMensal').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
                 $('#renda').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
@@ -742,16 +747,72 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                     $(this).select();
                 });  
 
-                // Evento incluido
                 $('#renda').on('focus', function() {  
                     $(this).select();
                 });  
 
+                // Função incluida
+                // Função associada ao Bootstrap para fazer o efeito de validação dos campos
+                (function () {
+                    'use strict';
+                    var form = document.getElementById('investidorForm');
+                    var button = document.getElementById('btnSave');
 
+                    button.addEventListener('click', function () {
+                        if (!form.checkValidity()) {
+                            form.classList.add('was-validated');
+                        } else {
+                            // alert('Formulário validado com sucesso!');
+                            Save();
+                        }
+                    });
+                })();
+
+                // Evento incluido
+                document.querySelectorAll(".maiusculo").forEach( function( input ) {
+                    input.addEventListener('blur', function(){
+                        input.value = input.value.toUpperCase();
+                    });
+                });
+
+                // Evento incluido
+                document.querySelectorAll(".minusculo").forEach( function( input ) {
+                    input.addEventListener('blur', function(){
+                        input.value = input.value.toLowerCase();
+                    });
+                });
+            }); 
+        };
+
+        $('#btnAdd').click(function () {
+
+            /* Apague o conteúdo abaixo
+            $.get('/Investidor/GetModalPartial').done(function (data) {
+                ....     
             });
+            /*
+
+            // Insira a linha abaixo
+            $(document).GetModalPartial();
+
         });
         ....
     });
+
+. Inclua as linhas abaixo no arquivo "site.css":
+
+    .maiusculo {
+        text-transform: uppercase;
+    }
+
+    .minusculo {
+        text-transform: lowercase;
+    }
+
+    /* Primeira letra de cada palavra maiúscula */
+    .capitalize {
+        text-transform: capitalize;
+    }
 
         
     
@@ -759,7 +820,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     dotnet run --project ./InvestTools.Web   
 
-. Acesse a página do "DataTable" e teste as mascaras na inclusão:
+. Acesse a página do "DataTable", teste se a chamada da tela continua funcionando e se as mascaras na inclusão:
 
     http://localhost:[porta]
 
@@ -794,7 +855,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
         var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
 
         var sendInfo = {
-            codigo: $('#investidorId').val().trim() === '' ? null : $('#investidorId').val(),
+            id: $('#investidorId').val().trim() === "" ? "0" : $('#investidorId').val(),
             cpf: removeNonNumeric($('#cpf').val()),
             nome: $('#nome').val(),
             dataNascimento: $('#dataNascimento').val(),
@@ -809,8 +870,12 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
             data: JSON.stringify(sendInfo),
             contentType: "application/json; charset=utf-8",
             success: function () {
-                // alert('Investidor incluido com sucesso!!!');             // Linha eliminada
-                $.notify('Investidor incluido com sucesso!!!', 'success');    // Linha inserida
+                if (method === 'POST') {
+                    $.notify('Investidor incluido com sucesso!!!', 'success');
+                } else {
+                    $.notify('Investidor alterado com sucesso!!!', 'success');
+                }
+                
                 $('#formModal').modal('hide');
                 $('#investidorTable').DataTable().ajax.reload();
             },
@@ -836,101 +901,142 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 . Inclua e altere o código abaixo no arquivo "investidor.js":
 
     ...
-    /*          Apague o conteúdo abaixo
-    var placeHolderElement = $("#modalContainer");
-
-    placeHolderElement.on('click', '[data-action="save"]', function (event) {
+    $(document).ready(function () {    
         ...
-    });
-    */
+        /*          Apague o conteúdo abaixo
+        var placeHolderElement = $("#modalContainer");
 
-    $('#btnAdd').click(function () {
-
-        $.get('/Investidor/GetModalPartial').done(function (data) {
-            $('#modalContainer').html(data);
-
-            document.getElementById('investidorForm').classList.remove("was-validated");
-            $('#formModal').modal('show');
-            $('#investidorForm')[0].reset(); // Clear the form
-            $('#formModalLabel').text('Inclusão');
-            $('#btnSave').text('Salvar');
-            $('#investidorId').val(''); // Clear the hidden ID field
-
-            $("#cpf").mask("000.000.000-00");
-            $('#aporteMensal').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
-            $('#renda').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
-
-            $('#aporteMensal').on('focus', function() {  
-                $(this).select();
-            });  
-
-            $('#renda').on('focus', function() {  
-                $(this).select();
-            });  
-
-
-
-
-            // Função incluida
-            // Função associada ao Bootstrap para fazer o efeito de validação dos campos
-            (function () {
-                'use strict';
-                var form = document.getElementById('investidorForm');
-                var button = document.getElementById('btnSave');
-
-                button.addEventListener('click', function () {
-                    if (!form.checkValidity()) {
-                        form.classList.add('was-validated');
-                    } else {
-                        // alert('Formulário validado com sucesso!');
-                        Save();
-                    }
-                });
-            })();
-
+        placeHolderElement.on('click', '[data-action="save"]', function (event) {
+            ...
         });
-    });
+        */
 
-    // Função Incluida
-    const Save = () => {
-        if (!validaCPF($('#cpf').val())) {
-            $.notify('CPF inválido. Verifique o número digitado.', 'error');                    // LInha inserida
-            $('#cpf').focus();
+        $.fn.GetModalPartial = function() {
+            $.get('/Investidor/GetModalPartial').done(function (data) {
+                $('#modalContainer').html(data);
 
-            return;
-        }
-        var url = '/investidorAPI/api/v1';
+                document.getElementById('investidorForm').classList.remove("was-validated");
+                $('#formModal').modal('show');
+                $('#investidorForm')[0].reset(); // Clear the form
+                $('#formModalLabel').text('Inclusão');
+                $('#btnSave').text('Salvar');
+                $('#investidorId').val(''); // Clear the hidden ID field
 
-        var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
+                $("#cpf").mask("000.000.000-00");
+                $('#aporteMensal').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
+                $('#renda').maskMoney({ prefix: 'R$ ', allowNegative: false, thousands: '.', decimal: ',',symbolStay: true,  affixesStay: true });
 
-        var sendInfo = {
-            codigo: $('#investidorId').val().trim() === '' ? null : $('#investidorId').val(),
-            cpf: removeNonNumeric($('#cpf').val()),
-            nome: $('#nome').val(),
-            dataNascimento: $('#dataNascimento').val(),
-            email: $('#email').val(),
-            renda: cleanCurrency($('#renda').val()),
-            aporteMensal: cleanCurrency($('#aporteMensal').val())
+                // Evento incluido
+                $('#aporteMensal').on('focus', function() {  
+                    $(this).select();
+                });  
+
+                $('#renda').on('focus', function() {  
+                    $(this).select();
+                });  
+
+
+
+                // Função incluida
+                // Função associada ao Bootstrap para fazer o efeito de validação dos campos
+                (function () {
+                    'use strict';
+                    var form = document.getElementById('investidorForm');
+                    var button = document.getElementById('btnSave');
+
+                    button.addEventListener('click', function () {
+                        if (!form.checkValidity()) {
+                            form.classList.add('was-validated');
+                        } else {
+                            // alert('Formulário validado com sucesso!');
+                            Save();
+                        }
+                    });
+                })();
+
+
+
+                document.querySelectorAll(".maiusculo").forEach( function( input ) {
+                    input.addEventListener('blur', function(){
+                        input.value = input.value.toUpperCase();
+                    });
+                });
+
+                document.querySelectorAll(".minusculo").forEach( function( input ) {
+                    input.addEventListener('blur', function(){
+                        input.value = input.value.toLowerCase();
+                    });
+                });
+
+
+                // Evento Incluido
+                document.querySelectorAll('.remove-acento').forEach(function (input) {
+                    input.addEventListener('input', function (event) {
+                        let texto = event.target.value;
+
+                        // Substituir acentos e "ç"
+                        texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos
+                        texto = texto.replace(/ç/g, 'c').replace(/Ç/g, 'C'); // Substitui "ç" por "c"
+
+                        // Forçar texto em maiúsculas
+                        // texto = texto.toUpperCase();
+
+                        event.target.value = texto;
+                    });
+                });
+
+            }); 
         };
 
-        $.ajax({
-            url: url,
-            type: method,
-            data: JSON.stringify(sendInfo),
-            contentType: "application/json; charset=utf-8",
-            success: function () {
-                // alert('Investidor incluido com sucesso!!!');
-                $.notify('Investidor incluido com sucesso!!!', 'success');
-                $('#formModal').modal('hide');
-                $('#investidorTable').DataTable().ajax.reload();
-            },
-            error: function (request, status, error) {
-                // alert(request.responseText);
-                $.notify(request.responseText, 'error');
-
-            }
+        $('#btnAdd').click(function () {
+            $(document).GetModalPartial();
         });
-    };
+
+        // Função Incluida
+        const Save = () => {
+            if (!validaCPF($('#cpf').val())) {
+                $.notify('CPF inválido. Verifique o número digitado.', 'error');                    // LInha inserida
+                $('#cpf').focus();
+
+                return;
+            }
+            var url = '/investidorAPI/api/v1';
+
+            var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
+
+            var sendInfo = {
+                id: $('#investidorId').val().trim() === "" ? "0" : $('#investidorId').val(),
+                cpf: removeNonNumeric($('#cpf').val()),
+                nome: $('#nome').val(),
+                dataNascimento: $('#dataNascimento').val(),
+                email: $('#email').val(),
+                renda: cleanCurrency($('#renda').val()),
+                aporteMensal: cleanCurrency($('#aporteMensal').val())
+            };
+
+            $.ajax({
+                url: url,
+                type: method,
+                data: JSON.stringify(sendInfo),
+                contentType: "application/json; charset=utf-8",
+                success: function () {
+                    if (method === 'POST') {
+                        $.notify('Investidor incluido com sucesso!!!', 'success');
+                    } else {
+                        $.notify('Investidor alterado com sucesso!!!', 'success');
+                    }
+                    
+                    $('#formModal').modal('hide');
+                    $('#investidorTable').DataTable().ajax.reload();
+                },
+                error: function (request, status, error) {
+                    // alert(request.responseText);
+                    $.notify(request.responseText, 'error');
+
+                }
+            });
+        };
+    });
 
 . Altere a Partial View "_InvestidorModal.cshtml" conforme abaixo:
 
@@ -1053,53 +1159,6 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     http://localhost:[porta]
 
-. Insira as linhas abaixo no arquivo "index.js":
-
-    // Evento Incluido
-    document.querySelectorAll('.remove-acento').forEach(function (input) {
-        input.addEventListener('input', function (event) {
-            let texto = event.target.value;
-
-            // Substituir acentos e "ç"
-            texto = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos
-            texto = texto.replace(/ç/g, 'c').replace(/Ç/g, 'C'); // Substitui "ç" por "c"
-
-            // Forçar texto em maiúsculas
-            // texto = texto.toUpperCase();
-
-            event.target.value = texto;
-        });
-    });
-
-    // Evento incluido
-    document.querySelectorAll(".maiusculo").forEach( function( input ) {
-        input.addEventListener('blur', function(){
-            input.value = input.value.toUpperCase();
-        });
-    });
-
-    // Evento incluido
-    document.querySelectorAll(".minusculo").forEach( function( input ) {
-        input.addEventListener('blur', function(){
-            input.value = input.value.toLowerCase();
-        });
-    });
-
-. Inclua as linhas abaixo no arquivo "site.css":
-
-    .maiusculo {
-        text-transform: uppercase;
-    }
-
-    .minusculo {
-        text-transform: lowercase;
-    }
-
-    /* Primeira letra de cada palavra maiúscula */
-    .capitalize {
-        text-transform: capitalize;
-    }
-
 . Altere o arquivo "_InvestidorModal.cshtml" inserindo a classe "remove-acento", "maisculo" e "minusculo" como abaixo:
 
     <!-- Modal for adding/editing customers -->
@@ -1220,3 +1279,124 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     http://localhost:[porta]
 
+. Função de Alteração:
+
+    . Altere o método abaixo na classe "InvestidorRepository.cs":
+
+        ...
+        public async Task<Investidor> GetByIdAsync(CreateInvestidorViewModel model)
+        {
+            var investidor = await _context.Investidores
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(i => model.Id > 0 ? i.Id == model.Id: i.CPF == model.CPF );
+                                    
+            if (investidor == null)
+                throw new Exception("Investidor não encontrado");
+
+            return investidor;
+        }
+        ...
+
+
+    . Atualize o método baixo na classe "InvestidorAPIController.cs":
+
+        ...
+        [HttpGet("v1/{id:int}")]
+        public async Task<ActionResult<Investidor>> GetByIdAsync([FromRoute] int id)
+        {
+            try
+            {
+                var createInvestidorViewModel = new CreateInvestidorViewModel{ Id = id };
+
+                var investidor = await _investidorRepository.GetByIdAsync(createInvestidorViewModel);
+
+                return investidor == null ?
+                                NotFound(new { Id = 1, error = $"Não foi encontrado o investidor" }) :
+                                Ok(new ResultViewModel<Investidor>(investidor));
+
+
+            }
+            catch (System.Exception)
+            {
+                throw;
+            }
+        }
+
+        ...
+
+    . Acesse o Postman e crie e execute a chamada abaixo:
+
+        Method: GET
+        URL: http://localhost:5181/investidorAPI/api/v1/3
+
+        Resultado:
+
+            {
+                "data": {
+                    "id": 3,
+                    "cpf": "00031122231",
+                    "nome": "JOAO DA SILVA",
+                    "dataNascimento": "2025-10-29T00:00:00",
+                    "renda": 2000.00,
+                    "aporteMensal": 2000.00,
+                    "email": "joao.silva@email.com",
+                    "dataInclusao": "2025-10-28T12:32:15",
+                    "dataAlteracao": "2025-10-28T12:57:20"
+                },
+                "errors": []
+            }
+
+
+    . Realize as mudanças abaixo no arquivo "investidor.js":
+
+        ...
+
+        $('#btnAdd').click(function () {
+            ...
+        });
+
+
+        // Bloco inserido
+
+        // Edit Customer Button Click
+        $('#investidorTable').on('click', '.editBtn', function(event) {
+            event.preventDefault(); // Evita o redirecionamento automático
+
+            var investidorId = $(this).data('id');
+
+            $(document).GetModalPartial();
+
+
+            $.ajax({
+                url: '/investidorAPI/api/v1/' + investidorId, // Replace with your ASP.NET API endpoint
+                type: 'GET',
+                datatype: 'json',
+                success: function (data) {
+                    $('#formModal').modal('show');
+                    $('#formModalLabel').text('Alteração');
+                    $('#btnSave').text('Salvar');
+                    $('#investidorId').val(data.data.id);
+                    $('#cpf').val(data.data.cpf).trigger('input');
+                    $('#nome').val(data.data.nome);
+                    $('#email').val(data.data.email);
+                    $('#aporteMensal').val(Number(data.data.aporteMensal).toFixed(2).replace(/\./g,",")).maskMoney('mask');
+                    $('#renda').val(Number(data.data.renda).toFixed(2).replace(/\./g,",")).maskMoney('mask');
+                    $('#dataNascimento').val(data.data.dataNascimento.substring(0,10));
+
+                },
+                error: function (request, status, error) {
+                    $.notify("Ocorreu o seguinte erro: \r\n\r\n" + request.responseText, 'error');
+                }
+            });
+
+
+        });
+        ...
+
+    . Execute o projeto na pasta raiz da solution:
+
+        dotnet run --project ./InvestTools.Web   
+
+    . Acesse a página do "DataTable" e teste as validações na alteração:
+
+        http://localhost:[porta]/Cliente/List

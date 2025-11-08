@@ -403,11 +403,12 @@ Tutorial Projeto InvestTools - Criando as APIs
     public async Task<Investidor> UpdateAsync(CreateInvestidorViewModel item)
     {
         var investidor = await _context.Investidores
-                                    .FirstOrDefaultAsync(i => i.CPF == item.CPF);
+                                    .FirstOrDefaultAsync(i => i.Id == item.Id);
 
         if (investidor == null)
             throw new Exception("Investidor não encontrado");
 
+        investidor.CPF = item.CPF;
         investidor.Nome = item.Nome;
         investidor.DataNascimento = item.DataNascimento;
         investidor.Renda = item.Renda;
@@ -462,6 +463,7 @@ Tutorial Projeto InvestTools - Criando as APIs
     Url: https://localhost:[porta]/investidorAPI/api/v1
     Body.raw: 
                 {
+                    "Id": 3,
                     "CPF": "00011122231",
                     "Nome": "JOAO DA SILVA",
                     "DataNascimento": "1900-01-01",
