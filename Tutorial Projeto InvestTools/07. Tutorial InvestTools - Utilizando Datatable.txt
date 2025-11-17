@@ -1144,13 +1144,15 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
         // Função Incluida
         const Save = () => {
+
+            /*  Trecho eliminado
             if (!validaCPF($('#cpf').val())) {
                 $.notify('CPF inválido. Verifique o número digitado.', 'error');                    // LInha inserida
                 $('#cpf').focus();
 
                 return;
             }
-
+            */
 
 
           // Trecho inserido
