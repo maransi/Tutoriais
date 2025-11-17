@@ -747,40 +747,10 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                     $(this).select();
                 });  
 
+                // Evento incluido
                 $('#renda').on('focus', function() {  
                     $(this).select();
                 });  
-
-                // Função incluida
-                // Função associada ao Bootstrap para fazer o efeito de validação dos campos
-                (function () {
-                    'use strict';
-                    var form = document.getElementById('investidorForm');
-                    var button = document.getElementById('btnSave');
-
-                    button.addEventListener('click', function () {
-                        if (!form.checkValidity()) {
-                            form.classList.add('was-validated');
-                        } else {
-                            // alert('Formulário validado com sucesso!');
-                            Save();
-                        }
-                    });
-                })();
-
-                // Evento incluido
-                document.querySelectorAll(".maiusculo").forEach( function( input ) {
-                    input.addEventListener('blur', function(){
-                        input.value = input.value.toUpperCase();
-                    });
-                });
-
-                // Evento incluido
-                document.querySelectorAll(".minusculo").forEach( function( input ) {
-                    input.addEventListener('blur', function(){
-                        input.value = input.value.toLowerCase();
-                    });
-                });
             }); 
         };
 
@@ -793,7 +763,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
             /*
 
             // Insira a linha abaixo
-            $(document).GetModalPartial();
+            $(document).GetModalPartial();   // Pode ser utilizado assim ---> $.fn.GetModalPartial();
 
         });
         ....
@@ -824,6 +794,18 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     http://localhost:[porta]
 
+
+. Insira as linhas abaixo no arquivo _Layout.cshtml:
+
+        ....
+        <!-- Biblioteca de Notificação Inserida-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/notify/0.4.2/notify.min.js"></script>
+
+        @await RenderSectionAsync("Scripts", required: false)
+    </body>
+
+    </html>
+
 . Altere o arquivo "index.js" com as linhas abaixo:
 
     ...
@@ -842,6 +824,8 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     ....
     placeHolderElement.on('click', '[data-action="save"]', function (event) {
+        
+        // if inserido
         if (!validaCPF($('#cpf').val())) {
             $.notify('CPF inválido. Verifique o número digitado.', 'error');                    // LInha inserida
 
@@ -870,6 +854,11 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
             data: JSON.stringify(sendInfo),
             contentType: "application/json; charset=utf-8",
             success: function () {
+
+                // Linha eliminada
+                // alert('Investidor incluido com sucesso!!!');
+
+                // IF inserido
                 if (method === 'POST') {
                     $.notify('Investidor incluido com sucesso!!!', 'success');
                 } else {
@@ -897,6 +886,153 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
     mensagem
 
     http://localhost:[porta]
+
+// PAREI AQUI
+
+. Inclua as linhas abaixo no arquivo "index.js":
+
+    ...
+    $.notify.defaults({
+        position: 'bottom right',
+        autoHide: true,
+        autoHideDelay: 8000
+    });
+
+
+    // Função inserida
+    $.fn.validarCampoMonetario = function( $input ){
+        // Remover classes e estilos anteriores de forma garantida
+        $input.removeClass('is-valid is-invalid').removeAttr('aria-invalid').css({
+            'border-color': '',
+            'box-shadow': ''
+        });
+
+        const minAttr = $input.attr('min');
+        const maxAttr = $input.attr('max');
+
+        const minimo = (minAttr ? parseFloat(minAttr) : -Infinity);
+        const maximo = (maxAttr ? parseFloat(maxAttr) : Infinity);
+
+        let texto = ($input.val() || '').trim();
+        texto = texto.replace(/[^\d\-,.]/g, '');
+
+        const lastComma = texto.lastIndexOf(',');
+        const lastDot = texto.lastIndexOf('.');
+        const lastSep = Math.max(lastComma, lastDot);
+
+        if (lastSep !== -1) {
+            let inteira = texto.slice(0, lastSep).replace(/[.,]/g, '');
+            let decimal = texto.slice(lastSep + 1).replace(/[.,]/g, '');
+            texto = inteira + '.' + decimal;
+        } else {
+            texto = texto.replace(/[.,]/g, '');
+        }
+
+        const numero = parseFloat(texto);
+
+        if (isNaN(numero) || numero < minimo || numero > maximo) {
+            // garante rejeitar qualquer is-valid residual e aplicar is-invalid
+            $input.removeClass('is-valid').addClass('is-invalid').attr('aria-invalid', 'true');
+
+            // fallback inline caso alguma regra CSS ainda sobreponha a classe
+            $input.css({
+                'border-color': '#dc3545',
+                'box-shadow': '0 0 0 .25rem rgba(220,53,69,.25)'
+            });
+
+            return false;
+        } else {
+            // garante remover qualquer visual inválido e aplicar válido
+            $input.removeClass('is-invalid').addClass('is-valid').removeAttr('aria-invalid');
+
+            // limpar qualquer style inline que tenhamos setado
+            $input.css({
+                'border-color': '',
+                'box-shadow': ''
+            });
+
+            return true;
+        }
+    }
+
+    // Função inserida
+    $.fn.validarCPF = function($input) {
+
+        // Remover status anterior
+        $input.removeClass('is-valid is-invalid').removeAttr('aria-invalid').css({
+            'border-color': '',
+            'box-shadow': ''
+        });
+
+        let cpf = $input.val().replace(/[^\d]/g, '');
+
+        if (cpf.length !== 11) {
+            $input.removeClass('is-valid').addClass('is-invalid').attr('aria-invalid', 'true');
+
+            // fallback inline caso alguma regra CSS ainda sobreponha a classe
+            $input.css({
+                'border-color': '#dc3545',
+                'box-shadow': '0 0 0 .25rem rgba(220,53,69,.25)'
+            });
+
+            return false;
+        }
+
+        // Rejeita CPFs conhecidos e inválidos
+        if (/^(.)\1+$/.test(cpf)) {
+            $input.removeClass('is-valid').addClass('is-invalid').attr('aria-invalid', 'true');
+
+            // fallback inline caso alguma regra CSS ainda sobreponha a classe
+            $input.css({
+                'border-color': '#dc3545',
+                'box-shadow': '0 0 0 .25rem rgba(220,53,69,.25)'
+            });
+
+            return false;
+        }
+
+        // Cálculo dos dígitos verificadores
+        let soma = 0;
+        let resto;
+
+        // Primeiro dígito
+        for (let i = 1; i <= 9; i++) soma += parseInt(cpf[i - 1]) * (11 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpf[9])) {
+            $input.removeClass('is-valid').addClass('is-invalid').attr('aria-invalid', 'true');
+
+            // fallback inline caso alguma regra CSS ainda sobreponha a classe
+            $input.css({
+                'border-color': '#dc3545',
+                'box-shadow': '0 0 0 .25rem rgba(220,53,69,.25)'
+            });
+
+            return false;
+        }
+
+        // Segundo dígito
+        soma = 0;
+        for (let i = 1; i <= 10; i++) soma += parseInt(cpf[i - 1]) * (12 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpf[10])) {
+            $input.addClass('is-invalid');
+            return false;
+        }
+
+        // CPF OK
+
+        $input.removeClass('is-invalid').addClass('is-valid').removeAttr('aria-invalid');
+
+        // limpar qualquer style inline que tenhamos setado
+        $input.css({
+            'border-color': '',
+            'box-shadow': ''
+        });
+
+        return true;
+    }
 
 . Inclua e altere o código abaixo no arquivo "investidor.js":
 
@@ -935,8 +1071,6 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                     $(this).select();
                 });  
 
-
-
                 // Função incluida
                 // Função associada ao Bootstrap para fazer o efeito de validação dos campos
                 (function () {
@@ -955,13 +1089,29 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                 })();
 
 
+                // Evento incluido
+                $('#cpf').on('blur', function () {
+                    $.fn.validarCPF($(this));
+                });
 
+                // Evento incluido
+                $('#renda').on('blur', function () {
+                    $.fn.validarCampoMonetario($(this));
+                });
+
+                // Evento incluido
+                $('#aporteMensal').on('blur', function () {
+                    $.fn.validarCampoMonetario($(this));
+                });
+
+                // Evento incluido
                 document.querySelectorAll(".maiusculo").forEach( function( input ) {
                     input.addEventListener('blur', function(){
                         input.value = input.value.toUpperCase();
                     });
                 });
 
+                // Evento incluido
                 document.querySelectorAll(".minusculo").forEach( function( input ) {
                     input.addEventListener('blur', function(){
                         input.value = input.value.toLowerCase();
@@ -1000,6 +1150,39 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
                 return;
             }
+
+
+
+          // Trecho inserido
+            let cpfValido = $.fn.validarCPF($('#cpf'));
+
+            if (!cpfValido) {
+                $('#cpf').focus();
+                return; // impede submit
+            }
+
+            let houveInvalido = false;
+
+            $('.monetario').each(function () {
+                const valido = $.fn.validarCampoMonetario($(this));
+                if (!valido) houveInvalido = true;
+            });
+
+            if (houveInvalido) {
+                // opcional: focar no primeiro inválido
+                $('.monetario.is-invalid').first().focus();
+                return; // interrompe o fluxo (não salva)
+            }
+
+            // Aqui o formulário está válido — prossiga com o submit/ajax
+            // Ex.: $('#investidorForm').submit();
+            console.log('Formulário válido — pode salvar!');
+
+
+          // Fim da inserção
+
+
+
             var url = '/investidorAPI/api/v1';
 
             var method = $('#investidorId').val().trim() === '' ? 'POST' : 'PUT';
@@ -1037,6 +1220,21 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
             });
         };
     });
+
+
+. Acrescente as linhas abaixo no arquivo "site.css":
+
+    .form-control.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 .25rem rgba(220,53,69,.25) !important;
+    }
+
+    /* Se existir foco específico que esteja aplicando a sombra verde,
+    forçamos também quando estiver em foco */
+    .form-control.is-invalid:focus {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 .25rem rgba(220,53,69,.25) !important;
+    }
 
 . Altere a Partial View "_InvestidorModal.cshtml" conforme abaixo:
 
@@ -1110,14 +1308,15 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                                     <div class="invalid-feedback">
                                         Campo Data Nasc é Obrigatório
                                     </div>
-
                                 </div>
                             </div>
                             <div class="col-3">
                                 <div class="form-group">
                                     <label for="renda">Renda Mensal</label>
-                                    <input type="text" class="form-control form-control-sm" name="renda" id="renda" placeholder="R$ 0,00"
-                                            required min="1540" max="1000000">           <!-- Incluido -->
+
+                                    <!-- Inserção da class "monetario"-->
+                                    <input type="text" class="form-control form-control-sm monetario" name="renda" id="renda" 
+                                            placeholder="R$ 0,00" required min="1540" max="1000000">           <!-- Incluido -->
 
                                     <!-- Tag Incluida -->    
                                     <div class="invalid-feedback">
@@ -1128,9 +1327,11 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
                             <div class="col-3">
                                 <div class="form-group">
                                     <label for="renda">Aporte Mensal</label>
-                                    <input type="text" class="form-control form-control-sm" name="aporteMensal" placeholder="R$ 0,00"
+
+                                    <!-- Inserção da class "monetario"-->
+                                    <input type="text" class="form-control form-control-sm monetario" name="aporteMensal" placeholder="R$ 0,00"
                                         id="aporteMensal" 
-                                        required min="1540" max="1000000">              <!-- Incluido -->
+                                        placeholder="R$ 0,00" required min="1540" max="1000000">              <!-- Incluido -->
 
                                     <!-- Tag Incluida -->    
                                     <div class="invalid-feedback">
@@ -1279,6 +1480,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
 
     http://localhost:[porta]
 
+// PAREI AQUI
 . Função de Alteração:
 
     . Altere o método abaixo na classe "InvestidorRepository.cs":
@@ -1298,7 +1500,7 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
         ...
 
 
-    . Atualize o método baixo na classe "InvestidorAPIController.cs":
+    . Insira o método baixo na classe "InvestidorAPIController.cs":
 
         ...
         [HttpGet("v1/{id:int}")]
