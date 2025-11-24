@@ -2779,6 +2779,13 @@ Tutorial Projeto InvestTools - Criando os Formulários
 
     dotnet watch --project ./InvestTools.Web
 
+    # Executa o projeto com o perfil chamado https, usando HTTPS e variáveis definidas nele
+    dotnet run --launch-profile https	--project ./InvestTools.Web
+
+    # Executa o projeto usando o perfil http (geralmente sem SSL)
+    dotnet run --launch-profile http	--project ./InvestTools.Web
+
+
 . Proximos passos:
 
     . Personalizar o menu, deixando em conformidade com o projeto "InvestTools"

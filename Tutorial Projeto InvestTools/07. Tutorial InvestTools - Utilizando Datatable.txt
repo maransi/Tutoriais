@@ -1604,3 +1604,102 @@ https://www.asmak9.com/2022/12/aspnet-core-7-mvc-integrate-jquery.html
     . Acesse a página do "DataTable" e teste as validações na alteração:
 
         http://localhost:[porta]/Cliente/List
+
+
+    . Função de Deleção:
+
+        . Crie a linha abaixo no arquivo "List.html":
+
+            ...
+
+            <input type="hidden" id="id-delete" name="id-delete"/>  <!-- Linha inserida -->
+
+            <div id="modalContainer"></div>
+            ...
+
+        . Insira as linhas abaixo no arquivo _Layout.cshtml
+
+            ...
+
+            <!-- Logout Modal-->
+            <partial name="_ConfirmationLogoutPartial.cshtml" />
+            
+
+            <!-- Trecho incluido -->
+            <!-- Modal de Confirmação -->
+            <div class="modal fade" id="confirmacaoModal" tabindex="-1" aria-labelledby="confirmacaoModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="confirmacaoModalLabel">Confirmação</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="modalMensagem">
+                            <!-- Mensagem configurável -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancela</button>
+                            <button type="button" class="btn btn-primary" id="confirmarEnvio">Confirma</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ...
+
+        . Inclua o código abaixo no arquivo javascript "investidor.js" com o conteúdo abaixo:
+
+            $(document).ready(function () {
+
+                ....
+
+                // Função inserida
+                var modalConfirmacao = new bootstrap.Modal(document.getElementById('confirmacaoModal'));
+
+                // Delete Customer Button Click
+                $('#investidorTable tbody').on('click', '.deleteBtn', function () {
+                    $('#id-delete').val($(this).data('id'));
+
+                    $('#modalMensagem').text("Deseja realmente eliminar este investidor?");
+                    
+                    modalConfirmacao.show();
+                });
+
+                // Função inserida
+                $('#confirmarEnvio').click(function(){
+                    if ( $('#id-delete').val() != '' ){
+                        var codigo = $('#id-delete').val();
+
+                        modalConfirmacao.hide();
+
+                        var sendInfo = {
+                            "Id": $('#id-delete').val()
+                        };
+
+
+                        $.ajax({
+                            url: '/investidorAPI/api/v1', // AQUI ENVIAR O MODEL INVESTIDOR
+                            type: 'DELETE',
+                            data: JSON.stringify( { "Id": $('#id-delete').val() } ), // JSON.stringify(sendInfo),
+                            contentType: "application/json; charset=utf-8",
+                            success: function () {
+                                $('#investidorTable').DataTable().ajax.reload();
+                                $.notify("Eliminação realizada com sucesso!!!", 'success');
+                            },
+                            error: function(){
+                                $.notify("Ocorreu o seguinte erro: \r\n\r\n" + request.responseText, 'error');
+                            }
+                        });
+
+                        $('#id-delete').val('');
+                    }
+                });
+                // Fim da inserção
+
+            });
+
+        . Execute o projeto na pasta raiz da solution:
+
+            dotnet run --project ./src/MvcDatatable.Web   
+
+        . Teste o botão de deleção.

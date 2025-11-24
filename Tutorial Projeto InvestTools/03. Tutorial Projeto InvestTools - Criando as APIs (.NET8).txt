@@ -141,7 +141,7 @@ Tutorial Projeto InvestTools - Criando as APIs
         {
             var investidor = await _context.Investidores
                                     .AsNoTracking()
-                                    .FirstOrDefaultAsync(i => i.CPF == model.CPF);
+                                    .FirstOrDefaultAsync(i => model.Id > 0 ? i.Id == model.Id: i.CPF == model.CPF );
             if (investidor == null)
                 throw new Exception("Investidor não encontrado");
 
@@ -386,7 +386,7 @@ Tutorial Projeto InvestTools - Criando as APIs
         {
             var investidor = await _context.Investidores
                                     .AsNoTracking()
-                                    .FirstOrDefaultAsync(i => i.CPF == model.CPF);
+                                    .FirstOrDefaultAsync(i => model.Id > 0 ? i.Id == model.Id: i.CPF == model.CPF );
             if (investidor == null)
                 throw new Exception("Investidor não encontrado");
 
@@ -478,10 +478,7 @@ Tutorial Projeto InvestTools - Criando as APIs
         ...
         public async Task<bool> DeleteAsync(CreateClienteViewModel model)
         {
-
-            var investidor = await _context.Investidores
-                                    .AsNoTracking()
-                                    .FirstOrDefaultAsync(x => x.CPF == model.CPF );
+            var investidor = await GetByIdAsync(model);
 
             _context.Investidores.Remove(investidor);
 
@@ -521,13 +518,16 @@ Tutorial Projeto InvestTools - Criando as APIs
         Url: http://localhost:[porta]/investidorAPI/api/v1
         Body.raw: 
                     {
-                        "CPF": "00011122231",
-                        "Nome": "JOAO DA SILVA",
-                        "DataNascimento": "1900-01-01",
-                        "Renda": 1000,
-                        "AporteMensal":200,
-                        "Email": "joao.silva@email.com"
+                        "Id": "3"
                     }       
         Type: JSON
 
+
+        Method: DELETE
+        Url: http://localhost:[porta]/investidorAPI/api/v1
+        Body.raw: 
+                    {
+                        "CPF": "10652360858"
+                    }       
+        Type: JSON
 
