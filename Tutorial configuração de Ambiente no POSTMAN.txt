@@ -21,7 +21,7 @@ Tutorial configuração de Ambiente no POSTMAN
 
     . Altere o contexto da API pelo valor {{url}}/token
 
-    . Na aba "Tests" inclua o código abaixo:
+    . Na aba "Scripts" inclua o código abaixo:
 
         var jsonData = JSON.parse(responseBody);
 
