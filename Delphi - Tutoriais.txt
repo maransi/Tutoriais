@@ -1,6 +1,9 @@
 Tutoriais em Delphi
 -------------------
 
+https://www.youtube.com/watch?v=u5RYOknW7k8&list=PL9gbVO3K4aXjkDAOzaEMZnmm7ba0h9DME
+
+
 1. Configurando o ambiente de desenvolvimento
 ---------------------------------------------
 
