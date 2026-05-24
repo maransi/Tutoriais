@@ -829,11 +829,13 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             . Acesse "Gerenciar Sua Conta do Google"
 
+                . ATENÇÃO: O login utilizado foi "4por4.ma***@gmail.com", faça o gerenciamento nesta conta.
+
             . Selecione "Segurança".
 
             . Selecione Verificação em duas etapas.
 
-            . Na parte de baixo da página, selecione Senhas de app.
+            . Na parte de baixo da página, selecione Senhas de app. Ou procure na pesquisa "Senhas de App".
             
             . Insira um nome que ajude você a lembrar onde usará a senha de app.
 
@@ -881,10 +883,10 @@ Tutorial Projeto InvestTools - Adequação ao Identity
 
             {
                 "EmailConfiguration": {
-                    "From": "4por4.marco@gmail.com",
+                    "From": "4por4.ma***@gmail.com",
                     "SmtpServer": "smtp.gmail.com",
                     "Port": 465,
-                    "Username": "4por4.marco@gmail.com",
+                    "Username": "4por4.ma****@gmail.com",
                     "Password": "[Senha de App]"
                 },
                 ...
