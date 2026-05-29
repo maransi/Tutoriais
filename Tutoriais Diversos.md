@@ -1,6 +1,5 @@
 # C# and .NET
 
-
 ## Linq
 https://www.youtube.com/watch?v=Mi2_wpcawGw&list=PLJ4k1IC8GhW0yky43O7TeNwRvaVrHdOmJ
 
@@ -80,3 +79,5 @@ https://www.youtube.com/watch?v=ae7QFU0ADo0&list=PLSPP1ouAVw7Wy-zjnZKX8c5cjVrAJw
 ## CURSO INTRODUTÓRIO DE SHELL SCRIPT
 https://www.youtube.com/watch?v=VX6IqzBbN_Q&list=PLCHxQu_V7ZinTvwd6VO98LGDPQhUJ_rsV
 
+## Arquitetura de Microsserviços
+https://www.youtube.com/watch?v=aIYzbsrXlRo&list=PLFmBNfkCoVHI-RP9frQtcROKu0v51al7y
