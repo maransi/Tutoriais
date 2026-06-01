@@ -26,13 +26,22 @@ https://www.youtube.com/watch?v=AsD4Ae325Ho&list=PLHVpcBDJr5dkJIY_DPnqeASeVIilmj
 https://www.youtube.com/watch?v=M4yWvr4GMIA&list=PLJ4k1IC8GhW19qPmjwtqRgslJzgwpqzVf
 
 
+## ASP.NET Core Web API e React
+https://www.youtube.com/watch?v=QC-XXwsDguw&list=PL0mNG_n6CohvnTGBiJO9NmPyJImmpcGgQ
+
+
+## Curso de ASP.NET Clássico
+https://www.youtube.com/watch?v=0BgeuYjJVhA&list=PLxNM4ef1BpxjOYHkUcgots2C_dibeOTdo
+
+
+
 
 # Delphi
 
 ## DElphi
 https://www.delphibasics.co.uk/index.html
 
-## API REST com Delphi
+## API REST com Delphi com Horse
 https://www.youtube.com/watch?v=M-4gwrCI21w&list=PL_YzAvjux_LZPLp1LGBESZvXuohP6I7HC
 
 
@@ -66,7 +75,6 @@ https://www.youtube.com/watch?v=jy5LcvMtQB8&list=PLR5z6BlKN4FkEbUhhpJxl-vQDuESrr
 
 
 
-
 # Diversos
 
 ## Docker
@@ -81,3 +89,12 @@ https://www.youtube.com/watch?v=VX6IqzBbN_Q&list=PLCHxQu_V7ZinTvwd6VO98LGDPQhUJ_
 
 ## Arquitetura de Microsserviços
 https://www.youtube.com/watch?v=aIYzbsrXlRo&list=PLFmBNfkCoVHI-RP9frQtcROKu0v51al7y
+
+## Curso de React
+https://www.youtube.com/watch?v=FXqX7oof0I4&list=PLnDvRpP8BneyVA0SZ2okm-QBojomniQVO
+
+## Curso de React
+https://www.youtube.com/watch?v=ggtWTKbhN_U&list=PL29TaWXah3iYzP5FGywXezXm4ZvBibGSk
+
+## Dicas de Formulários React
+https://www.youtube.com/watch?v=awUE9p5ITQA&list=PLzILwKck99iYm4s-X0vk3gomBD8le54sE
