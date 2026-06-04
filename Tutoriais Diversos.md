@@ -34,6 +34,8 @@ https://www.youtube.com/watch?v=QC-XXwsDguw&list=PL0mNG_n6CohvnTGBiJO9NmPyJImmpc
 https://www.youtube.com/watch?v=0BgeuYjJVhA&list=PLxNM4ef1BpxjOYHkUcgots2C_dibeOTdo
 
 
+# How to Integrate Admin Theme/Admin LTE/Admin Template in ASP.NET MVC Application
+https://youtube.com/playlist?list=PLDAPLmR-A0XSCA9BeBllWMBr6XgdgS7oD&si=ZgH6IXtbsDQKeoVm
 
 
 # Delphi
