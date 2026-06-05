@@ -38,6 +38,10 @@ https://www.youtube.com/watch?v=0BgeuYjJVhA&list=PLxNM4ef1BpxjOYHkUcgots2C_dibeO
 https://youtube.com/playlist?list=PLDAPLmR-A0XSCA9BeBllWMBr6XgdgS7oD&si=ZgH6IXtbsDQKeoVm
 
 
+## ASP.NET Core MVC Using JQuery
+https://www.youtube.com/watch?v=9aGn-5ZOhqk&list=PLDAPLmR-A0XRTP3iImluTMnT7tA2JQEyU
+
+
 # Delphi
 
 ## DElphi
@@ -73,7 +77,6 @@ https://www.youtube.com/watch?v=msw6MuJWVRQ&list=PLjC0a8M4Dmz9SQxT5Qkds50RU1-Zqa
 
 ## Dicas e Truques em Delphi
 https://www.youtube.com/watch?v=jy5LcvMtQB8&list=PLR5z6BlKN4FkEbUhhpJxl-vQDuESrrPZf
-
 
 
 
