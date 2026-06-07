@@ -34,9 +34,11 @@ https://www.youtube.com/watch?v=QC-XXwsDguw&list=PL0mNG_n6CohvnTGBiJO9NmPyJImmpc
 https://www.youtube.com/watch?v=0BgeuYjJVhA&list=PLxNM4ef1BpxjOYHkUcgots2C_dibeOTdo
 
 
-# How to Integrate Admin Theme/Admin LTE/Admin Template in ASP.NET MVC Application
+## How to Integrate Admin Theme/Admin LTE/Admin Template in ASP.NET MVC Application
 https://youtube.com/playlist?list=PLDAPLmR-A0XSCA9BeBllWMBr6XgdgS7oD&si=ZgH6IXtbsDQKeoVm
 
+## How to Integrate Admin LTE Theme / Template / Admin Dashboard in ASP.NET Core 9 in Hindi
+https://www.youtube.com/watch?v=VWHQ9RRt_v0&t=62s
 
 ## ASP.NET Core MVC Using JQuery
 https://www.youtube.com/watch?v=9aGn-5ZOhqk&list=PLDAPLmR-A0XRTP3iImluTMnT7tA2JQEyU
@@ -77,6 +79,9 @@ https://www.youtube.com/watch?v=msw6MuJWVRQ&list=PLjC0a8M4Dmz9SQxT5Qkds50RU1-Zqa
 
 ## Dicas e Truques em Delphi
 https://www.youtube.com/watch?v=jy5LcvMtQB8&list=PLR5z6BlKN4FkEbUhhpJxl-vQDuESrrPZf
+
+## Princípios SOLID no Delphi com exemplos reais
+https://vinicius-sanchez.medium.com/princ%C3%ADpios-solid-no-delphi-com-exemplos-reais-35b783675a82
 
 
 
