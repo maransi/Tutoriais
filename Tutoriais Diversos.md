@@ -43,6 +43,8 @@ https://www.youtube.com/watch?v=VWHQ9RRt_v0&t=62s
 ## ASP.NET Core MVC Using JQuery
 https://www.youtube.com/watch?v=9aGn-5ZOhqk&list=PLDAPLmR-A0XRTP3iImluTMnT7tA2JQEyU
 
+## MVC Examples
+https://www.youtube.com/watch?v=OLBmtRFFwcQ&list=PLz3T2C4dYvQJw_VlvJAtwMxWJGYhOawH-
 
 # Delphi
 
