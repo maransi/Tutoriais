@@ -110,3 +110,7 @@ https://www.youtube.com/watch?v=ggtWTKbhN_U&list=PL29TaWXah3iYzP5FGywXezXm4ZvBib
 
 ## Dicas de Formulários React
 https://www.youtube.com/watch?v=awUE9p5ITQA&list=PLzILwKck99iYm4s-X0vk3gomBD8le54sE
+
+
+## Claude Code: Tutorial COMPLETO
+https://www.youtube.com/watch?v=w8HuiXr5Fkc&list=PLnDvRpP8BnexO0yWQAf9EAbi3R_qv7D4Q
