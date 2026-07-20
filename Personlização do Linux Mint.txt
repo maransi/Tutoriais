@@ -292,3 +292,35 @@ Personlização do Linux Mint
     . Para reconfigurar o "zsh" digite o comando abaixo:
 
         p10k reconfigure
+
+13. Instalação de aplicativos:
+
+    Brave
+    Chrome
+    VSCode
+    VirtualBox
+    Postman
+    MySQL Workbank
+    Bazaar
+    OBS Studio
+    Pomodoro
+    Amule
+    Stremio
+    Rider
+    WebStorm
+    Chatgpt-desktop-client
+    Calibre
+    Flame
+    Lazarus
+    Vim
+
+    git
+    Ambiente .NET
+    Docker
+    nvm
+    node
+    npm
+    npx (Ver se já foi instalado junto com node e o npm)
+    Codex
+    mysql-client
+    flatpak (Ver se já foi instalado)
