@@ -313,6 +313,9 @@ Personlização do Linux Mint
     Flame
     Lazarus
     Vim
+    Calc
+    VLC
+
 
     git
     Ambiente .NET
@@ -324,3 +327,4 @@ Personlização do Linux Mint
     Codex
     mysql-client
     flatpak (Ver se já foi instalado)
+    Angular
