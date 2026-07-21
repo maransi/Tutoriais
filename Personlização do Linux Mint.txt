@@ -328,4 +328,5 @@ Personlização do Linux Mint
     Codex
     mysql-client
     flatpak (Ver se já foi instalado)
+    snapd (Ver se já foi instalado)
     Angular
