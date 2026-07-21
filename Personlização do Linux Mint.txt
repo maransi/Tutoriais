@@ -295,6 +295,7 @@ Personlização do Linux Mint
 
 13. Instalação de aplicativos:
 
+    Plank
     Brave
     Chrome
     VSCode
@@ -318,8 +319,8 @@ Personlização do Linux Mint
 
 
     git
-    Ambiente .NET
     Docker
+    Ambiente .NET
     nvm
     node
     npm
