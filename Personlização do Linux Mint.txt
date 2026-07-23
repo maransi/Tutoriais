@@ -311,7 +311,7 @@ Personlização do Linux Mint
     WebStorm
     Chatgpt-desktop-client
     Calibre
-    Flame
+    Flameshot
     Frame0 (Software de Prototipação)
     Lazarus
     Vim
