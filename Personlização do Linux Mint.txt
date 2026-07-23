@@ -312,6 +312,7 @@ Personlização do Linux Mint
     Chatgpt-desktop-client
     Calibre
     Flame
+    Frame0 (Software de Prototipação)
     Lazarus
     Vim
     Calc
